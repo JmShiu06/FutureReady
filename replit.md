@@ -1,15 +1,19 @@
-# [Project name]
+# FutureReady Workforce
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A skills intelligence demo for exploring career matches, learning paths, workforce trends, and team reskilling plans.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Install the workspace dependencies with `pnpm install --frozen-lockfile`.
+- Start the existing `artifacts/future-ready-workforce: web` workflow for the web preview at `/`. It runs `pnpm --filter @workspace/future-ready-workforce run dev` and supplies the required `PORT` and `BASE_PATH`; do not run this command without those workflow-provided variables.
+- `pnpm --filter @workspace/future-ready-workforce run typecheck` — check the web app.
+- The current web demo uses browser-local storage and does not require a database or API server.
+- Start the existing `artifacts/api-server: API Server` workflow if the API is needed; its managed configuration supplies the port.
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Database tooling requires `DATABASE_URL` — Postgres connection string (not needed for the current web demo).
 
 ## Stack
 
