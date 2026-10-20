@@ -1,0 +1,3621 @@
+{
+  "dataset_type": "career_match_test_data",
+  "intended_use": "Prototype/test role-to-skill matching; not a verified Malaysian workforce dataset.",
+  "matching_guidance": {
+    "suggested_method": "Compare normalized candidate skills with the role-family skill list. Treat pct_of_role as evidence/prevalence, not a mandatory requirement.",
+    "simple_unweighted_score": "matched skill count / number of skills considered * 100",
+    "optional_weighted_score": "sum of pct_of_role for matched skills / sum of pct_of_role for all skills considered * 100",
+    "caution": "Score is a prototype overlap indicator, not probability of employment or a calibrated fit probability."
+  },
+  "source": {
+    "dataset_name": "Most In-Demand Job Skills of 2026",
+    "publisher": "Qarera",
+    "dataset_period": "2025-12-27 to 2026-06-16",
+    "reported_corpus_size": 360336,
+    "license": "CC BY 4.0",
+    "citation": "Qarera (2026). The Most In-Demand Job Skills of 2026: Skill-Demand Frequencies from 360,336 Job Postings. Zenodo. https://doi.org/10.5281/zenodo.21204423",
+    "source_urls": [
+      "https://huggingface.co/datasets/yash2111/most-in-demand-skills-2026",
+      "https://github.com/dreamjobs-tech/most-in-demand-skills-2026",
+      "https://doi.org/10.5281/zenodo.21204423"
+    ],
+    "geography_note": "Country and compensation fields were too sparse to report; do not label these values as Malaysia-specific.",
+    "measurement_note": "Percentages are shares of postings that mention a skill, not shares of hires, number of openings, or proof that a skill is mandatory. Role families are grouped from titles by keyword."
+  },
+  "role_count": 15,
+  "role_skill_record_count": 450,
+  "skills_by_role": [
+    {
+      "role_family": "Software Engineer",
+      "role_postings": 38762,
+      "skills": [
+        {
+          "skill": "java",
+          "postings_with_skill": 12200,
+          "pct_of_role": 31.47
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 12095,
+          "pct_of_role": 31.2
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 10304,
+          "pct_of_role": 26.58
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 8281,
+          "pct_of_role": 21.36
+        },
+        {
+          "skill": "react",
+          "postings_with_skill": 6977,
+          "pct_of_role": 18.0
+        },
+        {
+          "skill": "javascript",
+          "postings_with_skill": 6930,
+          "pct_of_role": 17.88
+        },
+        {
+          "skill": "docker",
+          "postings_with_skill": 6643,
+          "pct_of_role": 17.14
+        },
+        {
+          "skill": "kubernetes",
+          "postings_with_skill": 6575,
+          "pct_of_role": 16.96
+        },
+        {
+          "skill": "software",
+          "postings_with_skill": 6368,
+          "pct_of_role": 16.43
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 6186,
+          "pct_of_role": 15.96
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 6054,
+          "pct_of_role": 15.62
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 6019,
+          "pct_of_role": 15.53
+        },
+        {
+          "skill": "software development",
+          "postings_with_skill": 5841,
+          "pct_of_role": 15.07
+        },
+        {
+          "skill": "typescript",
+          "postings_with_skill": 5683,
+          "pct_of_role": 14.66
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 4958,
+          "pct_of_role": 12.79
+        },
+        {
+          "skill": "microservices",
+          "postings_with_skill": 4856,
+          "pct_of_role": 12.53
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 4826,
+          "pct_of_role": 12.45
+        },
+        {
+          "skill": "ci/cd",
+          "postings_with_skill": 4682,
+          "pct_of_role": 12.08
+        },
+        {
+          "skill": "angular",
+          "postings_with_skill": 4012,
+          "pct_of_role": 10.35
+        },
+        {
+          "skill": "collaboration",
+          "postings_with_skill": 3841,
+          "pct_of_role": 9.91
+        },
+        {
+          "skill": "security",
+          "postings_with_skill": 3820,
+          "pct_of_role": 9.86
+        },
+        {
+          "skill": "spring boot",
+          "postings_with_skill": 3773,
+          "pct_of_role": 9.73
+        },
+        {
+          "skill": "development",
+          "postings_with_skill": 3574,
+          "pct_of_role": 9.22
+        },
+        {
+          "skill": "design",
+          "postings_with_skill": 3521,
+          "pct_of_role": 9.08
+        },
+        {
+          "skill": "testing",
+          "postings_with_skill": 3477,
+          "pct_of_role": 8.97
+        },
+        {
+          "skill": "postgresql",
+          "postings_with_skill": 3421,
+          "pct_of_role": 8.83
+        },
+        {
+          "skill": "software engineering",
+          "postings_with_skill": 3353,
+          "pct_of_role": 8.65
+        },
+        {
+          "skill": "gcp",
+          "postings_with_skill": 3221,
+          "pct_of_role": 8.31
+        },
+        {
+          "skill": "automation",
+          "postings_with_skill": 3212,
+          "pct_of_role": 8.29
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 3114,
+          "pct_of_role": 8.03
+        }
+      ]
+    },
+    {
+      "role_family": "Security",
+      "role_postings": 11981,
+      "skills": [
+        {
+          "skill": "security",
+          "postings_with_skill": 8616,
+          "pct_of_role": 71.91
+        },
+        {
+          "skill": "cybersecurity",
+          "postings_with_skill": 4541,
+          "pct_of_role": 37.9
+        },
+        {
+          "skill": "siem",
+          "postings_with_skill": 2908,
+          "pct_of_role": 24.27
+        },
+        {
+          "skill": "incident response",
+          "postings_with_skill": 2792,
+          "pct_of_role": 23.3
+        },
+        {
+          "skill": "compliance",
+          "postings_with_skill": 2541,
+          "pct_of_role": 21.21
+        },
+        {
+          "skill": "cyber security",
+          "postings_with_skill": 2439,
+          "pct_of_role": 20.36
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 2023,
+          "pct_of_role": 16.89
+        },
+        {
+          "skill": "information security",
+          "postings_with_skill": 1908,
+          "pct_of_role": 15.93
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 1889,
+          "pct_of_role": 15.77
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 1868,
+          "pct_of_role": 15.59
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 1725,
+          "pct_of_role": 14.4
+        },
+        {
+          "skill": "cloud security",
+          "postings_with_skill": 1696,
+          "pct_of_role": 14.16
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 1469,
+          "pct_of_role": 12.26
+        },
+        {
+          "skill": "network security",
+          "postings_with_skill": 1455,
+          "pct_of_role": 12.14
+        },
+        {
+          "skill": "vulnerability management",
+          "postings_with_skill": 1450,
+          "pct_of_role": 12.1
+        },
+        {
+          "skill": "firewalls",
+          "postings_with_skill": 1405,
+          "pct_of_role": 11.73
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 1365,
+          "pct_of_role": 11.39
+        },
+        {
+          "skill": "iso 27001",
+          "postings_with_skill": 1326,
+          "pct_of_role": 11.07
+        },
+        {
+          "skill": "leadership",
+          "postings_with_skill": 1293,
+          "pct_of_role": 10.79
+        },
+        {
+          "skill": "threats",
+          "postings_with_skill": 1289,
+          "pct_of_role": 10.76
+        },
+        {
+          "skill": "security operations",
+          "postings_with_skill": 1208,
+          "pct_of_role": 10.08
+        },
+        {
+          "skill": "edr",
+          "postings_with_skill": 1153,
+          "pct_of_role": 9.62
+        },
+        {
+          "skill": "risk management",
+          "postings_with_skill": 1115,
+          "pct_of_role": 9.31
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 1066,
+          "pct_of_role": 8.9
+        },
+        {
+          "skill": "splunk",
+          "postings_with_skill": 1041,
+          "pct_of_role": 8.69
+        },
+        {
+          "skill": "cissp",
+          "postings_with_skill": 1033,
+          "pct_of_role": 8.62
+        },
+        {
+          "skill": "monitoring",
+          "postings_with_skill": 1008,
+          "pct_of_role": 8.41
+        },
+        {
+          "skill": "automation",
+          "postings_with_skill": 1004,
+          "pct_of_role": 8.38
+        },
+        {
+          "skill": "incidents",
+          "postings_with_skill": 994,
+          "pct_of_role": 8.3
+        },
+        {
+          "skill": "nist",
+          "postings_with_skill": 995,
+          "pct_of_role": 8.3
+        }
+      ]
+    },
+    {
+      "role_family": "Data Scientist / ML",
+      "role_postings": 11871,
+      "skills": [
+        {
+          "skill": "python",
+          "postings_with_skill": 8290,
+          "pct_of_role": 69.83
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 7565,
+          "pct_of_role": 63.73
+        },
+        {
+          "skill": "machine learning",
+          "postings_with_skill": 5755,
+          "pct_of_role": 48.48
+        },
+        {
+          "skill": "pytorch",
+          "postings_with_skill": 3598,
+          "pct_of_role": 30.31
+        },
+        {
+          "skill": "tensorflow",
+          "postings_with_skill": 3251,
+          "pct_of_role": 27.39
+        },
+        {
+          "skill": "data science",
+          "postings_with_skill": 3151,
+          "pct_of_role": 26.54
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 3084,
+          "pct_of_role": 25.98
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 2875,
+          "pct_of_role": 24.22
+        },
+        {
+          "skill": "deep learning",
+          "postings_with_skill": 2379,
+          "pct_of_role": 20.04
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 2308,
+          "pct_of_role": 19.44
+        },
+        {
+          "skill": "ai/ml",
+          "postings_with_skill": 2269,
+          "pct_of_role": 19.11
+        },
+        {
+          "skill": "generative ai",
+          "postings_with_skill": 2191,
+          "pct_of_role": 18.46
+        },
+        {
+          "skill": "llm",
+          "postings_with_skill": 2155,
+          "pct_of_role": 18.15
+        },
+        {
+          "skill": "langchain",
+          "postings_with_skill": 2152,
+          "pct_of_role": 18.13
+        },
+        {
+          "skill": "rag",
+          "postings_with_skill": 2137,
+          "pct_of_role": 18.0
+        },
+        {
+          "skill": "llms",
+          "postings_with_skill": 2074,
+          "pct_of_role": 17.47
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 2010,
+          "pct_of_role": 16.93
+        },
+        {
+          "skill": "scikit",
+          "postings_with_skill": 1904,
+          "pct_of_role": 16.04
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1822,
+          "pct_of_role": 15.35
+        },
+        {
+          "skill": "gcp",
+          "postings_with_skill": 1739,
+          "pct_of_role": 14.65
+        },
+        {
+          "skill": "prompt engineering",
+          "postings_with_skill": 1729,
+          "pct_of_role": 14.56
+        },
+        {
+          "skill": "docker",
+          "postings_with_skill": 1699,
+          "pct_of_role": 14.31
+        },
+        {
+          "skill": "machine learning models",
+          "postings_with_skill": 1508,
+          "pct_of_role": 12.7
+        },
+        {
+          "skill": "nlp",
+          "postings_with_skill": 1469,
+          "pct_of_role": 12.37
+        },
+        {
+          "skill": "kubernetes",
+          "postings_with_skill": 1369,
+          "pct_of_role": 11.53
+        },
+        {
+          "skill": "ci/cd",
+          "postings_with_skill": 1346,
+          "pct_of_role": 11.34
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 1328,
+          "pct_of_role": 11.19
+        },
+        {
+          "skill": "mlops",
+          "postings_with_skill": 1323,
+          "pct_of_role": 11.14
+        },
+        {
+          "skill": "pandas",
+          "postings_with_skill": 1293,
+          "pct_of_role": 10.89
+        },
+        {
+          "skill": "vector databases",
+          "postings_with_skill": 1272,
+          "pct_of_role": 10.72
+        }
+      ]
+    },
+    {
+      "role_family": "Full Stack",
+      "role_postings": 11752,
+      "skills": [
+        {
+          "skill": "react",
+          "postings_with_skill": 5075,
+          "pct_of_role": 43.18
+        },
+        {
+          "skill": "javascript",
+          "postings_with_skill": 4083,
+          "pct_of_role": 34.74
+        },
+        {
+          "skill": "angular",
+          "postings_with_skill": 3699,
+          "pct_of_role": 31.48
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 3605,
+          "pct_of_role": 30.68
+        },
+        {
+          "skill": "java",
+          "postings_with_skill": 3540,
+          "pct_of_role": 30.12
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 3508,
+          "pct_of_role": 29.85
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 3326,
+          "pct_of_role": 28.3
+        },
+        {
+          "skill": "typescript",
+          "postings_with_skill": 3318,
+          "pct_of_role": 28.23
+        },
+        {
+          "skill": "node.js",
+          "postings_with_skill": 3244,
+          "pct_of_role": 27.6
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 3185,
+          "pct_of_role": 27.1
+        },
+        {
+          "skill": "docker",
+          "postings_with_skill": 2873,
+          "pct_of_role": 24.45
+        },
+        {
+          "skill": "postgresql",
+          "postings_with_skill": 2666,
+          "pct_of_role": 22.69
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 2464,
+          "pct_of_role": 20.97
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 2436,
+          "pct_of_role": 20.73
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 2430,
+          "pct_of_role": 20.68
+        },
+        {
+          "skill": "css",
+          "postings_with_skill": 2322,
+          "pct_of_role": 19.76
+        },
+        {
+          "skill": "mysql",
+          "postings_with_skill": 2104,
+          "pct_of_role": 17.9
+        },
+        {
+          "skill": "html",
+          "postings_with_skill": 2060,
+          "pct_of_role": 17.53
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 2018,
+          "pct_of_role": 17.17
+        },
+        {
+          "skill": "mongodb",
+          "postings_with_skill": 2011,
+          "pct_of_role": 17.11
+        },
+        {
+          "skill": "microservices",
+          "postings_with_skill": 1975,
+          "pct_of_role": 16.81
+        },
+        {
+          "skill": "restful apis",
+          "postings_with_skill": 1964,
+          "pct_of_role": 16.71
+        },
+        {
+          "skill": "kubernetes",
+          "postings_with_skill": 1931,
+          "pct_of_role": 16.43
+        },
+        {
+          "skill": "rest apis",
+          "postings_with_skill": 1885,
+          "pct_of_role": 16.04
+        },
+        {
+          "skill": "spring boot",
+          "postings_with_skill": 1847,
+          "pct_of_role": 15.72
+        },
+        {
+          "skill": "react.js",
+          "postings_with_skill": 1787,
+          "pct_of_role": 15.21
+        },
+        {
+          "skill": "full stack",
+          "postings_with_skill": 1632,
+          "pct_of_role": 13.89
+        },
+        {
+          "skill": "ci/cd",
+          "postings_with_skill": 1557,
+          "pct_of_role": 13.25
+        },
+        {
+          "skill": "devops",
+          "postings_with_skill": 1497,
+          "pct_of_role": 12.74
+        },
+        {
+          "skill": "next.js",
+          "postings_with_skill": 1382,
+          "pct_of_role": 11.76
+        }
+      ]
+    },
+    {
+      "role_family": "Backend",
+      "role_postings": 10896,
+      "skills": [
+        {
+          "skill": "python",
+          "postings_with_skill": 4327,
+          "pct_of_role": 39.71
+        },
+        {
+          "skill": "java",
+          "postings_with_skill": 4033,
+          "pct_of_role": 37.01
+        },
+        {
+          "skill": "docker",
+          "postings_with_skill": 3239,
+          "pct_of_role": 29.73
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 3218,
+          "pct_of_role": 29.53
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 3076,
+          "pct_of_role": 28.23
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 2745,
+          "pct_of_role": 25.19
+        },
+        {
+          "skill": "postgresql",
+          "postings_with_skill": 2637,
+          "pct_of_role": 24.2
+        },
+        {
+          "skill": "mysql",
+          "postings_with_skill": 2474,
+          "pct_of_role": 22.71
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 2471,
+          "pct_of_role": 22.68
+        },
+        {
+          "skill": "kubernetes",
+          "postings_with_skill": 2372,
+          "pct_of_role": 21.77
+        },
+        {
+          "skill": "microservices",
+          "postings_with_skill": 2322,
+          "pct_of_role": 21.31
+        },
+        {
+          "skill": "spring boot",
+          "postings_with_skill": 2233,
+          "pct_of_role": 20.49
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 2069,
+          "pct_of_role": 18.99
+        },
+        {
+          "skill": "javascript",
+          "postings_with_skill": 1911,
+          "pct_of_role": 17.54
+        },
+        {
+          "skill": "restful apis",
+          "postings_with_skill": 1865,
+          "pct_of_role": 17.12
+        },
+        {
+          "skill": "rest apis",
+          "postings_with_skill": 1833,
+          "pct_of_role": 16.82
+        },
+        {
+          "skill": "node.js",
+          "postings_with_skill": 1828,
+          "pct_of_role": 16.78
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 1751,
+          "pct_of_role": 16.07
+        },
+        {
+          "skill": "mongodb",
+          "postings_with_skill": 1714,
+          "pct_of_role": 15.73
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1659,
+          "pct_of_role": 15.23
+        },
+        {
+          "skill": "kafka",
+          "postings_with_skill": 1442,
+          "pct_of_role": 13.23
+        },
+        {
+          "skill": "ci/cd",
+          "postings_with_skill": 1373,
+          "pct_of_role": 12.6
+        },
+        {
+          "skill": "microservices architecture",
+          "postings_with_skill": 1357,
+          "pct_of_role": 12.45
+        },
+        {
+          "skill": "gcp",
+          "postings_with_skill": 1309,
+          "pct_of_role": 12.01
+        },
+        {
+          "skill": "react",
+          "postings_with_skill": 1298,
+          "pct_of_role": 11.91
+        },
+        {
+          "skill": "fastapi",
+          "postings_with_skill": 1243,
+          "pct_of_role": 11.41
+        },
+        {
+          "skill": "typescript",
+          "postings_with_skill": 1218,
+          "pct_of_role": 11.18
+        },
+        {
+          "skill": "devops",
+          "postings_with_skill": 1136,
+          "pct_of_role": 10.43
+        },
+        {
+          "skill": "redis",
+          "postings_with_skill": 1092,
+          "pct_of_role": 10.02
+        },
+        {
+          "skill": "django",
+          "postings_with_skill": 1077,
+          "pct_of_role": 9.88
+        }
+      ]
+    },
+    {
+      "role_family": "DevOps / Cloud / SRE",
+      "role_postings": 10548,
+      "skills": [
+        {
+          "skill": "terraform",
+          "postings_with_skill": 4606,
+          "pct_of_role": 43.67
+        },
+        {
+          "skill": "devops",
+          "postings_with_skill": 4573,
+          "pct_of_role": 43.35
+        },
+        {
+          "skill": "kubernetes",
+          "postings_with_skill": 4534,
+          "pct_of_role": 42.98
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 4366,
+          "pct_of_role": 41.39
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 4095,
+          "pct_of_role": 38.82
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 3414,
+          "pct_of_role": 32.37
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 3224,
+          "pct_of_role": 30.57
+        },
+        {
+          "skill": "docker",
+          "postings_with_skill": 2914,
+          "pct_of_role": 27.63
+        },
+        {
+          "skill": "security",
+          "postings_with_skill": 2635,
+          "pct_of_role": 24.98
+        },
+        {
+          "skill": "ci/cd",
+          "postings_with_skill": 2591,
+          "pct_of_role": 24.56
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 2413,
+          "pct_of_role": 22.88
+        },
+        {
+          "skill": "automation",
+          "postings_with_skill": 2394,
+          "pct_of_role": 22.7
+        },
+        {
+          "skill": "jenkins",
+          "postings_with_skill": 2352,
+          "pct_of_role": 22.3
+        },
+        {
+          "skill": "grafana",
+          "postings_with_skill": 2063,
+          "pct_of_role": 19.56
+        },
+        {
+          "skill": "ansible",
+          "postings_with_skill": 2035,
+          "pct_of_role": 19.29
+        },
+        {
+          "skill": "bash",
+          "postings_with_skill": 1969,
+          "pct_of_role": 18.67
+        },
+        {
+          "skill": "prometheus",
+          "postings_with_skill": 1969,
+          "pct_of_role": 18.67
+        },
+        {
+          "skill": "gcp",
+          "postings_with_skill": 1802,
+          "pct_of_role": 17.08
+        },
+        {
+          "skill": "networking",
+          "postings_with_skill": 1638,
+          "pct_of_role": 15.53
+        },
+        {
+          "skill": "github actions",
+          "postings_with_skill": 1632,
+          "pct_of_role": 15.47
+        },
+        {
+          "skill": "infrastructure",
+          "postings_with_skill": 1576,
+          "pct_of_role": 14.94
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1517,
+          "pct_of_role": 14.38
+        },
+        {
+          "skill": "infrastructure as code",
+          "postings_with_skill": 1482,
+          "pct_of_role": 14.05
+        },
+        {
+          "skill": "cloud",
+          "postings_with_skill": 1466,
+          "pct_of_role": 13.9
+        },
+        {
+          "skill": "cloud infrastructure",
+          "postings_with_skill": 1449,
+          "pct_of_role": 13.74
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 1345,
+          "pct_of_role": 12.75
+        },
+        {
+          "skill": "linux",
+          "postings_with_skill": 1278,
+          "pct_of_role": 12.12
+        },
+        {
+          "skill": "java",
+          "postings_with_skill": 1163,
+          "pct_of_role": 11.03
+        },
+        {
+          "skill": "azure devops",
+          "postings_with_skill": 1160,
+          "pct_of_role": 11.0
+        },
+        {
+          "skill": "monitoring",
+          "postings_with_skill": 1109,
+          "pct_of_role": 10.51
+        }
+      ]
+    },
+    {
+      "role_family": "Data Analyst / BI",
+      "role_postings": 9677,
+      "skills": [
+        {
+          "skill": "sql",
+          "postings_with_skill": 5283,
+          "pct_of_role": 54.59
+        },
+        {
+          "skill": "power bi",
+          "postings_with_skill": 4092,
+          "pct_of_role": 42.29
+        },
+        {
+          "skill": "analytics",
+          "postings_with_skill": 3900,
+          "pct_of_role": 40.3
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 3592,
+          "pct_of_role": 37.12
+        },
+        {
+          "skill": "tableau",
+          "postings_with_skill": 2804,
+          "pct_of_role": 28.98
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 2621,
+          "pct_of_role": 27.08
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 2513,
+          "pct_of_role": 25.97
+        },
+        {
+          "skill": "data analysis",
+          "postings_with_skill": 2421,
+          "pct_of_role": 25.02
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 1969,
+          "pct_of_role": 20.35
+        },
+        {
+          "skill": "excel",
+          "postings_with_skill": 1916,
+          "pct_of_role": 19.8
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 1902,
+          "pct_of_role": 19.65
+        },
+        {
+          "skill": "bi",
+          "postings_with_skill": 1900,
+          "pct_of_role": 19.63
+        },
+        {
+          "skill": "data analytics",
+          "postings_with_skill": 1797,
+          "pct_of_role": 18.57
+        },
+        {
+          "skill": "business intelligence",
+          "postings_with_skill": 1710,
+          "pct_of_role": 17.67
+        },
+        {
+          "skill": "data analyst",
+          "postings_with_skill": 1376,
+          "pct_of_role": 14.22
+        },
+        {
+          "skill": "data modeling",
+          "postings_with_skill": 1222,
+          "pct_of_role": 12.63
+        },
+        {
+          "skill": "leadership",
+          "postings_with_skill": 1175,
+          "pct_of_role": 12.14
+        },
+        {
+          "skill": "data engineering",
+          "postings_with_skill": 1163,
+          "pct_of_role": 12.02
+        },
+        {
+          "skill": "data science",
+          "postings_with_skill": 1163,
+          "pct_of_role": 12.02
+        },
+        {
+          "skill": "attention to detail",
+          "postings_with_skill": 1150,
+          "pct_of_role": 11.88
+        },
+        {
+          "skill": "dax",
+          "postings_with_skill": 1023,
+          "pct_of_role": 10.57
+        },
+        {
+          "skill": "snowflake",
+          "postings_with_skill": 1001,
+          "pct_of_role": 10.34
+        },
+        {
+          "skill": "data visualization",
+          "postings_with_skill": 996,
+          "pct_of_role": 10.29
+        },
+        {
+          "skill": "statistics",
+          "postings_with_skill": 981,
+          "pct_of_role": 10.14
+        },
+        {
+          "skill": "business",
+          "postings_with_skill": 940,
+          "pct_of_role": 9.71
+        },
+        {
+          "skill": "data governance",
+          "postings_with_skill": 924,
+          "pct_of_role": 9.55
+        },
+        {
+          "skill": "dashboards",
+          "postings_with_skill": 839,
+          "pct_of_role": 8.67
+        },
+        {
+          "skill": "governance",
+          "postings_with_skill": 838,
+          "pct_of_role": 8.66
+        },
+        {
+          "skill": "marketing",
+          "postings_with_skill": 819,
+          "pct_of_role": 8.46
+        },
+        {
+          "skill": "finance",
+          "postings_with_skill": 784,
+          "pct_of_role": 8.1
+        }
+      ]
+    },
+    {
+      "role_family": "Frontend",
+      "role_postings": 8706,
+      "skills": [
+        {
+          "skill": "javascript",
+          "postings_with_skill": 5273,
+          "pct_of_role": 60.57
+        },
+        {
+          "skill": "react",
+          "postings_with_skill": 4160,
+          "pct_of_role": 47.78
+        },
+        {
+          "skill": "css",
+          "postings_with_skill": 3616,
+          "pct_of_role": 41.53
+        },
+        {
+          "skill": "typescript",
+          "postings_with_skill": 3285,
+          "pct_of_role": 37.73
+        },
+        {
+          "skill": "html",
+          "postings_with_skill": 3111,
+          "pct_of_role": 35.73
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 2618,
+          "pct_of_role": 30.07
+        },
+        {
+          "skill": "html5",
+          "postings_with_skill": 2041,
+          "pct_of_role": 23.44
+        },
+        {
+          "skill": "css3",
+          "postings_with_skill": 1787,
+          "pct_of_role": 20.53
+        },
+        {
+          "skill": "angular",
+          "postings_with_skill": 1722,
+          "pct_of_role": 19.78
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 1661,
+          "pct_of_role": 19.08
+        },
+        {
+          "skill": "react.js",
+          "postings_with_skill": 1298,
+          "pct_of_role": 14.91
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1289,
+          "pct_of_role": 14.81
+        },
+        {
+          "skill": "web development",
+          "postings_with_skill": 1215,
+          "pct_of_role": 13.96
+        },
+        {
+          "skill": "next.js",
+          "postings_with_skill": 1196,
+          "pct_of_role": 13.74
+        },
+        {
+          "skill": "redux",
+          "postings_with_skill": 1085,
+          "pct_of_role": 12.46
+        },
+        {
+          "skill": "performance",
+          "postings_with_skill": 1069,
+          "pct_of_role": 12.28
+        },
+        {
+          "skill": "responsive design",
+          "postings_with_skill": 1027,
+          "pct_of_role": 11.8
+        },
+        {
+          "skill": "design",
+          "postings_with_skill": 1024,
+          "pct_of_role": 11.76
+        },
+        {
+          "skill": "restful apis",
+          "postings_with_skill": 1011,
+          "pct_of_role": 11.61
+        },
+        {
+          "skill": "frontend",
+          "postings_with_skill": 1004,
+          "pct_of_role": 11.53
+        },
+        {
+          "skill": "jest",
+          "postings_with_skill": 980,
+          "pct_of_role": 11.26
+        },
+        {
+          "skill": "attention to detail",
+          "postings_with_skill": 976,
+          "pct_of_role": 11.21
+        },
+        {
+          "skill": "development",
+          "postings_with_skill": 969,
+          "pct_of_role": 11.13
+        },
+        {
+          "skill": "web",
+          "postings_with_skill": 945,
+          "pct_of_role": 10.85
+        },
+        {
+          "skill": "node.js",
+          "postings_with_skill": 933,
+          "pct_of_role": 10.72
+        },
+        {
+          "skill": "accessibility",
+          "postings_with_skill": 893,
+          "pct_of_role": 10.26
+        },
+        {
+          "skill": "figma",
+          "postings_with_skill": 849,
+          "pct_of_role": 9.75
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 842,
+          "pct_of_role": 9.67
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 818,
+          "pct_of_role": 9.4
+        },
+        {
+          "skill": "vue.js",
+          "postings_with_skill": 786,
+          "pct_of_role": 9.03
+        }
+      ]
+    },
+    {
+      "role_family": "Data Engineer",
+      "role_postings": 7499,
+      "skills": [
+        {
+          "skill": "python",
+          "postings_with_skill": 4738,
+          "pct_of_role": 63.18
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 4671,
+          "pct_of_role": 62.29
+        },
+        {
+          "skill": "data engineering",
+          "postings_with_skill": 4056,
+          "pct_of_role": 54.09
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 2433,
+          "pct_of_role": 32.44
+        },
+        {
+          "skill": "azure",
+          "postings_with_skill": 2078,
+          "pct_of_role": 27.71
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 1995,
+          "pct_of_role": 26.6
+        },
+        {
+          "skill": "databricks",
+          "postings_with_skill": 1953,
+          "pct_of_role": 26.04
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 1885,
+          "pct_of_role": 25.14
+        },
+        {
+          "skill": "spark",
+          "postings_with_skill": 1802,
+          "pct_of_role": 24.03
+        },
+        {
+          "skill": "analytics",
+          "postings_with_skill": 1724,
+          "pct_of_role": 22.99
+        },
+        {
+          "skill": "snowflake",
+          "postings_with_skill": 1671,
+          "pct_of_role": 22.28
+        },
+        {
+          "skill": "etl",
+          "postings_with_skill": 1659,
+          "pct_of_role": 22.12
+        },
+        {
+          "skill": "data pipelines",
+          "postings_with_skill": 1566,
+          "pct_of_role": 20.88
+        },
+        {
+          "skill": "data governance",
+          "postings_with_skill": 1487,
+          "pct_of_role": 19.83
+        },
+        {
+          "skill": "pyspark",
+          "postings_with_skill": 1423,
+          "pct_of_role": 18.98
+        },
+        {
+          "skill": "data modeling",
+          "postings_with_skill": 1382,
+          "pct_of_role": 18.43
+        },
+        {
+          "skill": "data quality",
+          "postings_with_skill": 1368,
+          "pct_of_role": 18.24
+        },
+        {
+          "skill": "airflow",
+          "postings_with_skill": 1261,
+          "pct_of_role": 16.82
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1221,
+          "pct_of_role": 16.28
+        },
+        {
+          "skill": "ci/cd",
+          "postings_with_skill": 1209,
+          "pct_of_role": 16.12
+        },
+        {
+          "skill": "gcp",
+          "postings_with_skill": 1159,
+          "pct_of_role": 15.46
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 1102,
+          "pct_of_role": 14.7
+        },
+        {
+          "skill": "java",
+          "postings_with_skill": 1077,
+          "pct_of_role": 14.36
+        },
+        {
+          "skill": "kafka",
+          "postings_with_skill": 1039,
+          "pct_of_role": 13.86
+        },
+        {
+          "skill": "data integration",
+          "postings_with_skill": 987,
+          "pct_of_role": 13.16
+        },
+        {
+          "skill": "dbt",
+          "postings_with_skill": 986,
+          "pct_of_role": 13.15
+        },
+        {
+          "skill": "scala",
+          "postings_with_skill": 985,
+          "pct_of_role": 13.14
+        },
+        {
+          "skill": "governance",
+          "postings_with_skill": 894,
+          "pct_of_role": 11.92
+        },
+        {
+          "skill": "data warehousing",
+          "postings_with_skill": 860,
+          "pct_of_role": 11.47
+        },
+        {
+          "skill": "machine learning",
+          "postings_with_skill": 836,
+          "pct_of_role": 11.15
+        }
+      ]
+    },
+    {
+      "role_family": "QA / Test",
+      "role_postings": 6760,
+      "skills": [
+        {
+          "skill": "testing",
+          "postings_with_skill": 2614,
+          "pct_of_role": 38.67
+        },
+        {
+          "skill": "automation",
+          "postings_with_skill": 1980,
+          "pct_of_role": 29.29
+        },
+        {
+          "skill": "selenium",
+          "postings_with_skill": 1822,
+          "pct_of_role": 26.95
+        },
+        {
+          "skill": "quality assurance",
+          "postings_with_skill": 1778,
+          "pct_of_role": 26.3
+        },
+        {
+          "skill": "jira",
+          "postings_with_skill": 1687,
+          "pct_of_role": 24.96
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1676,
+          "pct_of_role": 24.79
+        },
+        {
+          "skill": "python",
+          "postings_with_skill": 1638,
+          "pct_of_role": 24.23
+        },
+        {
+          "skill": "postman",
+          "postings_with_skill": 1572,
+          "pct_of_role": 23.25
+        },
+        {
+          "skill": "java",
+          "postings_with_skill": 1562,
+          "pct_of_role": 23.11
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 1393,
+          "pct_of_role": 20.61
+        },
+        {
+          "skill": "playwright",
+          "postings_with_skill": 1336,
+          "pct_of_role": 19.76
+        },
+        {
+          "skill": "qa",
+          "postings_with_skill": 1222,
+          "pct_of_role": 18.08
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 1197,
+          "pct_of_role": 17.71
+        },
+        {
+          "skill": "api testing",
+          "postings_with_skill": 1156,
+          "pct_of_role": 17.1
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 1101,
+          "pct_of_role": 16.29
+        },
+        {
+          "skill": "test automation",
+          "postings_with_skill": 1057,
+          "pct_of_role": 15.64
+        },
+        {
+          "skill": "javascript",
+          "postings_with_skill": 1026,
+          "pct_of_role": 15.18
+        },
+        {
+          "skill": "jenkins",
+          "postings_with_skill": 985,
+          "pct_of_role": 14.57
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 945,
+          "pct_of_role": 13.98
+        },
+        {
+          "skill": "attention to detail",
+          "postings_with_skill": 890,
+          "pct_of_role": 13.17
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 816,
+          "pct_of_role": 12.07
+        },
+        {
+          "skill": "automation testing",
+          "postings_with_skill": 797,
+          "pct_of_role": 11.79
+        },
+        {
+          "skill": "cypress",
+          "postings_with_skill": 742,
+          "pct_of_role": 10.98
+        },
+        {
+          "skill": "quality",
+          "postings_with_skill": 741,
+          "pct_of_role": 10.96
+        },
+        {
+          "skill": "performance testing",
+          "postings_with_skill": 644,
+          "pct_of_role": 9.53
+        },
+        {
+          "skill": "compliance",
+          "postings_with_skill": 617,
+          "pct_of_role": 9.13
+        },
+        {
+          "skill": "agile",
+          "postings_with_skill": 613,
+          "pct_of_role": 9.07
+        },
+        {
+          "skill": "azure devops",
+          "postings_with_skill": 577,
+          "pct_of_role": 8.54
+        },
+        {
+          "skill": "performance",
+          "postings_with_skill": 576,
+          "pct_of_role": 8.52
+        },
+        {
+          "skill": "sdlc",
+          "postings_with_skill": 570,
+          "pct_of_role": 8.43
+        }
+      ]
+    },
+    {
+      "role_family": "Business Analyst",
+      "role_postings": 4740,
+      "skills": [
+        {
+          "skill": "communication",
+          "postings_with_skill": 1895,
+          "pct_of_role": 39.98
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 1500,
+          "pct_of_role": 31.65
+        },
+        {
+          "skill": "business analysis",
+          "postings_with_skill": 1284,
+          "pct_of_role": 27.09
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 1007,
+          "pct_of_role": 21.24
+        },
+        {
+          "skill": "excel",
+          "postings_with_skill": 934,
+          "pct_of_role": 19.7
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 905,
+          "pct_of_role": 19.09
+        },
+        {
+          "skill": "stakeholder management",
+          "postings_with_skill": 826,
+          "pct_of_role": 17.43
+        },
+        {
+          "skill": "business",
+          "postings_with_skill": 806,
+          "pct_of_role": 17.0
+        },
+        {
+          "skill": "jira",
+          "postings_with_skill": 783,
+          "pct_of_role": 16.52
+        },
+        {
+          "skill": "analytical skills",
+          "postings_with_skill": 638,
+          "pct_of_role": 13.46
+        },
+        {
+          "skill": "agile",
+          "postings_with_skill": 636,
+          "pct_of_role": 13.42
+        },
+        {
+          "skill": "data analysis",
+          "postings_with_skill": 552,
+          "pct_of_role": 11.65
+        },
+        {
+          "skill": "power bi",
+          "postings_with_skill": 532,
+          "pct_of_role": 11.22
+        },
+        {
+          "skill": "finance",
+          "postings_with_skill": 473,
+          "pct_of_role": 9.98
+        },
+        {
+          "skill": "leadership",
+          "postings_with_skill": 452,
+          "pct_of_role": 9.54
+        },
+        {
+          "skill": "documentation",
+          "postings_with_skill": 440,
+          "pct_of_role": 9.28
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 421,
+          "pct_of_role": 8.88
+        },
+        {
+          "skill": "tableau",
+          "postings_with_skill": 419,
+          "pct_of_role": 8.84
+        },
+        {
+          "skill": "confluence",
+          "postings_with_skill": 387,
+          "pct_of_role": 8.16
+        },
+        {
+          "skill": "attention to detail",
+          "postings_with_skill": 375,
+          "pct_of_role": 7.91
+        },
+        {
+          "skill": "collaboration",
+          "postings_with_skill": 358,
+          "pct_of_role": 7.55
+        },
+        {
+          "skill": "testing",
+          "postings_with_skill": 356,
+          "pct_of_role": 7.51
+        },
+        {
+          "skill": "project management",
+          "postings_with_skill": 337,
+          "pct_of_role": 7.11
+        },
+        {
+          "skill": "analytics",
+          "postings_with_skill": 322,
+          "pct_of_role": 6.79
+        },
+        {
+          "skill": "english",
+          "postings_with_skill": 322,
+          "pct_of_role": 6.79
+        },
+        {
+          "skill": "scrum",
+          "postings_with_skill": 317,
+          "pct_of_role": 6.69
+        },
+        {
+          "skill": "chatgpt",
+          "postings_with_skill": 314,
+          "pct_of_role": 6.62
+        },
+        {
+          "skill": "communication and collaboration",
+          "postings_with_skill": 311,
+          "pct_of_role": 6.56
+        },
+        {
+          "skill": "data interpretation",
+          "postings_with_skill": 305,
+          "pct_of_role": 6.43
+        },
+        {
+          "skill": "email",
+          "postings_with_skill": 302,
+          "pct_of_role": 6.37
+        }
+      ]
+    },
+    {
+      "role_family": "Designer (UX/UI)",
+      "role_postings": 4275,
+      "skills": [
+        {
+          "skill": "figma",
+          "postings_with_skill": 1268,
+          "pct_of_role": 29.66
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 1226,
+          "pct_of_role": 28.68
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 986,
+          "pct_of_role": 23.06
+        },
+        {
+          "skill": "attention to detail",
+          "postings_with_skill": 802,
+          "pct_of_role": 18.76
+        },
+        {
+          "skill": "photoshop",
+          "postings_with_skill": 711,
+          "pct_of_role": 16.63
+        },
+        {
+          "skill": "illustrator",
+          "postings_with_skill": 684,
+          "pct_of_role": 16.0
+        },
+        {
+          "skill": "design",
+          "postings_with_skill": 662,
+          "pct_of_role": 15.49
+        },
+        {
+          "skill": "typography",
+          "postings_with_skill": 619,
+          "pct_of_role": 14.48
+        },
+        {
+          "skill": "marketing",
+          "postings_with_skill": 579,
+          "pct_of_role": 13.54
+        },
+        {
+          "skill": "graphic design",
+          "postings_with_skill": 542,
+          "pct_of_role": 12.68
+        },
+        {
+          "skill": "adobe photoshop",
+          "postings_with_skill": 536,
+          "pct_of_role": 12.54
+        },
+        {
+          "skill": "design systems",
+          "postings_with_skill": 492,
+          "pct_of_role": 11.51
+        },
+        {
+          "skill": "adobe xd",
+          "postings_with_skill": 477,
+          "pct_of_role": 11.16
+        },
+        {
+          "skill": "branding",
+          "postings_with_skill": 466,
+          "pct_of_role": 10.9
+        },
+        {
+          "skill": "social media",
+          "postings_with_skill": 445,
+          "pct_of_role": 10.41
+        },
+        {
+          "skill": "canva",
+          "postings_with_skill": 436,
+          "pct_of_role": 10.2
+        },
+        {
+          "skill": "collaboration",
+          "postings_with_skill": 431,
+          "pct_of_role": 10.08
+        },
+        {
+          "skill": "user research",
+          "postings_with_skill": 430,
+          "pct_of_role": 10.06
+        },
+        {
+          "skill": "adobe creative suite",
+          "postings_with_skill": 424,
+          "pct_of_role": 9.92
+        },
+        {
+          "skill": "autocad",
+          "postings_with_skill": 420,
+          "pct_of_role": 9.82
+        },
+        {
+          "skill": "css",
+          "postings_with_skill": 402,
+          "pct_of_role": 9.4
+        },
+        {
+          "skill": "html",
+          "postings_with_skill": 400,
+          "pct_of_role": 9.36
+        },
+        {
+          "skill": "ui/ux",
+          "postings_with_skill": 393,
+          "pct_of_role": 9.19
+        },
+        {
+          "skill": "motion graphics",
+          "postings_with_skill": 380,
+          "pct_of_role": 8.89
+        },
+        {
+          "skill": "javascript",
+          "postings_with_skill": 371,
+          "pct_of_role": 8.68
+        },
+        {
+          "skill": "layout",
+          "postings_with_skill": 365,
+          "pct_of_role": 8.54
+        },
+        {
+          "skill": "ux",
+          "postings_with_skill": 363,
+          "pct_of_role": 8.49
+        },
+        {
+          "skill": "color theory",
+          "postings_with_skill": 349,
+          "pct_of_role": 8.16
+        },
+        {
+          "skill": "usability testing",
+          "postings_with_skill": 347,
+          "pct_of_role": 8.12
+        },
+        {
+          "skill": "ui/ux design",
+          "postings_with_skill": 346,
+          "pct_of_role": 8.09
+        }
+      ]
+    },
+    {
+      "role_family": "Project / Program Mgr",
+      "role_postings": 3431,
+      "skills": [
+        {
+          "skill": "communication",
+          "postings_with_skill": 1392,
+          "pct_of_role": 40.57
+        },
+        {
+          "skill": "project management",
+          "postings_with_skill": 1376,
+          "pct_of_role": 40.1
+        },
+        {
+          "skill": "leadership",
+          "postings_with_skill": 1139,
+          "pct_of_role": 33.2
+        },
+        {
+          "skill": "stakeholder management",
+          "postings_with_skill": 645,
+          "pct_of_role": 18.8
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 564,
+          "pct_of_role": 16.44
+        },
+        {
+          "skill": "agile",
+          "postings_with_skill": 547,
+          "pct_of_role": 15.94
+        },
+        {
+          "skill": "jira",
+          "postings_with_skill": 493,
+          "pct_of_role": 14.37
+        },
+        {
+          "skill": "risk management",
+          "postings_with_skill": 404,
+          "pct_of_role": 11.77
+        },
+        {
+          "skill": "collaboration",
+          "postings_with_skill": 375,
+          "pct_of_role": 10.93
+        },
+        {
+          "skill": "scrum",
+          "postings_with_skill": 347,
+          "pct_of_role": 10.11
+        },
+        {
+          "skill": "compliance",
+          "postings_with_skill": 345,
+          "pct_of_role": 10.06
+        },
+        {
+          "skill": "governance",
+          "postings_with_skill": 318,
+          "pct_of_role": 9.27
+        },
+        {
+          "skill": "automation",
+          "postings_with_skill": 292,
+          "pct_of_role": 8.51
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 276,
+          "pct_of_role": 8.04
+        },
+        {
+          "skill": "program management",
+          "postings_with_skill": 260,
+          "pct_of_role": 7.58
+        },
+        {
+          "skill": "construction",
+          "postings_with_skill": 236,
+          "pct_of_role": 6.88
+        },
+        {
+          "skill": "attention to detail",
+          "postings_with_skill": 232,
+          "pct_of_role": 6.76
+        },
+        {
+          "skill": "ms project",
+          "postings_with_skill": 232,
+          "pct_of_role": 6.76
+        },
+        {
+          "skill": "scrum master",
+          "postings_with_skill": 225,
+          "pct_of_role": 6.56
+        },
+        {
+          "skill": "project management tools",
+          "postings_with_skill": 224,
+          "pct_of_role": 6.53
+        },
+        {
+          "skill": "procurement",
+          "postings_with_skill": 221,
+          "pct_of_role": 6.44
+        },
+        {
+          "skill": "change management",
+          "postings_with_skill": 210,
+          "pct_of_role": 6.12
+        },
+        {
+          "skill": "excel",
+          "postings_with_skill": 191,
+          "pct_of_role": 5.57
+        },
+        {
+          "skill": "supply chain",
+          "postings_with_skill": 186,
+          "pct_of_role": 5.42
+        },
+        {
+          "skill": "finance",
+          "postings_with_skill": 183,
+          "pct_of_role": 5.33
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 173,
+          "pct_of_role": 5.04
+        },
+        {
+          "skill": "business",
+          "postings_with_skill": 170,
+          "pct_of_role": 4.95
+        },
+        {
+          "skill": "aws",
+          "postings_with_skill": 166,
+          "pct_of_role": 4.84
+        },
+        {
+          "skill": "marketing",
+          "postings_with_skill": 162,
+          "pct_of_role": 4.72
+        },
+        {
+          "skill": "software development",
+          "postings_with_skill": 159,
+          "pct_of_role": 4.63
+        }
+      ]
+    },
+    {
+      "role_family": "Product Manager",
+      "role_postings": 3065,
+      "skills": [
+        {
+          "skill": "ai",
+          "postings_with_skill": 1136,
+          "pct_of_role": 37.06
+        },
+        {
+          "skill": "product management",
+          "postings_with_skill": 904,
+          "pct_of_role": 29.49
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 879,
+          "pct_of_role": 28.68
+        },
+        {
+          "skill": "leadership",
+          "postings_with_skill": 617,
+          "pct_of_role": 20.13
+        },
+        {
+          "skill": "data",
+          "postings_with_skill": 439,
+          "pct_of_role": 14.32
+        },
+        {
+          "skill": "analytical",
+          "postings_with_skill": 402,
+          "pct_of_role": 13.12
+        },
+        {
+          "skill": "stakeholder management",
+          "postings_with_skill": 378,
+          "pct_of_role": 12.33
+        },
+        {
+          "skill": "marketing",
+          "postings_with_skill": 341,
+          "pct_of_role": 11.13
+        },
+        {
+          "skill": "collaboration",
+          "postings_with_skill": 328,
+          "pct_of_role": 10.7
+        },
+        {
+          "skill": "product strategy",
+          "postings_with_skill": 317,
+          "pct_of_role": 10.34
+        },
+        {
+          "skill": "jira",
+          "postings_with_skill": 308,
+          "pct_of_role": 10.05
+        },
+        {
+          "skill": "analytics",
+          "postings_with_skill": 283,
+          "pct_of_role": 9.23
+        },
+        {
+          "skill": "go",
+          "postings_with_skill": 281,
+          "pct_of_role": 9.17
+        },
+        {
+          "skill": "agile",
+          "postings_with_skill": 274,
+          "pct_of_role": 8.94
+        },
+        {
+          "skill": "sql",
+          "postings_with_skill": 270,
+          "pct_of_role": 8.81
+        },
+        {
+          "skill": "compliance",
+          "postings_with_skill": 255,
+          "pct_of_role": 8.32
+        },
+        {
+          "skill": "fintech",
+          "postings_with_skill": 242,
+          "pct_of_role": 7.9
+        },
+        {
+          "skill": "analytical skills",
+          "postings_with_skill": 225,
+          "pct_of_role": 7.34
+        },
+        {
+          "skill": "automation",
+          "postings_with_skill": 216,
+          "pct_of_role": 7.05
+        },
+        {
+          "skill": "business",
+          "postings_with_skill": 216,
+          "pct_of_role": 7.05
+        },
+        {
+          "skill": "market research",
+          "postings_with_skill": 193,
+          "pct_of_role": 6.3
+        },
+        {
+          "skill": "saas",
+          "postings_with_skill": 192,
+          "pct_of_role": 6.26
+        },
+        {
+          "skill": "finance",
+          "postings_with_skill": 184,
+          "pct_of_role": 6.0
+        },
+        {
+          "skill": "product development",
+          "postings_with_skill": 178,
+          "pct_of_role": 5.81
+        },
+        {
+          "skill": "ai/ml",
+          "postings_with_skill": 174,
+          "pct_of_role": 5.68
+        },
+        {
+          "skill": "scrum",
+          "postings_with_skill": 171,
+          "pct_of_role": 5.58
+        },
+        {
+          "skill": "governance",
+          "postings_with_skill": 170,
+          "pct_of_role": 5.55
+        },
+        {
+          "skill": "product roadmap",
+          "postings_with_skill": 163,
+          "pct_of_role": 5.32
+        },
+        {
+          "skill": "data science",
+          "postings_with_skill": 158,
+          "pct_of_role": 5.15
+        },
+        {
+          "skill": "engineering",
+          "postings_with_skill": 158,
+          "pct_of_role": 5.15
+        }
+      ]
+    },
+    {
+      "role_family": "Mobile",
+      "role_postings": 2904,
+      "skills": [
+        {
+          "skill": "android",
+          "postings_with_skill": 1405,
+          "pct_of_role": 48.38
+        },
+        {
+          "skill": "ios",
+          "postings_with_skill": 1171,
+          "pct_of_role": 40.32
+        },
+        {
+          "skill": "kotlin",
+          "postings_with_skill": 1155,
+          "pct_of_role": 39.77
+        },
+        {
+          "skill": "git",
+          "postings_with_skill": 951,
+          "pct_of_role": 32.75
+        },
+        {
+          "skill": "react native",
+          "postings_with_skill": 892,
+          "pct_of_role": 30.72
+        },
+        {
+          "skill": "swift",
+          "postings_with_skill": 833,
+          "pct_of_role": 28.68
+        },
+        {
+          "skill": "flutter",
+          "postings_with_skill": 753,
+          "pct_of_role": 25.93
+        },
+        {
+          "skill": "java",
+          "postings_with_skill": 751,
+          "pct_of_role": 25.86
+        },
+        {
+          "skill": "firebase",
+          "postings_with_skill": 679,
+          "pct_of_role": 23.38
+        },
+        {
+          "skill": "rest apis",
+          "postings_with_skill": 660,
+          "pct_of_role": 22.73
+        },
+        {
+          "skill": "communication",
+          "postings_with_skill": 635,
+          "pct_of_role": 21.87
+        },
+        {
+          "skill": "restful apis",
+          "postings_with_skill": 536,
+          "pct_of_role": 18.46
+        },
+        {
+          "skill": "dart",
+          "postings_with_skill": 507,
+          "pct_of_role": 17.46
+        },
+        {
+          "skill": "javascript",
+          "postings_with_skill": 486,
+          "pct_of_role": 16.74
+        },
+        {
+          "skill": "mvvm",
+          "postings_with_skill": 455,
+          "pct_of_role": 15.67
+        },
+        {
+          "skill": "xcode",
+          "postings_with_skill": 444,
+          "pct_of_role": 15.29
+        },
+        {
+          "skill": "typescript",
+          "postings_with_skill": 435,
+          "pct_of_role": 14.98
+        },
+        {
+          "skill": "android studio",
+          "postings_with_skill": 421,
+          "pct_of_role": 14.5
+        },
+        {
+          "skill": "ai",
+          "postings_with_skill": 417,
+          "pct_of_role": 14.36
+        },
+        {
+          "skill": "ci/cd pipelines",
+          "postings_with_skill": 400,
+          "pct_of_role": 13.77
+        },
+        {
+          "skill": "react",
+          "postings_with_skill": 361,
+          "pct_of_role": 12.43
+        },
+        {
+          "skill": "redux",
+          "postings_with_skill": 359,
+          "pct_of_role": 12.36
+        },
+        {
+          "skill": "mobile development",
+          "postings_with_skill": 358,
+          "pct_of_role": 12.33
+        },
+        {
+          "skill": "json",
+          "postings_with_skill": 312,
+          "pct_of_role": 10.74
+        },
+        {
+          "skill": "android development",
+          "postings_with_skill": 306,
+          "pct_of_role": 10.54
+        },
+        {
+          "skill": "jetpack compose",
+          "postings_with_skill": 301,
+          "pct_of_role": 10.37
+        },
+        {
+          "skill": "mobile",
+          "postings_with_skill": 298,
+          "pct_of_role": 10.26
+        },
+        {
+          "skill": "debugging",
+          "postings_with_skill": 281,
+          "pct_of_role": 9.68
+        },
+        {
+          "skill": "state management",
+          "postings_with_skill": 254,
+          "pct_of_role": 8.75
+        },
+        {
+          "skill": "android sdk",
+          "postings_with_skill": 251,
+          "pct_of_role": 8.64
+        }
+      ]
+    }
+  ],
+  "overall_skill_reference": [
+    {
+      "skill": "communication",
+      "postings_with_skill": 83239,
+      "pct_of_all_postings": 23.09
+    },
+    {
+      "skill": "ai",
+      "postings_with_skill": 71253,
+      "pct_of_all_postings": 19.77
+    },
+    {
+      "skill": "python",
+      "postings_with_skill": 67062,
+      "pct_of_all_postings": 18.6
+    },
+    {
+      "skill": "sql",
+      "postings_with_skill": 42078,
+      "pct_of_all_postings": 11.67
+    },
+    {
+      "skill": "aws",
+      "postings_with_skill": 40549,
+      "pct_of_all_postings": 11.25
+    },
+    {
+      "skill": "leadership",
+      "postings_with_skill": 40327,
+      "pct_of_all_postings": 11.19
+    },
+    {
+      "skill": "java",
+      "postings_with_skill": 37811,
+      "pct_of_all_postings": 10.49
+    },
+    {
+      "skill": "analytical",
+      "postings_with_skill": 34247,
+      "pct_of_all_postings": 9.5
+    },
+    {
+      "skill": "javascript",
+      "postings_with_skill": 31397,
+      "pct_of_all_postings": 8.71
+    },
+    {
+      "skill": "security",
+      "postings_with_skill": 31281,
+      "pct_of_all_postings": 8.68
+    },
+    {
+      "skill": "git",
+      "postings_with_skill": 29551,
+      "pct_of_all_postings": 8.2
+    },
+    {
+      "skill": "azure",
+      "postings_with_skill": 29427,
+      "pct_of_all_postings": 8.16
+    },
+    {
+      "skill": "collaboration",
+      "postings_with_skill": 27868,
+      "pct_of_all_postings": 7.73
+    },
+    {
+      "skill": "compliance",
+      "postings_with_skill": 27025,
+      "pct_of_all_postings": 7.5
+    },
+    {
+      "skill": "attention to detail",
+      "postings_with_skill": 26985,
+      "pct_of_all_postings": 7.49
+    },
+    {
+      "skill": "automation",
+      "postings_with_skill": 26524,
+      "pct_of_all_postings": 7.36
+    },
+    {
+      "skill": "data",
+      "postings_with_skill": 26290,
+      "pct_of_all_postings": 7.29
+    },
+    {
+      "skill": "docker",
+      "postings_with_skill": 25151,
+      "pct_of_all_postings": 6.98
+    },
+    {
+      "skill": "kubernetes",
+      "postings_with_skill": 24384,
+      "pct_of_all_postings": 6.76
+    },
+    {
+      "skill": "ci/cd pipelines",
+      "postings_with_skill": 24057,
+      "pct_of_all_postings": 6.67
+    },
+    {
+      "skill": "react",
+      "postings_with_skill": 24031,
+      "pct_of_all_postings": 6.67
+    },
+    {
+      "skill": "performance",
+      "postings_with_skill": 22656,
+      "pct_of_all_postings": 6.28
+    },
+    {
+      "skill": "testing",
+      "postings_with_skill": 20284,
+      "pct_of_all_postings": 5.63
+    },
+    {
+      "skill": "ci/cd",
+      "postings_with_skill": 19682,
+      "pct_of_all_postings": 5.46
+    },
+    {
+      "skill": "marketing",
+      "postings_with_skill": 19643,
+      "pct_of_all_postings": 5.45
+    },
+    {
+      "skill": "excel",
+      "postings_with_skill": 19525,
+      "pct_of_all_postings": 5.42
+    },
+    {
+      "skill": "typescript",
+      "postings_with_skill": 18925,
+      "pct_of_all_postings": 5.25
+    },
+    {
+      "skill": "devops",
+      "postings_with_skill": 17824,
+      "pct_of_all_postings": 4.94
+    },
+    {
+      "skill": "analytics",
+      "postings_with_skill": 17479,
+      "pct_of_all_postings": 4.85
+    },
+    {
+      "skill": "design",
+      "postings_with_skill": 17169,
+      "pct_of_all_postings": 4.76
+    },
+    {
+      "skill": "gcp",
+      "postings_with_skill": 16800,
+      "pct_of_all_postings": 4.66
+    },
+    {
+      "skill": "development",
+      "postings_with_skill": 16641,
+      "pct_of_all_postings": 4.62
+    },
+    {
+      "skill": "software",
+      "postings_with_skill": 15634,
+      "pct_of_all_postings": 4.34
+    },
+    {
+      "skill": "microservices",
+      "postings_with_skill": 15275,
+      "pct_of_all_postings": 4.24
+    },
+    {
+      "skill": "css",
+      "postings_with_skill": 15250,
+      "pct_of_all_postings": 4.23
+    },
+    {
+      "skill": "machine learning",
+      "postings_with_skill": 15117,
+      "pct_of_all_postings": 4.19
+    },
+    {
+      "skill": "finance",
+      "postings_with_skill": 14997,
+      "pct_of_all_postings": 4.16
+    },
+    {
+      "skill": "cloud",
+      "postings_with_skill": 14328,
+      "pct_of_all_postings": 3.97
+    },
+    {
+      "skill": "angular",
+      "postings_with_skill": 14311,
+      "pct_of_all_postings": 3.97
+    },
+    {
+      "skill": "html",
+      "postings_with_skill": 14272,
+      "pct_of_all_postings": 3.96
+    },
+    {
+      "skill": "analytical skills",
+      "postings_with_skill": 14230,
+      "pct_of_all_postings": 3.95
+    },
+    {
+      "skill": "postgresql",
+      "postings_with_skill": 14068,
+      "pct_of_all_postings": 3.9
+    },
+    {
+      "skill": "business",
+      "postings_with_skill": 13375,
+      "pct_of_all_postings": 3.71
+    },
+    {
+      "skill": "software development",
+      "postings_with_skill": 13275,
+      "pct_of_all_postings": 3.68
+    },
+    {
+      "skill": "governance",
+      "postings_with_skill": 13269,
+      "pct_of_all_postings": 3.68
+    },
+    {
+      "skill": "agile",
+      "postings_with_skill": 13255,
+      "pct_of_all_postings": 3.68
+    },
+    {
+      "skill": "written communication",
+      "postings_with_skill": 12935,
+      "pct_of_all_postings": 3.59
+    },
+    {
+      "skill": "node.js",
+      "postings_with_skill": 12783,
+      "pct_of_all_postings": 3.55
+    },
+    {
+      "skill": "stakeholder management",
+      "postings_with_skill": 12776,
+      "pct_of_all_postings": 3.54
+    },
+    {
+      "skill": "documentation",
+      "postings_with_skill": 12588,
+      "pct_of_all_postings": 3.49
+    },
+    {
+      "skill": "rest apis",
+      "postings_with_skill": 12402,
+      "pct_of_all_postings": 3.44
+    },
+    {
+      "skill": "mysql",
+      "postings_with_skill": 12320,
+      "pct_of_all_postings": 3.42
+    },
+    {
+      "skill": "jenkins",
+      "postings_with_skill": 12298,
+      "pct_of_all_postings": 3.41
+    },
+    {
+      "skill": "terraform",
+      "postings_with_skill": 12151,
+      "pct_of_all_postings": 3.37
+    },
+    {
+      "skill": "jira",
+      "postings_with_skill": 11923,
+      "pct_of_all_postings": 3.31
+    },
+    {
+      "skill": "power bi",
+      "postings_with_skill": 11874,
+      "pct_of_all_postings": 3.29
+    },
+    {
+      "skill": "go",
+      "postings_with_skill": 11769,
+      "pct_of_all_postings": 3.26
+    },
+    {
+      "skill": "verbal communication",
+      "postings_with_skill": 11737,
+      "pct_of_all_postings": 3.26
+    },
+    {
+      "skill": "project management",
+      "postings_with_skill": 11361,
+      "pct_of_all_postings": 3.15
+    },
+    {
+      "skill": "data analysis",
+      "postings_with_skill": 11130,
+      "pct_of_all_postings": 3.09
+    },
+    {
+      "skill": "restful apis",
+      "postings_with_skill": 11084,
+      "pct_of_all_postings": 3.07
+    },
+    {
+      "skill": "spring boot",
+      "postings_with_skill": 10687,
+      "pct_of_all_postings": 2.96
+    },
+    {
+      "skill": "data engineering",
+      "postings_with_skill": 10357,
+      "pct_of_all_postings": 2.87
+    },
+    {
+      "skill": "github",
+      "postings_with_skill": 10352,
+      "pct_of_all_postings": 2.87
+    },
+    {
+      "skill": "sap",
+      "postings_with_skill": 10308,
+      "pct_of_all_postings": 2.86
+    },
+    {
+      "skill": "systems",
+      "postings_with_skill": 10264,
+      "pct_of_all_postings": 2.85
+    },
+    {
+      "skill": "mentoring",
+      "postings_with_skill": 10005,
+      "pct_of_all_postings": 2.78
+    },
+    {
+      "skill": "engineering",
+      "postings_with_skill": 9916,
+      "pct_of_all_postings": 2.75
+    },
+    {
+      "skill": "troubleshooting",
+      "postings_with_skill": 9888,
+      "pct_of_all_postings": 2.74
+    },
+    {
+      "skill": "healthcare",
+      "postings_with_skill": 9872,
+      "pct_of_all_postings": 2.74
+    },
+    {
+      "skill": "kafka",
+      "postings_with_skill": 9806,
+      "pct_of_all_postings": 2.72
+    },
+    {
+      "skill": "customer service",
+      "postings_with_skill": 9773,
+      "pct_of_all_postings": 2.71
+    },
+    {
+      "skill": "oracle",
+      "postings_with_skill": 9765,
+      "pct_of_all_postings": 2.71
+    },
+    {
+      "skill": "technical leadership",
+      "postings_with_skill": 9745,
+      "pct_of_all_postings": 2.7
+    },
+    {
+      "skill": "data science",
+      "postings_with_skill": 9555,
+      "pct_of_all_postings": 2.65
+    },
+    {
+      "skill": "networking",
+      "postings_with_skill": 9508,
+      "pct_of_all_postings": 2.64
+    },
+    {
+      "skill": "problem solving",
+      "postings_with_skill": 9242,
+      "pct_of_all_postings": 2.56
+    },
+    {
+      "skill": "management",
+      "postings_with_skill": 9119,
+      "pct_of_all_postings": 2.53
+    },
+    {
+      "skill": "linux",
+      "postings_with_skill": 8981,
+      "pct_of_all_postings": 2.49
+    },
+    {
+      "skill": "accounting",
+      "postings_with_skill": 8977,
+      "pct_of_all_postings": 2.49
+    },
+    {
+      "skill": "crm",
+      "postings_with_skill": 8911,
+      "pct_of_all_postings": 2.47
+    },
+    {
+      "skill": ".net",
+      "postings_with_skill": 8867,
+      "pct_of_all_postings": 2.46
+    },
+    {
+      "skill": "rest",
+      "postings_with_skill": 8828,
+      "pct_of_all_postings": 2.45
+    },
+    {
+      "skill": "llm",
+      "postings_with_skill": 8826,
+      "pct_of_all_postings": 2.45
+    },
+    {
+      "skill": "mongodb",
+      "postings_with_skill": 8793,
+      "pct_of_all_postings": 2.44
+    },
+    {
+      "skill": "quality",
+      "postings_with_skill": 8767,
+      "pct_of_all_postings": 2.43
+    },
+    {
+      "skill": "training",
+      "postings_with_skill": 8689,
+      "pct_of_all_postings": 2.41
+    },
+    {
+      "skill": "cybersecurity",
+      "postings_with_skill": 8652,
+      "pct_of_all_postings": 2.4
+    },
+    {
+      "skill": "quality assurance",
+      "postings_with_skill": 8510,
+      "pct_of_all_postings": 2.36
+    },
+    {
+      "skill": "monitoring",
+      "postings_with_skill": 8163,
+      "pct_of_all_postings": 2.26
+    },
+    {
+      "skill": "organization",
+      "postings_with_skill": 8109,
+      "pct_of_all_postings": 2.25
+    },
+    {
+      "skill": "control",
+      "postings_with_skill": 8047,
+      "pct_of_all_postings": 2.23
+    },
+    {
+      "skill": "risk management",
+      "postings_with_skill": 8041,
+      "pct_of_all_postings": 2.23
+    },
+    {
+      "skill": "software engineering",
+      "postings_with_skill": 8008,
+      "pct_of_all_postings": 2.22
+    },
+    {
+      "skill": "platform",
+      "postings_with_skill": 7918,
+      "pct_of_all_postings": 2.2
+    },
+    {
+      "skill": "cloud platforms",
+      "postings_with_skill": 7842,
+      "pct_of_all_postings": 2.18
+    },
+    {
+      "skill": "tableau",
+      "postings_with_skill": 7820,
+      "pct_of_all_postings": 2.17
+    },
+    {
+      "skill": "distributed systems",
+      "postings_with_skill": 7781,
+      "pct_of_all_postings": 2.16
+    },
+    {
+      "skill": "digital marketing",
+      "postings_with_skill": 7639,
+      "pct_of_all_postings": 2.12
+    },
+    {
+      "skill": "apis",
+      "postings_with_skill": 7631,
+      "pct_of_all_postings": 2.12
+    },
+    {
+      "skill": "html5",
+      "postings_with_skill": 7597,
+      "pct_of_all_postings": 2.11
+    },
+    {
+      "skill": "services",
+      "postings_with_skill": 7585,
+      "pct_of_all_postings": 2.1
+    },
+    {
+      "skill": "ai/ml",
+      "postings_with_skill": 7580,
+      "pct_of_all_postings": 2.1
+    },
+    {
+      "skill": "debugging",
+      "postings_with_skill": 7522,
+      "pct_of_all_postings": 2.09
+    },
+    {
+      "skill": "generative ai",
+      "postings_with_skill": 7501,
+      "pct_of_all_postings": 2.08
+    },
+    {
+      "skill": "powerpoint",
+      "postings_with_skill": 7435,
+      "pct_of_all_postings": 2.06
+    },
+    {
+      "skill": "communication skills",
+      "postings_with_skill": 7352,
+      "pct_of_all_postings": 2.04
+    },
+    {
+      "skill": "optimization",
+      "postings_with_skill": 7262,
+      "pct_of_all_postings": 2.01
+    },
+    {
+      "skill": "architecture",
+      "postings_with_skill": 7186,
+      "pct_of_all_postings": 1.99
+    },
+    {
+      "skill": "azure devops",
+      "postings_with_skill": 7121,
+      "pct_of_all_postings": 1.98
+    },
+    {
+      "skill": "github actions",
+      "postings_with_skill": 7052,
+      "pct_of_all_postings": 1.96
+    },
+    {
+      "skill": "infrastructure",
+      "postings_with_skill": 7020,
+      "pct_of_all_postings": 1.95
+    },
+    {
+      "skill": "sql server",
+      "postings_with_skill": 7002,
+      "pct_of_all_postings": 1.94
+    },
+    {
+      "skill": "microservices architecture",
+      "postings_with_skill": 6919,
+      "pct_of_all_postings": 1.92
+    },
+    {
+      "skill": "saas",
+      "postings_with_skill": 6667,
+      "pct_of_all_postings": 1.85
+    },
+    {
+      "skill": "ownership",
+      "postings_with_skill": 6661,
+      "pct_of_all_postings": 1.85
+    },
+    {
+      "skill": "agile methodologies",
+      "postings_with_skill": 6632,
+      "pct_of_all_postings": 1.84
+    },
+    {
+      "skill": "salesforce",
+      "postings_with_skill": 6556,
+      "pct_of_all_postings": 1.82
+    },
+    {
+      "skill": "pytorch",
+      "postings_with_skill": 6533,
+      "pct_of_all_postings": 1.81
+    },
+    {
+      "skill": "presentation",
+      "postings_with_skill": 6516,
+      "pct_of_all_postings": 1.81
+    },
+    {
+      "skill": "supply chain",
+      "postings_with_skill": 6493,
+      "pct_of_all_postings": 1.8
+    },
+    {
+      "skill": "databricks",
+      "postings_with_skill": 6479,
+      "pct_of_all_postings": 1.8
+    },
+    {
+      "skill": "llms",
+      "postings_with_skill": 6443,
+      "pct_of_all_postings": 1.79
+    },
+    {
+      "skill": "driven",
+      "postings_with_skill": 6439,
+      "pct_of_all_postings": 1.79
+    },
+    {
+      "skill": "customer",
+      "postings_with_skill": 6429,
+      "pct_of_all_postings": 1.78
+    },
+    {
+      "skill": "teamwork",
+      "postings_with_skill": 6413,
+      "pct_of_all_postings": 1.78
+    },
+    {
+      "skill": "react.js",
+      "postings_with_skill": 6352,
+      "pct_of_all_postings": 1.76
+    },
+    {
+      "skill": "scrum",
+      "postings_with_skill": 6333,
+      "pct_of_all_postings": 1.76
+    },
+    {
+      "skill": "procurement",
+      "postings_with_skill": 6316,
+      "pct_of_all_postings": 1.75
+    },
+    {
+      "skill": "banking",
+      "postings_with_skill": 6298,
+      "pct_of_all_postings": 1.75
+    },
+    {
+      "skill": "analysis",
+      "postings_with_skill": 6298,
+      "pct_of_all_postings": 1.75
+    },
+    {
+      "skill": "clinical",
+      "postings_with_skill": 6289,
+      "pct_of_all_postings": 1.74
+    },
+    {
+      "skill": "css3",
+      "postings_with_skill": 6249,
+      "pct_of_all_postings": 1.73
+    },
+    {
+      "skill": "financial services",
+      "postings_with_skill": 6237,
+      "pct_of_all_postings": 1.73
+    },
+    {
+      "skill": "algorithms",
+      "postings_with_skill": 6114,
+      "pct_of_all_postings": 1.7
+    },
+    {
+      "skill": "data modeling",
+      "postings_with_skill": 6101,
+      "pct_of_all_postings": 1.69
+    },
+    {
+      "skill": "snowflake",
+      "postings_with_skill": 6059,
+      "pct_of_all_postings": 1.68
+    },
+    {
+      "skill": "integration",
+      "postings_with_skill": 6012,
+      "pct_of_all_postings": 1.67
+    },
+    {
+      "skill": "json",
+      "postings_with_skill": 5964,
+      "pct_of_all_postings": 1.65
+    },
+    {
+      "skill": "service",
+      "postings_with_skill": 5900,
+      "pct_of_all_postings": 1.64
+    },
+    {
+      "skill": "recruitment",
+      "postings_with_skill": 5899,
+      "pct_of_all_postings": 1.64
+    },
+    {
+      "skill": "seo",
+      "postings_with_skill": 5895,
+      "pct_of_all_postings": 1.64
+    },
+    {
+      "skill": "root cause analysis",
+      "postings_with_skill": 5875,
+      "pct_of_all_postings": 1.63
+    },
+    {
+      "skill": "prompt engineering",
+      "postings_with_skill": 5862,
+      "pct_of_all_postings": 1.63
+    },
+    {
+      "skill": "tensorflow",
+      "postings_with_skill": 5849,
+      "pct_of_all_postings": 1.62
+    },
+    {
+      "skill": "data governance",
+      "postings_with_skill": 5767,
+      "pct_of_all_postings": 1.6
+    },
+    {
+      "skill": "data analytics",
+      "postings_with_skill": 5743,
+      "pct_of_all_postings": 1.59
+    },
+    {
+      "skill": "s3",
+      "postings_with_skill": 5694,
+      "pct_of_all_postings": 1.58
+    },
+    {
+      "skill": "artificial intelligence",
+      "postings_with_skill": 5650,
+      "pct_of_all_postings": 1.57
+    },
+    {
+      "skill": "rag",
+      "postings_with_skill": 5636,
+      "pct_of_all_postings": 1.56
+    },
+    {
+      "skill": "data management",
+      "postings_with_skill": 5593,
+      "pct_of_all_postings": 1.55
+    },
+    {
+      "skill": "business development",
+      "postings_with_skill": 5566,
+      "pct_of_all_postings": 1.54
+    },
+    {
+      "skill": "effective communication",
+      "postings_with_skill": 5488,
+      "pct_of_all_postings": 1.52
+    },
+    {
+      "skill": "spark",
+      "postings_with_skill": 5482,
+      "pct_of_all_postings": 1.52
+    },
+    {
+      "skill": "fastapi",
+      "postings_with_skill": 5367,
+      "pct_of_all_postings": 1.49
+    },
+    {
+      "skill": "databases",
+      "postings_with_skill": 5312,
+      "pct_of_all_postings": 1.47
+    },
+    {
+      "skill": "php",
+      "postings_with_skill": 5306,
+      "pct_of_all_postings": 1.47
+    },
+    {
+      "skill": "grafana",
+      "postings_with_skill": 5298,
+      "pct_of_all_postings": 1.47
+    },
+    {
+      "skill": "enterprise",
+      "postings_with_skill": 5296,
+      "pct_of_all_postings": 1.47
+    },
+    {
+      "skill": "digital",
+      "postings_with_skill": 5289,
+      "pct_of_all_postings": 1.47
+    },
+    {
+      "skill": "langchain",
+      "postings_with_skill": 5253,
+      "pct_of_all_postings": 1.46
+    },
+    {
+      "skill": "logistics",
+      "postings_with_skill": 5248,
+      "pct_of_all_postings": 1.46
+    },
+    {
+      "skill": "nosql",
+      "postings_with_skill": 5229,
+      "pct_of_all_postings": 1.45
+    },
+    {
+      "skill": "data quality",
+      "postings_with_skill": 5189,
+      "pct_of_all_postings": 1.44
+    },
+    {
+      "skill": "sales",
+      "postings_with_skill": 5183,
+      "pct_of_all_postings": 1.44
+    },
+    {
+      "skill": "retail",
+      "postings_with_skill": 5097,
+      "pct_of_all_postings": 1.41
+    },
+    {
+      "skill": "code",
+      "postings_with_skill": 5074,
+      "pct_of_all_postings": 1.41
+    },
+    {
+      "skill": "communication and collaboration",
+      "postings_with_skill": 4988,
+      "pct_of_all_postings": 1.38
+    },
+    {
+      "skill": "digital transformation",
+      "postings_with_skill": 4967,
+      "pct_of_all_postings": 1.38
+    },
+    {
+      "skill": "web",
+      "postings_with_skill": 4962,
+      "pct_of_all_postings": 1.38
+    },
+    {
+      "skill": "data structures",
+      "postings_with_skill": 4927,
+      "pct_of_all_postings": 1.37
+    },
+    {
+      "skill": "sdlc",
+      "postings_with_skill": 4926,
+      "pct_of_all_postings": 1.37
+    },
+    {
+      "skill": "safe",
+      "postings_with_skill": 4924,
+      "pct_of_all_postings": 1.37
+    },
+    {
+      "skill": "bi",
+      "postings_with_skill": 4922,
+      "pct_of_all_postings": 1.37
+    },
+    {
+      "skill": "next.js",
+      "postings_with_skill": 4910,
+      "pct_of_all_postings": 1.36
+    },
+    {
+      "skill": "social media",
+      "postings_with_skill": 4867,
+      "pct_of_all_postings": 1.35
+    },
+    {
+      "skill": "analytical thinking",
+      "postings_with_skill": 4839,
+      "pct_of_all_postings": 1.34
+    },
+    {
+      "skill": "equipment",
+      "postings_with_skill": 4828,
+      "pct_of_all_postings": 1.34
+    },
+    {
+      "skill": "medical",
+      "postings_with_skill": 4796,
+      "pct_of_all_postings": 1.33
+    },
+    {
+      "skill": "writing",
+      "postings_with_skill": 4754,
+      "pct_of_all_postings": 1.32
+    },
+    {
+      "skill": "bash",
+      "postings_with_skill": 4754,
+      "pct_of_all_postings": 1.32
+    },
+    {
+      "skill": "web development",
+      "postings_with_skill": 4743,
+      "pct_of_all_postings": 1.32
+    },
+    {
+      "skill": "redis",
+      "postings_with_skill": 4697,
+      "pct_of_all_postings": 1.3
+    },
+    {
+      "skill": "negotiation",
+      "postings_with_skill": 4668,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "ansible",
+      "postings_with_skill": 4662,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "scripting",
+      "postings_with_skill": 4650,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "selenium",
+      "postings_with_skill": 4648,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "understanding",
+      "postings_with_skill": 4645,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "dashboards",
+      "postings_with_skill": 4643,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "linkedin",
+      "postings_with_skill": 4642,
+      "pct_of_all_postings": 1.29
+    },
+    {
+      "skill": "knowledge",
+      "postings_with_skill": 4603,
+      "pct_of_all_postings": 1.28
+    },
+    {
+      "skill": "fintech",
+      "postings_with_skill": 4566,
+      "pct_of_all_postings": 1.27
+    },
+    {
+      "skill": "observability",
+      "postings_with_skill": 4557,
+      "pct_of_all_postings": 1.26
+    },
+    {
+      "skill": "etl",
+      "postings_with_skill": 4553,
+      "pct_of_all_postings": 1.26
+    },
+    {
+      "skill": "incident response",
+      "postings_with_skill": 4550,
+      "pct_of_all_postings": 1.26
+    },
+    {
+      "skill": "android",
+      "postings_with_skill": 4535,
+      "pct_of_all_postings": 1.26
+    },
+    {
+      "skill": "genai",
+      "postings_with_skill": 4456,
+      "pct_of_all_postings": 1.24
+    },
+    {
+      "skill": "graphql",
+      "postings_with_skill": 4456,
+      "pct_of_all_postings": 1.24
+    },
+    {
+      "skill": "risk",
+      "postings_with_skill": 4404,
+      "pct_of_all_postings": 1.22
+    },
+    {
+      "skill": "devops practices",
+      "postings_with_skill": 4397,
+      "pct_of_all_postings": 1.22
+    },
+    {
+      "skill": "gitlab",
+      "postings_with_skill": 4396,
+      "pct_of_all_postings": 1.22
+    },
+    {
+      "skill": "cloud infrastructure",
+      "postings_with_skill": 4395,
+      "pct_of_all_postings": 1.22
+    },
+    {
+      "skill": "prometheus",
+      "postings_with_skill": 4386,
+      "pct_of_all_postings": 1.22
+    },
+    {
+      "skill": "email",
+      "postings_with_skill": 4383,
+      "pct_of_all_postings": 1.22
+    },
+    {
+      "skill": "lambda",
+      "postings_with_skill": 4374,
+      "pct_of_all_postings": 1.21
+    },
+    {
+      "skill": "build",
+      "postings_with_skill": 4373,
+      "pct_of_all_postings": 1.21
+    },
+    {
+      "skill": "data pipelines",
+      "postings_with_skill": 4308,
+      "pct_of_all_postings": 1.2
+    },
+    {
+      "skill": "spring",
+      "postings_with_skill": 4296,
+      "pct_of_all_postings": 1.19
+    },
+    {
+      "skill": "statistics",
+      "postings_with_skill": 4281,
+      "pct_of_all_postings": 1.19
+    },
+    {
+      "skill": "powershell",
+      "postings_with_skill": 4267,
+      "pct_of_all_postings": 1.18
+    },
+    {
+      "skill": "forecasting",
+      "postings_with_skill": 4259,
+      "pct_of_all_postings": 1.18
+    },
+    {
+      "skill": "microsoft azure",
+      "postings_with_skill": 4252,
+      "pct_of_all_postings": 1.18
+    },
+    {
+      "skill": "iam",
+      "postings_with_skill": 4244,
+      "pct_of_all_postings": 1.18
+    },
+    {
+      "skill": "strategic",
+      "postings_with_skill": 4232,
+      "pct_of_all_postings": 1.17
+    },
+    {
+      "skill": "insurance",
+      "postings_with_skill": 4229,
+      "pct_of_all_postings": 1.17
+    },
+    {
+      "skill": "applications",
+      "postings_with_skill": 4168,
+      "pct_of_all_postings": 1.16
+    },
+    {
+      "skill": "legal",
+      "postings_with_skill": 4164,
+      "pct_of_all_postings": 1.16
+    },
+    {
+      "skill": "api",
+      "postings_with_skill": 4144,
+      "pct_of_all_postings": 1.15
+    },
+    {
+      "skill": "servicenow",
+      "postings_with_skill": 4144,
+      "pct_of_all_postings": 1.15
+    },
+    {
+      "skill": "platforms",
+      "postings_with_skill": 4110,
+      "pct_of_all_postings": 1.14
+    },
+    {
+      "skill": "application development",
+      "postings_with_skill": 4107,
+      "pct_of_all_postings": 1.14
+    },
+    {
+      "skill": "autocad",
+      "postings_with_skill": 4103,
+      "pct_of_all_postings": 1.14
+    },
+    {
+      "skill": "django",
+      "postings_with_skill": 4092,
+      "pct_of_all_postings": 1.14
+    },
+    {
+      "skill": "reports",
+      "postings_with_skill": 4083,
+      "pct_of_all_postings": 1.13
+    },
+    {
+      "skill": "mentorship",
+      "postings_with_skill": 4029,
+      "pct_of_all_postings": 1.12
+    },
+    {
+      "skill": "kotlin",
+      "postings_with_skill": 3991,
+      "pct_of_all_postings": 1.11
+    },
+    {
+      "skill": "ms excel",
+      "postings_with_skill": 3959,
+      "pct_of_all_postings": 1.1
+    },
+    {
+      "skill": "pricing",
+      "postings_with_skill": 3956,
+      "pct_of_all_postings": 1.1
+    },
+    {
+      "skill": "ios",
+      "postings_with_skill": 3954,
+      "pct_of_all_postings": 1.1
+    },
+    {
+      "skill": "construction",
+      "postings_with_skill": 3937,
+      "pct_of_all_postings": 1.09
+    },
+    {
+      "skill": "computer science",
+      "postings_with_skill": 3928,
+      "pct_of_all_postings": 1.09
+    },
+    {
+      "skill": "administration",
+      "postings_with_skill": 3912,
+      "pct_of_all_postings": 1.09
+    },
+    {
+      "skill": "design patterns",
+      "postings_with_skill": 3872,
+      "pct_of_all_postings": 1.07
+    },
+    {
+      "skill": "change management",
+      "postings_with_skill": 3871,
+      "pct_of_all_postings": 1.07
+    },
+    {
+      "skill": "system design",
+      "postings_with_skill": 3858,
+      "pct_of_all_postings": 1.07
+    },
+    {
+      "skill": "deep learning",
+      "postings_with_skill": 3809,
+      "pct_of_all_postings": 1.06
+    },
+    {
+      "skill": "video",
+      "postings_with_skill": 3806,
+      "pct_of_all_postings": 1.06
+    },
+    {
+      "skill": "standards",
+      "postings_with_skill": 3805,
+      "pct_of_all_postings": 1.06
+    },
+    {
+      "skill": "test automation",
+      "postings_with_skill": 3799,
+      "pct_of_all_postings": 1.05
+    },
+    {
+      "skill": "es",
+      "postings_with_skill": 3776,
+      "pct_of_all_postings": 1.05
+    },
+    {
+      "skill": "business intelligence",
+      "postings_with_skill": 3765,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "qa",
+      "postings_with_skill": 3759,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "microsoft office",
+      "postings_with_skill": 3756,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "postman",
+      "postings_with_skill": 3744,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "playwright",
+      "postings_with_skill": 3738,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "siem",
+      "postings_with_skill": 3736,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "inventory",
+      "postings_with_skill": 3735,
+      "pct_of_all_postings": 1.04
+    },
+    {
+      "skill": "payments",
+      "postings_with_skill": 3724,
+      "pct_of_all_postings": 1.03
+    },
+    {
+      "skill": "google cloud",
+      "postings_with_skill": 3717,
+      "pct_of_all_postings": 1.03
+    },
+    {
+      "skill": "government",
+      "postings_with_skill": 3696,
+      "pct_of_all_postings": 1.03
+    }
+  ]
+}
