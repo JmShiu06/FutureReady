@@ -34,7 +34,7 @@
   --input: 37 20% 86%;
   --card: 42 40% 99%;
   --card-foreground: 174 24% 17%;
-  --primary: 168 43% 31%;
+  --primary: 22 82% 38%;
   --primary-foreground: 42 35% 97%;
   --secondary: 39 36% 91%;
   --secondary-foreground: 174 24% 17%;
@@ -44,20 +44,20 @@
   --accent-foreground: 24 35% 15%;
   --destructive: 3 62% 48%;
   --destructive-foreground: 42 35% 97%;
-  --ring: 168 43% 31%;
+  --ring: 22 82% 38%;
   --app-font-sans: 'DM Sans', sans-serif;
   --display-font: 'Manrope', sans-serif;
   --mono-font: 'IBM Plex Mono', monospace;
   --radius: 1rem;
-  --sidebar: 170 28% 18%;
+  --sidebar: 22 34% 17%;
   --sidebar-foreground: 42 30% 92%;
-  --sidebar-border: 170 18% 29%;
-  --sidebar-primary: 168 43% 31%;
+  --sidebar-border: 22 25% 29%;
+  --sidebar-primary: 22 82% 38%;
   --sidebar-primary-foreground: 42 35% 97%;
-  --sidebar-accent: 170 23% 25%;
+  --sidebar-accent: 22 28% 25%;
   --sidebar-accent-foreground: 42 30% 94%;
-  --sidebar-ring: 168 43% 44%;
-  --chart-1: 168 43% 31%;
+  --sidebar-ring: 22 82% 52%;
+  --chart-1: 22 82% 38%;
   --chart-2: 19 73% 61%;
   --chart-3: 45 64% 60%;
   --chart-4: 196 28% 48%;
@@ -291,3 +291,63 @@ tr:last-child td { border-bottom:0; }
   .chart { gap:5px; }
   .bar { width:10px; }
 }
+
+/* Warm orange brand theme */
+:root {
+  --background: 30 45% 96%;
+  --border: 29 28% 86%;
+  --input: 29 28% 86%;
+  --card: 36 50% 99%;
+  --secondary: 29 55% 92%;
+  --muted: 30 35% 93%;
+  --accent: 24 75% 90%;
+  --accent-foreground: 22 48% 21%;
+  --ring: 22 82% 38%;
+  --sidebar: 22 34% 17%;
+  --sidebar-border: 22 25% 29%;
+  --sidebar-accent: 22 28% 25%;
+  --sidebar-ring: 22 82% 52%;
+  --chart-1: 22 82% 38%;
+}
+
+body { background: #f7f1e9; color: #3c2d25; }
+.sidebar { background: #40291f; }
+.brand-mark { background: #ffdfc4; color: #71360f; }
+.brand-name span, .nav-caption { color: #d3aa8f; }
+.nav-link { color: #e4d2c5; }
+.nav-link:hover { background: #593a2b; }
+.nav-link.active { background: #f6d6bc; color: #492817; }
+.demo-note { border-color: #70503e; background: #4c3326; }
+.profile-chip { border-color: #70503e; }
+.topbar { border-color: #e9ded2; background: rgba(251, 247, 241, .82); }
+h1, .crumb b { color: #3c2d25; }
+.panel { background: #fffdf9; border-color: #eadfd3; }
+.text-link, .plan-toggle { color: #a94710; }
+.text-link:hover { color: #87360c; }
+.btn-primary { background: #b84d11; color: #fffaf6; }
+.btn-primary:hover { background: #963d0b; }
+.btn-secondary { background: #f5e8dc; border-color: #ead5c3; color: #68412b; }
+.btn-secondary:hover, .icon-button:hover { background: #f1dcc9; }
+.btn-quiet, .icon-button { border-color: #eadfd3; background: #fffdf9; color: #73533f; }
+.welcome-card, .role-hero, .trend-hero { background: #f8e4d3; border-color: #edcdb3; }
+.welcome-card:after { border-color: rgba(184, 77, 17, .2); box-shadow: 0 0 0 25px rgba(184, 77, 17, .04), 0 0 0 52px rgba(184, 77, 17, .025); }
+.welcome-card .eyebrow { color: #94512b; }
+.welcome-card p, .trend-hero p { color: #785740; }
+.stat-number, .team-stat strong { color: #ad4810; }
+.stat-trend { color: #a94b17; }
+.role-icon, .upload-icon, .person-dot { background: #fae7d6; color: #a64a17; }
+.match-pill, .chip { background: #f8e9da; color: #914215; }
+.skill-meter i.on { background: #d66a27; }
+.level-select { color: #754326; background: #fff8f1; }
+.team-hero { background: #40291f; }
+.team-hero:after { border-color: #9c694c; }
+.team-hero p { color: #e1c5b1; }
+.person-cell strong { color: #483529; }
+.scenario-tabs { background: #f0e7dc; }
+.scenario-tab.active { color: #9f4311; }
+.score-ring { border-color: #df8b50; color: #a94710; }
+.factor-track i, .trend-line i, .bar, .legend i { background: #d66a27; }
+.bar.alt, .legend .alt-dot { background: #e9a36f; }
+.course-num, .signal-mark { color: #a94710; background: #fae8d9; }
+.source-note { background: #f7eee4; border-left-color: #c95b1c; }
+.source-note strong { color: #60412e; }
