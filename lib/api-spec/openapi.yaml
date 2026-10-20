@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: career
+    description: Dataset-based career skill matching
 paths:
   /healthz:
     get:
@@ -24,8 +26,172 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /career/skills:
+    get:
+      operationId: listCareerSkills
+      tags: [career]
+      summary: List skills known to the career dataset
+      description: Returns every distinct normalized skill name in the role-to-skill dataset.
+      responses:
+        "200":
+          description: Skill names
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerSkillList"
+  /career/match:
+    post:
+      operationId: matchCareers
+      tags: [career]
+      summary: Rank role families by dataset skill overlap
+      description: >
+        Compares the supplied skills (normalized, exact-name matching) with each
+        role family's 30 listed skills. Score = matched skills / 30 x 100.
+        This is dataset skill overlap, not a probability of employment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareerSkillsInput"
+      responses:
+        "200":
+          description: Ranked role families
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerMatchResult"
+        "400":
+          description: Invalid skills input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    CareerSkillList:
+      type: object
+      properties:
+        skills:
+          type: array
+          items:
+            type: string
+      required:
+        - skills
+    CareerSkillsInput:
+      type: object
+      properties:
+        skills:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+            maxLength: 60
+      required:
+        - skills
+    CareerMatch:
+      type: object
+      properties:
+        roleFamily:
+          type: string
+        score:
+          type: number
+          description: Matched skills / skills considered x 100, rounded to one decimal place.
+        skillsConsidered:
+          type: integer
+        matchedSkills:
+          type: array
+          items:
+            type: string
+        missingSkills:
+          type: array
+          items:
+            type: string
+      required:
+        - roleFamily
+        - score
+        - skillsConsidered
+        - matchedSkills
+        - missingSkills
+    CareerScoring:
+      type: object
+      properties:
+        label:
+          type: string
+        formula:
+          type: string
+        note:
+          type: string
+      required:
+        - label
+        - formula
+        - note
+    CareerSource:
+      type: object
+      properties:
+        datasetName:
+          type: string
+        publisher:
+          type: string
+        period:
+          type: string
+        license:
+          type: string
+        citation:
+          type: string
+        urls:
+          type: array
+          items:
+            type: string
+        intendedUse:
+          type: string
+        geographyNote:
+          type: string
+        measurementNote:
+          type: string
+      required:
+        - datasetName
+        - publisher
+        - period
+        - license
+        - citation
+        - urls
+        - intendedUse
+        - geographyNote
+        - measurementNote
+    CareerMatchResult:
+      type: object
+      properties:
+        matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerMatch"
+        normalizedSkills:
+          type: array
+          items:
+            type: string
+        unrecognizedSkills:
+          type: array
+          items:
+            type: string
+        scoring:
+          $ref: "#/components/schemas/CareerScoring"
+        source:
+          $ref: "#/components/schemas/CareerSource"
+      required:
+        - matches
+        - normalizedSkills
+        - unrecognizedSkills
+        - scoring
+        - source
     HealthStatus:
       type: object
       properties:

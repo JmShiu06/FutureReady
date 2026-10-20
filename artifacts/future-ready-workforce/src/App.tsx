@@ -7,6 +7,9 @@ import {
   Target, TrendingUp, Users, X,
 } from 'lucide-react';
 
+import { CareerMatcher } from '@/components/career-matcher';
+import type { CareerMatch } from '@workspace/api-client-react';
+
 type Skill = { name: string; level: number; trend: string; category: string };
 type Role = {
   id: string; title: string; match: number; salary: string; location: string;
@@ -134,6 +137,7 @@ function Dashboard({ skills, saveSkills }: { skills: Skill[]; saveSkills: (skill
   const [upload, setUpload] = useState('');
   const [feedback, setFeedback] = useState('');
   const [addingSkill, setAddingSkill] = useState(false);
+  const [topMatch, setTopMatch] = useState<CareerMatch | null>(null);
   const available = skillOptions.filter(item => !skills.some(skill => skill.name === item));
   const addSkill = (name: string) => {
     saveSkills([...skills, { name, level: 2, trend: '+16%', category: 'Emerging' }]);
@@ -158,20 +162,15 @@ function Dashboard({ skills, saveSkills }: { skills: Skill[]; saveSkills: (skill
         <div className="welcome-actions"><a href="#recommendations" className="btn btn-primary"><Compass size={14} /> Explore role matches <ArrowRight size={14} /></a><Link className="btn btn-quiet" href="/trends">View skills outlook</Link></div>
       </div>
       <div className="panel stat-card">
-        <div className="stat-top"><span>Profile to role fit</span><Target size={16} /></div>
-        <div><div className="stat-number">84<span style={{fontSize:17}}>%</span></div><div className="stat-foot"><span className="stat-trend"><ArrowUpRight size={12} /> 6 points</span> across your top match</div></div>
-        <div className="section-kicker">A directional estimate from demo skills</div>
+        <div className="stat-top"><span>Top dataset skill overlap</span><Target size={16} /></div>
+        <div><div className="stat-number" data-testid="stat-top-overlap">{topMatch ? <>{topMatch.score}<span style={{fontSize:17}}>%</span></> : <>—</>}</div><div className="stat-foot">{topMatch ? <span>{topMatch.roleFamily} · {topMatch.matchedSkills.length} of {topMatch.skillsConsidered} skills</span> : <span>Add skills below to calculate</span>}</div></div>
+        <div className="section-kicker">Skill overlap, not job probability</div>
       </div>
     </section>
     <section className="dashboard-grid" id="recommendations">
       <div className="panel panel-pad">
-        <SectionTitle title="Roles worth a closer look" note="MATCHED TO YOUR CURRENT SKILLS" action={<Link href="/trends" className="text-link">How matches work <ArrowRight size={12} /></Link>} />
-        <div className="role-list">{roles.map((role, index) => <Link href={`/roles/${role.id}`} key={role.id} className="role-row" data-testid={`card-role-${role.id}`}>
-          <span className="role-icon">{index === 0 ? <Compass size={17} /> : index === 1 ? <BarChart3 size={17} /> : <GraduationCap size={17} />}</span>
-          <span><h3>{role.title}</h3><p>{role.salary} <span className="role-arrow">·</span> {role.location}</p></span>
-          <span className="match-pill">{role.match}% <ArrowUpRight size={11} /></span>
-        </Link>)}</div>
-        <div className="disclaimer"><Info size={14} /><span>Role matches and salary ranges are sample estimates for this demo. They are not a promise of fit, hiring demand, or compensation.</span></div>
+        <SectionTitle title="Roles that overlap with your skills" note="CALCULATED FROM A JOB-POSTING DATASET" />
+        <CareerMatcher onTopMatch={setTopMatch} />
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="Market signals" note="ILLUSTRATIVE, NOT LIVE" action={<Link href="/trends" className="text-link">See outlook <ArrowRight size={12} /></Link>} />

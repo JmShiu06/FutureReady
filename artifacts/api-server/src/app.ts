@@ -31,4 +31,20 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
+// Return JSON (not an HTML page) for malformed request bodies.
+app.use(
+  (
+    err: { status?: number; type?: string },
+    _req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    if (err.type === "entity.parse.failed") {
+      res.status(400).json({ error: "Request body must be valid JSON." });
+      return;
+    }
+    next(err);
+  },
+);
+
 export default app;

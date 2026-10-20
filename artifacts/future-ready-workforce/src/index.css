@@ -351,3 +351,14 @@ h1, .crumb b { color: #3c2d25; }
 .course-num, .signal-mark { color: #a94710; background: #fae8d9; }
 .source-note { background: #f7eee4; border-left-color: #c95b1c; }
 .source-note strong { color: #60412e; }
+
+/* Career matcher */
+.match-row { grid-template-columns: 1fr auto; align-items: start; }
+.match-row:hover { transform: none; }
+.match-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 5px 8px; }
+.match-chip button { border: 0; background: none; color: inherit; padding: 0; display: grid; place-items: center; }
+.match-error { border-left: 3px solid #c0392b; background: #fbeae6; color: #8a2c1e; padding: 10px 12px; border-radius: 0 9px 9px 0; font-size: 11px; margin-bottom: 10px; }
+.chip { font-size: 9px; }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
