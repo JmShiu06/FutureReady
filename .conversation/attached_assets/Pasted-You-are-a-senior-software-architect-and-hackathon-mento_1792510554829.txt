@@ -1,0 +1,96 @@
+You are a senior software architect and hackathon mentor.
+
+I am building a web application for the "Aiversecity Future-Ready Workforce" challenge.
+
+Please review my idea and identify:
+1. Logic flaws
+2. Missing features
+3. Technical risks
+4. Scalability issues
+5. Ways to better align with the judging rubric
+6. Better UI/UX flow
+7. Simpler implementation alternatives
+
+My current design:
+
+USER TYPE SELECTION
+- User chooses:
+  1. Job Seeker
+  2. HR / Team Reskilling
+
+JOB SEEKER FLOW
+1. Upload CV (PDF)
+2. Extract skills, experience, education, and certifications
+3. Generate a skill profile
+4. Visualize skills using a radar chart
+5. Show which skills are increasing or decreasing in market demand
+6. Recommend future roles with match scores
+7. Show skill gaps for each role
+8. Recommend learning resources and courses
+9. Show SDG impact of each career path
+
+HR / TEAM RESKILLING FLOW
+1. Upload employee skills data
+2. Analyze industry trends
+3. Generate a team skill dashboard
+4. Show current strengths and weaknesses
+5. Show future high-demand skills
+6. Identify team skill gaps
+7. Recommend reskilling plans
+
+FEATURES
+- Income filter
+- Location filter
+- Keyword filter
+- Job explanation page
+- Trend analysis using real-time market data
+- CV analysis
+- Skill gap detection
+- Course recommendations
+- Future role matching
+- SDG mapping
+- Multiple future scenarios (moderate AI growth vs rapid AI growth)
+
+TECHNICAL STACK
+Frontend:
+- React
+- Tailwind CSS
+
+Backend:
+- FastAPI
+
+CV Parsing:
+- PyMuPDF
+
+Skill Extraction:
+- spaCy or keyword matching
+
+Embeddings:
+- BGE-small-en-v1.5
+
+Vector Search:
+- FAISS
+
+Data Sources:
+- O*NET
+- LinkedIn job data
+- World Economic Forum reports
+- Public job market datasets
+
+CONSTRAINTS
+- I may not be allowed to use GPT, Llama, Claude, or other LLMs.
+- The solution must work primarily with traditional NLP, embeddings, and rule-based systems.
+- Must be feasible for a hackathon.
+
+Please provide:
+1. Architecture diagram
+2. Improved user flow
+3. Database schema suggestions
+4. API endpoint suggestions
+5. Missing features from the judging rubric
+6. Risks and mitigation strategies
+7. Priority order of features for MVP
+8. What judges would criticize and how to fix it
+
+Be brutally honest and act as a hackathon judge reviewing this project.
+``

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FutureReady Workforce"
+description = "A skills intelligence web app for job seekers and HR teams. Explore explainable future-role matches, skills gaps, labor-market trends, learning paths, and team reskilling plans using transparent demo data."
+version = "1.0.0"
+id = "artifacts/future-ready-workforce"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22019
+
+[services.development]
+run = "pnpm --filter @workspace/future-ready-workforce run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/future-ready-workforce", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/future-ready-workforce/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22019"
+BASE_PATH = "/"
