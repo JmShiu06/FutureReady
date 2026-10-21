@@ -76,5 +76,5 @@ export function useAsync<T>(run: (signal: AbortSignal) => Promise<T>, key: strin
   return { ...state, retry: () => setNonce(n => n + 1) };
 }
 
-export const levelLabel = (level: number) => ['Not present', 'New to it', 'Exploring', 'Working knowledge', 'Confident', 'Can coach'][level] ?? 'Not present';
+export const levelLabel = (level: number) => ['Not present', 'New to it', 'Exploring', 'Working knowledge', 'Confident', 'Can teach'][level] ?? 'Not present';
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');

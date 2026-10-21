@@ -5,7 +5,10 @@ import type { Audience, DemoProfile, WorkspaceState } from './types';
 export const STORAGE_KEY = 'frw-demo-workspace-v1';
 export const audiences = ['adult', 'graduate', 'hr', 'education'] as const;
 const boundedText = z.string().trim().max(120);
-export const skillSchema = z.object({ name: z.string().trim().min(1).max(60), level: z.number().int().min(1).max(5), category: boundedText });
+export const skillSchema = z.object({
+  name: z.string().trim().min(1).max(60), level: z.number().int().min(1).max(5), category: boundedText,
+  cvDetected: z.boolean().optional(),
+});
 export const profileSchema = z.object({
   id: z.string().min(1).max(80), audience: z.enum(audiences), occupation: z.string().trim().min(1, 'Enter an occupation or study programme.').max(120),
   experienceYears: z.number().min(0).max(60), education: boundedText, qualification: boundedText,

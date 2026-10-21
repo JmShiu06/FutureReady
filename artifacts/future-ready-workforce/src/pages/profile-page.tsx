@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
+import { ChiliLevelPicker } from '@/components/chili-level-picker';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -12,8 +13,8 @@ import {
 import { useWorkspace } from '@/domain/workspace-context';
 import { profileSchema } from '@/domain/storage';
 import { audienceLabels, skillCatalogue } from '@/domain/demo-data';
-import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
-import { PageHead, SectionTitle, levelLabel, slug } from '@/components/workspace/ui';
+import type { DemoProfile, ProfileSkill } from '@/domain/types';
+import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
 
 const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) }).superRefine((v, ctx) => {
   const list = v.interestsText.split(',').map(s => s.trim()).filter(Boolean);
@@ -28,6 +29,7 @@ export default function ProfilePage() {
   const { state, profile, saveProfile, resetProfile, loadSample } = useWorkspace();
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
   const skills = useFieldArray({ control: form.control, name: 'skills' });
+  const profileSkills = form.watch('skills') ?? [];
   const [saved, setSaved] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [newCategory, setNewCategory] = useState('Custom');
@@ -62,10 +64,10 @@ export default function ProfilePage() {
     <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review CV-detected skills or enter your details manually. Each audience keeps its own profile." />
     <div className="source-note" style={{ marginBottom: 18 }}>
       Use fictional details for this demo. Occupation, education, interests and location provide planning context; they do not secretly change your score.
-      Skill levels range from 1 (new to it) to 5 (can coach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
+      Skill levels range from 1 (new to it) to 5 (can teach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
       Save your edits before switching audiences or pages.
     </div>
-    <ProfileCvImport existingSkills={form.watch('skills')} onApplySkills={addCvSkills} />
+    <ProfileCvImport existingSkills={profileSkills} onApplySkills={addCvSkills} />
     <div className="grid-2">
       <div className="panel panel-pad">
         <SectionTitle title="Fictional sample profiles" note="REPLACES THIS AUDIENCE ONLY" />
@@ -115,9 +117,18 @@ export default function ProfilePage() {
           <SectionTitle title="Skills" note={`${skills.fields.length} OF 50 · LEVELS 1–5`} />
           {skills.fields.length === 0 && <p className="muted">No skills yet. Add one below.</p>}
           {skills.fields.map((f, i) => <div className="skill-edit" key={f.id} data-testid={`row-skill-${i}`}>
-            <FormField control={form.control} name={`skills.${i}.name`} render={({ field }) => <FormItem className="field"><FormControl><input className="fr-input" aria-label={`Skill ${i + 1} name`} maxLength={60} {...field} data-testid={`input-skill-name-${i}`} /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name={`skills.${i}.name`} render={({ field }) => <FormItem className="field"><FormControl><div className="skill-name-control">
+              <input className="fr-input" aria-label={`Skill ${i + 1} name`} maxLength={60} {...field} data-testid={`input-skill-name-${i}`} />
+              {(profileSkills[i]?.cvDetected || profileSkills[i]?.category === 'CV detected') && <span className="cv-skill-check" title="Found in CV" role="img" aria-label="Found in CV"><Check size={12} /></span>}
+            </div></FormControl><FormMessage /></FormItem>} />
             <FormField control={form.control} name={`skills.${i}.category`} render={({ field }) => <FormItem className="field"><FormControl><input className="fr-input" aria-label={`Skill ${i + 1} category`} {...field} data-testid={`input-skill-category-${i}`} /></FormControl></FormItem>} />
-            <FormField control={form.control} name={`skills.${i}.level`} render={({ field }) => <FormItem className="field"><FormControl><select className="fr-select" aria-label={`Skill ${i + 1} level`} value={field.value} onChange={e => field.onChange(Number(e.target.value) as Proficiency)} data-testid={`select-skill-level-${i}`}>{[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} · {levelLabel(n)}</option>)}</select></FormControl></FormItem>} />
+            <FormField control={form.control} name={`skills.${i}.level`} render={({ field }) => <FormItem className="field"><FormControl><ChiliLevelPicker
+              name={field.name}
+              value={Number(field.value) as 1 | 2 | 3 | 4 | 5}
+              onChange={field.onChange}
+              label={`Proficiency for ${f.name}`}
+              testId={`select-skill-level-${i}`}
+            /></FormControl></FormItem>} />
             <button type="button" className="icon-button" onClick={() => skills.remove(i)} aria-label={`Remove skill ${f.name}`} data-testid={`button-remove-skill-${i}`}><Trash2 size={14} /></button>
           </div>)}
           {form.formState.errors.skills?.root?.message && <p className="field-error" role="alert">{form.formState.errors.skills.root.message}</p>}

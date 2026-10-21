@@ -1,6 +1,6 @@
 export type Audience = 'adult' | 'graduate' | 'hr' | 'education';
 export type Proficiency = 1 | 2 | 3 | 4 | 5;
-export interface ProfileSkill { name: string; level: Proficiency; category: string }
+export interface ProfileSkill { name: string; level: Proficiency; category: string; cvDetected?: boolean }
 export interface DemoProfile {
   id: string; audience: Audience; occupation: string; experienceYears: number;
   education: string; qualification: string; studyField: string; interests: string[];

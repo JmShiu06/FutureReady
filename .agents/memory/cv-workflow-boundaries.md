@@ -20,3 +20,9 @@ The CV import review is one popup: open it automatically after extraction and ke
 **Why:** The user clarified that both detected-skill review and proficiency selection should happen in the popup immediately after upload.
 
 **How to apply:** Keep upload results transient until the user confirms the selected skills and levels, then add them to the profile draft for the user to save.
+
+Show proficiency as five chili icons, from 1 “New to it” through 5 “Can teach.” A CV tick means the skill name was detected in the document; it does not verify the user's proficiency.
+
+**Why:** The user requested chili-based 1–5 skill ratings and a small CV tick while keeping proficiency self-assessed.
+
+**How to apply:** Reuse this visual scale anywhere users set profile or CV-review proficiency, and label CV evidence as detection rather than validated expertise.

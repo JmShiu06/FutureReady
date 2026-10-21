@@ -41,7 +41,7 @@
 .profile-cv-dialog-skill-name { display:flex; align-items:center; gap:8px; min-width:0; color:#4a382e; }
 .profile-cv-dialog-skill-name input { width:15px;height:15px; flex:none; accent-color:#b84d11; }
 .profile-cv-dialog-row strong { color:#4a382e; font-size:11px; overflow-wrap:anywhere; }
-.profile-cv-dialog-row .fr-select { min-width:0; font-size:10px; }
+.profile-cv-dialog-row .chili-level-picker { justify-self:start; }
 .profile-cv-dialog-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
 .profile-cv-dialog-footer .btn:disabled { opacity:.55; cursor:not-allowed; }
 .profile-cv-empty { margin:13px 0; padding:12px; border:1px dashed #e3bfa2; border-radius:10px; background:#fff7ef; color:#785740; font-size:10.5px; line-height:1.5; }
@@ -52,7 +52,7 @@
   .profile-cv-result .btn { width:100%; justify-content:center; }
   .profile-cv-dialog-review-head { align-items:flex-start; flex-direction:column; gap:3px; }
   .profile-cv-dialog-row { grid-template-columns:1fr; gap:8px; }
-  .profile-cv-dialog-row .fr-select { width:100%; }
+  .profile-cv-dialog-row .chili-level-picker { width:100%; }
   .profile-cv-dialog-footer { flex-direction:column-reverse; }
   .profile-cv-dialog-footer .btn { width:100%; }
 }

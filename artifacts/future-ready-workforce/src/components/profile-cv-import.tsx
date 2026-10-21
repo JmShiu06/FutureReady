@@ -2,12 +2,11 @@ import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'r
 import { AlertTriangle, Check, CloudUpload, FileText, Info, Loader2, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
-import { levelLabel } from '@/components/workspace/ui';
+import { ChiliLevelPicker } from '@/components/chili-level-picker';
 import './profile-cv-import.css';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = ['pdf', 'docx', 'txt', 'jpg', 'jpeg', 'png'];
-const proficiencyLevels: Proficiency[] = [1, 2, 3, 4, 5];
 
 interface ReviewSkill {
   name: string;
@@ -144,6 +143,7 @@ export function ProfileCvImport({
       name: skill.name,
       level: skill.level as Proficiency,
       category: 'CV detected',
+      cvDetected: true,
     })));
     setReviewSkills([]);
     setWarnings([]);
@@ -242,19 +242,18 @@ export function ProfileCvImport({
                   aria-label={`Add ${skill.name} to profile`}
                 />
                 <strong>{skill.name}</strong>
+                <span className="cv-skill-check" title="Found in CV" role="img" aria-label="Found in CV"><Check size={12} /></span>
               </label>
               {skill.alreadyInProfile
                 ? <span className="profile-cv-existing"><Check size={12} /> Already in profile</span>
-                : <select
-                  className="fr-select"
+                : <ChiliLevelPicker
+                  name={`cv-skill-${index}`}
                   value={skill.level}
                   disabled={!skill.selected}
-                  onChange={event => setSkillLevel(index, event.target.value)}
-                  aria-label={`Proficiency level for ${skill.name}`}
-                >
-                  <option value="">Choose level</option>
-                  {proficiencyLevels.map(level => <option key={level} value={level}>{level} · {levelLabel(level)}</option>)}
-                </select>}
+                  onChange={level => setSkillLevel(index, String(level))}
+                  label={`Proficiency level for ${skill.name}`}
+                  testId={`cv-skill-level-${index}`}
+                />}
             </div>)}
           </div>
           {!canApply && <p className="profile-cv-level-note" role="status">Select at least one new skill and choose its level to continue.</p>}
