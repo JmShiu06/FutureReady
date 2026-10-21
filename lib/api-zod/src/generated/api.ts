@@ -27,6 +27,20 @@ export const ListCareerSkillsResponse = zod.object({
 
 
 /**
+ * PDF, DOCX or UTF-8 TXT, at most 5 MB. No file or raw text is retained. No external services.
+ * @summary Extract dataset skills from an in-memory CV
+ */
+export const ExtractCvSkillsBody = zod.object({
+  "file": zod.instanceof(Blob)
+})
+
+export const ExtractCvSkillsResponse = zod.object({
+  "skills": zod.array(zod.string()),
+  "warnings": zod.array(zod.string())
+})
+
+
+/**
  * Compares the supplied skills (normalized, exact-name matching) with each role family's 30 listed skills. Score = matched skills / 30 x 100. This is dataset skill overlap, not a probability of employment.
  * @summary Rank role families by dataset skill overlap
  */

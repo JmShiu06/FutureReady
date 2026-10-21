@@ -12,6 +12,8 @@ export * from './careerScoring';
 export * from './careerSkillList';
 export * from './careerSkillsInput';
 export * from './careerSource';
+export * from './cvSkillExtraction';
+export * from './cvUploadInput';
 export * from './errorResponse';
 export * from './filterJobsParams';
 export * from './healthStatus';

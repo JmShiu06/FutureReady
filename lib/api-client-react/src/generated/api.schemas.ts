@@ -9,6 +9,15 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface CvUploadInput {
+  file: Blob;
+}
+
+export interface CvSkillExtraction {
+  skills: string[];
+  warnings: string[];
+}
+
 export interface CareerSkillList {
   skills: string[];
 }

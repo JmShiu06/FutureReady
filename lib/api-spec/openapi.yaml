@@ -39,6 +39,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CareerSkillList"
+  /career/cv-skills:
+    post:
+      operationId: extractCvSkills
+      tags: [career]
+      summary: Extract dataset skills from an in-memory CV
+      description: PDF, DOCX or UTF-8 TXT, at most 5 MB. No file or raw text is retained. No external services.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CvUploadInput"
+      responses:
+        "200":
+          description: Detected skills for user review, including an empty list if no skills were recognized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CvSkillExtraction"
+        "400":
+          description: Missing, malformed or unsupported file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: File or expanded document exceeds the processing limit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: No readable text; scanned PDFs may require OCR
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Extraction capacity is busy; retry shortly
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /career/match:
     post:
       operationId: matchCareers
@@ -295,6 +338,23 @@ components:
           type: string
       required:
         - error
+    CvUploadInput:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+    CvSkillExtraction:
+      type: object
+      required: [skills, warnings]
+      properties:
+        skills:
+          type: array
+          items: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
     CareerSkillList:
       type: object
       properties:

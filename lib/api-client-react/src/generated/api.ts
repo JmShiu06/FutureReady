@@ -23,6 +23,8 @@ import type {
   CareerMatchResult,
   CareerSkillList,
   CareerSkillsInput,
+  CvSkillExtraction,
+  CvUploadInput,
   ErrorResponse,
   FilterJobsParams,
   HealthStatus,
@@ -216,6 +218,83 @@ export function useListCareerSkills<TData = Awaited<ReturnType<typeof listCareer
 
 
 
+
+export const getExtractCvSkillsUrl = () => {
+
+
+
+
+  return `/api/career/cv-skills`
+}
+
+/**
+ * PDF, DOCX or UTF-8 TXT, at most 5 MB. No file or raw text is retained. No external services.
+ * @summary Extract dataset skills from an in-memory CV
+ */
+export const extractCvSkills = async (cvUploadInput: CvUploadInput, options?: Parameters<typeof customFetch>[1]): Promise<CvSkillExtraction> => {
+    const formData = new FormData();
+formData.append(`file`, cvUploadInput.file);
+
+  return customFetch<CvSkillExtraction>(getExtractCvSkillsUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getExtractCvSkillsMutationKey = () => ['extractCvSkills'] as const;
+
+export const getExtractCvSkillsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractCvSkills>>, TError,ExtractCvSkillsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof extractCvSkills>>, TError,ExtractCvSkillsMutationVariables, TContext> => {
+
+const mutationKey = getExtractCvSkillsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractCvSkills>>, ExtractCvSkillsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  extractCvSkills(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractCvSkillsMutationResult = NonNullable<Awaited<ReturnType<typeof extractCvSkills>>>
+    export type ExtractCvSkillsMutationBody = BodyType<CvUploadInput>
+    export type ExtractCvSkillsMutationError = ErrorType<ErrorResponse>
+    export type ExtractCvSkillsMutationVariables = {data: BodyType<CvUploadInput>}
+
+    /**
+ * @summary Extract dataset skills from an in-memory CV
+ */
+export const useExtractCvSkills = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractCvSkills>>, TError,ExtractCvSkillsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof extractCvSkills>>,
+        TError,
+        ExtractCvSkillsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getExtractCvSkillsMutationOptions(options));
+    }
 
 export const getMatchCareersUrl = () => {
 
