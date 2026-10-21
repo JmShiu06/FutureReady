@@ -29,6 +29,12 @@ async function buildAll() {
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
       "pdf-parse",
+      "pdfjs-dist",
+      "tesseract.js",
+      "tesseract.js-core",
+      "@tesseract.js-data/eng",
+      "@napi-rs/canvas",
+      "image-size",
       "mammoth",
       "yauzl",
       "*.node",

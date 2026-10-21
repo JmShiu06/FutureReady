@@ -1,4 +1,10 @@
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { createCanvas } from "@napi-rs/canvas";
+import { imageSize } from "image-size";
 import { PDFParse } from "pdf-parse";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import Tesseract from "tesseract.js";
 import mammoth from "mammoth";
 import yauzl from "yauzl";
 import { careerDataset, normalizeSkill } from "./careerMatcher";
@@ -6,6 +12,15 @@ import { careerDataset, normalizeSkill } from "./careerMatcher";
 export const MAX_CV_BYTES = 5 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;
 const MAX_TEXT_LENGTH = 1_000_000;
+const MAX_OCR_PDF_PAGES = 3;
+const MAX_IMAGE_PIXELS = 12_000_000;
+const MAX_RENDER_EDGE = 2_000;
+export const CV_PROCESSING_TIMEOUT_MS = 35_000;
+const require = createRequire(import.meta.url);
+const OCR_LANG_PATH = join(dirname(require.resolve("@tesseract.js-data/eng")), "4.0.0_best_int");
+const TESSERACT_DIR = dirname(require.resolve("tesseract.js"));
+const requireTesseract = createRequire(join(TESSERACT_DIR, "index.js"));
+const TESSERACT_CORE_DIR = dirname(requireTesseract.resolve("tesseract.js-core"));
 
 export class CvError extends Error {
   constructor(public status: number, message: string) {
@@ -46,7 +61,7 @@ export function detectSkills(text: string, catalogue = careerDataset.allSkills):
 }
 
 /** Validate and drain the archive before Mammoth opens it, bounding actual inflation. */
-async function validateDocx(buffer: Buffer): Promise<void> {
+async function validateDocx(buffer: Buffer, signal?: AbortSignal): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     yauzl.fromBuffer(buffer, { lazyEntries: true, validateEntrySizes: true }, (error, zip) => {
       if (error || !zip) return reject(new CvError(422, "This DOCX is damaged or unreadable. Try another file."));
@@ -57,9 +72,18 @@ async function validateDocx(buffer: Buffer): Promise<void> {
       const fail = () => {
         if (finished) return;
         finished = true;
+        signal?.removeEventListener("abort", abort);
         zip.close();
         reject(new CvError(422, "This DOCX is damaged, encrypted, or too complex to process. Export a simpler DOCX or TXT."));
       };
+      const abort = () => {
+        if (finished) return;
+        finished = true;
+        signal?.removeEventListener("abort", abort);
+        zip.close();
+        reject(processingError(signal));
+      };
+      signal?.addEventListener("abort", abort, { once: true });
       zip.on("error", fail);
       zip.on("entry", (entry: yauzl.Entry) => {
         if (++entries > 400 || (entry.generalPurposeBitFlag & 1) || entry.uncompressedSize > MAX_EXPANDED_BYTES) return fail();
@@ -81,33 +105,187 @@ async function validateDocx(buffer: Buffer): Promise<void> {
       zip.on("end", () => {
         if (finished) return;
         finished = true;
+        signal?.removeEventListener("abort", abort);
         zip.close();
         if (!paths.has("[Content_Types].xml") || !paths.has("word/document.xml")) {
           reject(new CvError(400, "The file is not a valid DOCX document."));
         } else resolve();
       });
-      zip.readEntry();
+      if (signal?.aborted) abort();
+      if (!finished) zip.readEntry();
     });
   });
 }
 
-export async function extractCvSkills(buffer: Buffer, filename: string): Promise<{ skills: string[]; warnings: string[] }> {
-  if (!buffer.length) throw new CvError(400, "The file is empty. Choose a readable PDF, DOCX or TXT.");
+function processingError(signal?: AbortSignal): CvError {
+  return signal?.reason?.name === "TimeoutError"
+    ? new CvError(422, "CV processing took too long. Choose a smaller or simpler file, or enter skills manually.")
+    : new CvError(499, "CV processing was cancelled.");
+}
+
+function checkProcessing(signal?: AbortSignal): void {
+  if (signal?.aborted) throw processingError(signal);
+}
+
+async function awaitWithAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  checkProcessing(signal);
+  if (!signal) return promise;
+  let onAbort: (() => void) | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_resolve, reject) => {
+        onAbort = () => reject(processingError(signal));
+        signal.addEventListener("abort", onAbort, { once: true });
+      }),
+    ]);
+  } finally {
+    if (onAbort) signal.removeEventListener("abort", onAbort);
+  }
+}
+
+function hasMeaningfulText(text: string): boolean {
+  return (text.match(/[\p{L}\p{N}]/gu)?.length ?? 0) >= 20;
+}
+
+function validateImage(buffer: Buffer, extension: string): void {
+  const isPng = buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  const isJpeg = buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  if ((extension === "png" && !isPng) || (extension === "jpg" || extension === "jpeg") && !isJpeg) {
+    throw new CvError(400, `The file is not a valid ${extension.toUpperCase()} image.`);
+  }
+  try {
+    const dimensions = imageSize(buffer);
+    if ((extension === "png" && dimensions.type !== "png") || ((extension === "jpg" || extension === "jpeg") && dimensions.type !== "jpg")) {
+      throw new CvError(400, `The file contents do not match the .${extension} extension.`);
+    }
+    if (!dimensions.width || !dimensions.height || dimensions.width * dimensions.height > MAX_IMAGE_PIXELS) {
+      throw new CvError(422, "This image is too large to process safely. Choose an image with 12 megapixels or fewer.");
+    }
+  } catch (error) {
+    if (error instanceof CvError) throw error;
+    throw new CvError(422, `This ${extension.toUpperCase()} image is damaged or unreadable.`);
+  }
+}
+
+async function recognizeImages(images: Buffer[], signal?: AbortSignal): Promise<string> {
+  checkProcessing(signal);
+  let worker: Tesseract.Worker | undefined;
+  let terminating = false;
+  const terminate = async () => {
+    if (!worker || terminating) return;
+    terminating = true;
+    await worker.terminate().catch(() => undefined);
+  };
+  const abort = () => { void terminate(); };
+  signal?.addEventListener("abort", abort, { once: true });
+  try {
+    worker = await Tesseract.createWorker("eng", Tesseract.OEM.LSTM_ONLY, {
+      langPath: OCR_LANG_PATH,
+      corePath: TESSERACT_CORE_DIR,
+      workerPath: join(TESSERACT_DIR, "worker-script", "node", "index.js"),
+      gzip: true,
+      cacheMethod: "none",
+      logger: () => undefined,
+    });
+    checkProcessing(signal);
+    const pages: string[] = [];
+    for (const image of images) {
+      checkProcessing(signal);
+      pages.push((await worker.recognize(image)).data.text);
+    }
+    return pages.join("\n");
+  } catch (error) {
+    if (signal?.aborted) throw processingError(signal);
+    throw new CvError(422, "Local OCR could not read this image. Try a clearer JPG, JPEG, PNG or PDF, or enter skills manually.");
+  } finally {
+    signal?.removeEventListener("abort", abort);
+    await terminate();
+  }
+}
+
+async function renderPdfPages(buffer: Buffer, pageCount: number, signal?: AbortSignal): Promise<Buffer[]> {
+  const loadingTask = getDocument({
+    data: new Uint8Array(buffer),
+    isEvalSupported: false,
+    useSystemFonts: true,
+    stopAtErrors: true,
+    maxImageSize: MAX_IMAGE_PIXELS,
+  });
+  let document: Awaited<typeof loadingTask.promise> | undefined;
+  try {
+    checkProcessing(signal);
+    document = await awaitWithAbort(loadingTask.promise, signal);
+    const images: Buffer[] = [];
+    const count = Math.min(pageCount, MAX_OCR_PDF_PAGES);
+    for (let index = 1; index <= count; index++) {
+      checkProcessing(signal);
+      const page = await document.getPage(index);
+      try {
+        checkProcessing(signal);
+        const original = page.getViewport({ scale: 1 });
+        const scale = Math.min(2, MAX_RENDER_EDGE / original.width, MAX_RENDER_EDGE / original.height);
+        const viewport = page.getViewport({ scale });
+        const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+        const renderTask = page.render({
+          canvas: null,
+          canvasContext: canvas.getContext("2d") as unknown as NonNullable<Parameters<typeof page.render>[0]["canvasContext"]>,
+          viewport,
+        });
+        const abortRender = () => renderTask.cancel();
+        signal?.addEventListener("abort", abortRender, { once: true });
+        if (signal?.aborted) abortRender();
+        try {
+          await renderTask.promise;
+          checkProcessing(signal);
+          images.push(canvas.toBuffer("image/png"));
+        } finally {
+          signal?.removeEventListener("abort", abortRender);
+          canvas.width = 1;
+          canvas.height = 1;
+        }
+      } finally {
+        page.cleanup();
+      }
+    }
+    return images;
+  } catch (error) {
+    if (signal?.aborted) throw processingError(signal);
+    throw new CvError(422, "This PDF could not be rendered safely. Try another PDF or enter skills manually.");
+  } finally {
+    if (document) await document.destroy().catch(() => undefined);
+    else await loadingTask.destroy().catch(() => undefined);
+  }
+}
+
+export async function extractCvSkills(buffer: Buffer, filename: string, requestSignal?: AbortSignal): Promise<{ skills: string[]; warnings: string[] }> {
+  const signal = requestSignal ?? AbortSignal.timeout(CV_PROCESSING_TIMEOUT_MS);
+  checkProcessing(signal);
+  if (!buffer.length) throw new CvError(400, "The file is empty. Choose a readable PDF, DOCX, TXT, JPG, JPEG or PNG.");
   if (buffer.length > MAX_CV_BYTES) throw new CvError(413, "Your CV exceeds the 5 MB limit.");
   const extension = filename.toLowerCase().split(".").pop();
-  if (!["pdf", "docx", "txt"].includes(extension ?? "")) {
-    throw new CvError(400, "Choose a PDF, DOCX or UTF-8 TXT file.");
+  if (!["pdf", "docx", "txt", "jpg", "jpeg", "png"].includes(extension ?? "")) {
+    throw new CvError(400, "Choose a PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG file.");
   }
   let text: string;
+  let warnings: string[] = [];
   try {
     if (extension === "pdf") {
       if (!buffer.subarray(0, 5).equals(Buffer.from("%PDF-"))) throw new CvError(400, "The file is not a valid PDF.");
       const parser = new PDFParse({ data: new Uint8Array(buffer), verbosity: 0, isEvalSupported: false });
       try {
-        const info = await parser.getInfo();
+        const info = await awaitWithAbort(parser.getInfo(), signal);
         if (info.total > 100) throw new CvError(422, "This PDF has too many pages. Upload a CV with 100 pages or fewer.");
-        const result = await parser.getText();
+        const result = await awaitWithAbort(parser.getText(), signal);
         text = result.pages.map((page) => page.text).join("\n");
+        if (!hasMeaningfulText(text)) {
+          const pageImages = await renderPdfPages(buffer, info.total, signal);
+          const recognized = await recognizeImages(pageImages, signal);
+          text = `${text}\n${recognized}`;
+          if (info.total > MAX_OCR_PDF_PAGES) {
+            warnings.push(`For privacy and speed, OCR was limited to the first ${MAX_OCR_PDF_PAGES} pages.`);
+          }
+        }
       } finally {
         await parser.destroy();
       }
@@ -115,22 +293,23 @@ export async function extractCvSkills(buffer: Buffer, filename: string): Promise
       if (!buffer.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04]))) {
         throw new CvError(400, "The file is not a valid DOCX.");
       }
-      await validateDocx(buffer);
+      await validateDocx(buffer, signal);
       text = (await mammoth.extractRawText({ buffer })).value;
-    } else {
+    } else if (extension === "txt") {
       text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
       if (/[\u0000-\u0008\u000e-\u001f]/.test(text) || text.trimStart().startsWith("%PDF-")) {
         throw new CvError(400, "This does not appear to be a plain-text CV. Upload the original PDF or DOCX instead.");
       }
+    } else {
+      validateImage(buffer, extension!);
+      text = await recognizeImages([buffer], signal);
     }
   } catch (error) {
     if (error instanceof CvError) throw error;
-    throw new CvError(422, `This ${extension?.toUpperCase()} could not be read. It may be damaged or password-protected. Try a readable PDF, DOCX or UTF-8 TXT.`);
+    throw new CvError(422, `This ${extension?.toUpperCase()} could not be read. It may be damaged or password-protected. Try a readable PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG.`);
   }
   if (!text.trim() || !/[\p{L}\p{N}]/u.test(text)) {
-    throw new CvError(422, extension === "pdf"
-      ? "No selectable text was found in this PDF. Scanned or image-based PDFs may require OCR. Try a text-based PDF, DOCX or TXT."
-      : "No readable text was found. Choose another CV or enter skills manually.");
+    throw new CvError(422, "No readable text could be recognized in this file. Try a clearer image or PDF, enter skills manually, or choose another file.");
   }
   if (text.length > MAX_TEXT_LENGTH) throw new CvError(422, "This document contains too much text. Upload a shorter CV.");
   const skills = detectSkills(text);
@@ -138,6 +317,7 @@ export async function extractCvSkills(buffer: Buffer, filename: string): Promise
     skills,
     warnings: [
       "Only exact skill names in the career dataset are detected. Review and correct the list before matching.",
+      ...warnings,
       ...(skills.length ? [] : ["No recognised dataset skills were found. You can add skills manually or upload another file."]),
     ],
   };

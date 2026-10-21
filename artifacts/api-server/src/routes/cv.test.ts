@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { PDFDocument } from "pdf-lib";
+import { createCanvas } from "@napi-rs/canvas";
 import JSZip from "jszip";
 import app from "../app";
-import { detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
+import { CvError, detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
 
 let server: Server;
 let base: string;
@@ -21,6 +22,26 @@ async function pdf(text?: string) {
   const document = await PDFDocument.create();
   const page = document.addPage();
   if (text) page.drawText(text, { x: 40, y: 700, size: 11 });
+  return Buffer.from(await document.save());
+}
+
+function cvImage(kind: "png" | "jpeg" = "png"): Buffer {
+  const canvas = createCanvas(1800, 1100);
+  const context = canvas.getContext("2d");
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#111111";
+  context.font = "bold 88px Arial";
+  context.fillText("Skills: Python, SQL", 90, 220);
+  context.fillText("JavaScript", 90, 360);
+  return kind === "png" ? canvas.toBuffer("image/png") : canvas.toBuffer("image/jpeg", 92);
+}
+
+async function scannedPdf() {
+  const document = await PDFDocument.create();
+  const page = document.addPage([612, 792]);
+  const image = await document.embedPng(cvImage());
+  page.drawImage(image, { x: 32, y: 32, width: 548, height: 335 });
   return Buffer.from(await document.save());
 }
 
@@ -98,6 +119,9 @@ describe("CV extraction and upload API", () => {
       [Buffer.from([0xff, 0xfe, 0xff]), "bad.txt", 422],
       [Buffer.from([0, 1, 2, 3]), "binary.txt", 400],
       [Buffer.from(" \n "), "blank.txt", 422],
+      [Buffer.from("not an image"), "bad.png", 400],
+      [Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), "truncated.png", 422],
+      [Buffer.from("not a JPEG"), "bad.jpg", 400],
     ] as [Buffer, string, number][]) {
       const response = await upload(buffer, name);
       assert.equal(response.status, status, `${name}: ${JSON.stringify(response.json)}`);
@@ -106,10 +130,45 @@ describe("CV extraction and upload API", () => {
       assert.ok(!("stack" in response.json));
     }
   });
-  it("rejects image-only/empty PDFs with an OCR explanation", async () => {
-    const response = await upload(await pdf(), "scanned.pdf");
+  it("runs local OCR on synthetic image-only PDFs and returns actual dataset skills", async () => {
+    const response = await upload(await scannedPdf(), "scanned.pdf");
+    assert.equal(response.status, 200, JSON.stringify(response.json));
+    assert.ok(response.json.skills?.includes("python"));
+    assert.ok(response.json.skills?.includes("sql"));
+    assert.ok(response.headers.get("cache-control")?.includes("no-store"));
+  });
+  it("runs the same local OCR path for direct PNG and JPEG uploads", async () => {
+    for (const [buffer, name] of [[cvImage("png"), "cv.png"], [cvImage("jpeg"), "cv.jpg"], [cvImage("jpeg"), "cv.jpeg"]] as const) {
+      const response = await upload(buffer, name);
+      assert.equal(response.status, 200, `${name}: ${JSON.stringify(response.json)}`);
+      assert.ok(response.json.skills?.includes("python"), `${name}: Python should be recognized`);
+      assert.ok(response.json.skills?.includes("sql"), `${name}: SQL should be recognized`);
+    }
+  });
+  it("returns an honest retry/manual-entry error when OCR sees a blank scanned page", async () => {
+    const document = await PDFDocument.create();
+    document.addPage([612, 792]);
+    const response = await upload(Buffer.from(await document.save()), "blank-scan.pdf");
     assert.equal(response.status, 422);
-    assert.match(response.json.error!, /OCR/);
+    assert.match(response.json.error!, /No readable text|Local OCR/);
+    assert.match(response.json.error!, /manually|another file|clearer/i);
+  });
+  it("cancels local OCR work when the caller aborts", async () => {
+    const controller = new AbortController();
+    const pending = extractCvSkills(cvImage(), "cancel.png", controller.signal);
+    const timer = setTimeout(() => controller.abort(), 50);
+    try {
+      await assert.rejects(pending, error => error instanceof CvError && error.status === 499);
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+  it("limits concurrent CV processing and returns a retryable busy response", async () => {
+    const fixtures = await Promise.all([scannedPdf(), scannedPdf(), scannedPdf()]);
+    const responses = await Promise.all(fixtures.map(buffer => upload(buffer, "concurrent-scan.pdf")));
+    assert.equal(responses.filter(response => response.status === 200).length, 2);
+    assert.equal(responses.filter(response => response.status === 503).length, 1);
+    assert.ok(responses.every(response => response.status === 200 || response.status === 503));
   });
   it("rejects oversized uploads and can process a subsequent safe upload", async () => {
     const response = await upload(Buffer.alloc(MAX_CV_BYTES + 1, 65), "large.txt");

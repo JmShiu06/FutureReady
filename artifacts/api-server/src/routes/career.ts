@@ -7,25 +7,25 @@ import {
   MatchCareersResponse,
 } from "@workspace/api-zod";
 import { careerDataset, matchSkills, SCORING } from "../lib/careerMatcher";
-import { CvError, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
+import { CvError, CV_PROCESSING_TIMEOUT_MS, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
 
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_CV_BYTES, files: 1, fields: 0, parts: 2 } });
 let activeParses = 0;
 
 router.post("/career/cv-skills", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
   upload.single("file")(req, res, (error: unknown) => {
     if (error) {
       const tooLarge = error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE";
-      res.status(tooLarge ? 413 : 400).json({ error: tooLarge ? "Your CV exceeds the 5 MB limit." : "Upload one PDF, DOCX or TXT file using the file field." });
+      res.status(tooLarge ? 413 : 400).json({ error: tooLarge ? "Your CV exceeds the 5 MB limit." : "Upload one PDF, DOCX, TXT, JPG, JPEG or PNG file using the file field." });
       return;
     }
     next();
   });
 }, async (req, res) => {
-  res.setHeader("Cache-Control", "no-store");
   if (!req.file) {
-    res.status(400).json({ error: "Choose a PDF, DOCX or TXT file first." });
+    res.status(400).json({ error: "Choose a PDF, DOCX, TXT, JPG, JPEG or PNG file first." });
     return;
   }
   if (activeParses >= 2) {
@@ -34,15 +34,29 @@ router.post("/career/cv-skills", (req, res, next) => {
     return;
   }
   activeParses++;
+  const abortController = new AbortController();
+  const abort = () => abortController.abort();
+  const timeout = setTimeout(
+    () => abortController.abort(new DOMException("CV processing timed out", "TimeoutError")),
+    CV_PROCESSING_TIMEOUT_MS,
+  );
+  req.once("aborted", abort);
+  res.once("close", () => {
+    if (!res.writableEnded) abort();
+  });
   try {
-    const result = await extractCvSkills(req.file.buffer, req.file.originalname);
-    res.json(ExtractCvSkillsResponse.parse(result));
+    const result = await extractCvSkills(req.file.buffer, req.file.originalname, abortController.signal);
+    if (!res.destroyed) res.json(ExtractCvSkillsResponse.parse(result));
   } catch (error) {
     // Deliberately do not log parser exceptions: they can contain document text.
-    res.status(error instanceof CvError ? error.status : 422).json({
-      error: error instanceof CvError ? error.message : "Your CV could not be processed. Try another file or enter skills manually.",
-    });
+    if (!res.destroyed && (!abortController.signal.aborted || abortController.signal.reason?.name === "TimeoutError")) {
+      res.status(error instanceof CvError ? error.status : 422).json({
+        error: error instanceof CvError ? error.message : "Your CV could not be processed. Try another file or enter skills manually.",
+      });
+    }
   } finally {
+    clearTimeout(timeout);
+    req.off("aborted", abort);
     activeParses--;
     delete req.file;
   }

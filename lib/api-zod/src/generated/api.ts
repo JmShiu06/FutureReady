@@ -27,7 +27,7 @@ export const ListCareerSkillsResponse = zod.object({
 
 
 /**
- * PDF, DOCX or UTF-8 TXT, at most 5 MB. No file or raw text is retained. No external services.
+ * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. No file or raw text is retained or sent to external services.
  * @summary Extract dataset skills from an in-memory CV
  */
 export const ExtractCvSkillsBody = zod.object({

@@ -129,7 +129,7 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
       fileRef.current = null;
       setFileMeta({ name: file.name, size: file.size });
       setSkills([]); setResult(null); confirmedRef.current = null;
-      setError('This file is larger than 5 MB. Please choose a smaller PDF, DOCX or TXT file.');
+      setError('This file is larger than 5 MB. Please choose a smaller PDF, DOCX, TXT, JPG, JPEG or PNG file.');
       setPhase('extraction-error');
       return;
     }
@@ -264,8 +264,8 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
         data-testid="dropzone-cv"
       >
         <input ref={inputRef} id="cm-cv-input" type="file" className="sr-only"
-          accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-          onChange={onFileChange} aria-label="Choose a CV file (PDF, DOCX or TXT, up to 5 MB)" data-testid="input-cv-file" />
+          accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,image/jpeg,image/png"
+          onChange={onFileChange} aria-label="Choose a CV file (PDF, DOCX, TXT, JPG, JPEG or PNG, up to 5 MB)" data-testid="input-cv-file" />
         {phase === 'extracting' ? <>
           <Loader2 size={22} className="spin cm-drop-icon" aria-hidden="true" />
           <strong>Reading your CV</strong>
@@ -283,7 +283,7 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
         </> : <>
           <CloudUpload size={24} className="cm-drop-icon" aria-hidden="true" />
           <strong>Drop your CV here</strong>
-          <span className="cm-drop-meta">PDF, DOCX or TXT · up to 5 MB</span>
+          <span className="cm-drop-meta">PDF, DOCX, TXT, JPG, JPEG or PNG · up to 5 MB</span>
           <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click(); } }} data-testid="button-choose-cv">Choose a file</label>
         </>}
       </div>

@@ -44,7 +44,7 @@ paths:
       operationId: extractCvSkills
       tags: [career]
       summary: Extract dataset skills from an in-memory CV
-      description: PDF, DOCX or UTF-8 TXT, at most 5 MB. No file or raw text is retained. No external services.
+      description: PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. No file or raw text is retained or sent to external services.
       requestBody:
         required: true
         content:
@@ -71,7 +71,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "422":
-          description: No readable text; scanned PDFs may require OCR
+          description: No readable text could be recognized; retry with a clearer file or enter skills manually
           content:
             application/json:
               schema:
