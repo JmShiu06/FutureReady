@@ -25,8 +25,12 @@ import type {
   CareerSkillsInput,
   CvSkillExtraction,
   CvUploadInput,
+  DosmJobMarketInsightsResponse,
+  DosmLabourForceResponse,
+  DosmRefreshResponse,
   ErrorResponse,
   FilterJobsParams,
+  GetDosmLabourForceParams,
   HealthStatus,
   Job,
   JobMatchInput,
@@ -801,5 +805,243 @@ export const useCalculateJobMatchScores = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getCalculateJobMatchScoresMutationOptions(options));
+    }
+
+export const getGetDosmLabourForceUrl = (params?: GetDosmLabourForceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dosm/labour-force?${stringifiedParams}` : `/api/dosm/labour-force`
+}
+
+/**
+ * National labour-force context only; these observations are not occupation or skill-demand data.
+ * @summary Get validated monthly labour-force observations from OpenDOSM
+ */
+export const getDosmLabourForce = async (params?: GetDosmLabourForceParams, options?: Parameters<typeof customFetch>[1]): Promise<DosmLabourForceResponse> => {
+
+  return customFetch<DosmLabourForceResponse>(getGetDosmLabourForceUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDosmLabourForceQueryKey = (params?: GetDosmLabourForceParams,) => {
+    return [
+    `/api/dosm/labour-force`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDosmLabourForceQueryOptions = <TData = Awaited<ReturnType<typeof getDosmLabourForce>>, TError = ErrorType<ErrorResponse>>(params?: GetDosmLabourForceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDosmLabourForce>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDosmLabourForceQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDosmLabourForce>>> = ({ signal }) => getDosmLabourForce(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDosmLabourForce>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDosmLabourForceQueryResult = NonNullable<Awaited<ReturnType<typeof getDosmLabourForce>>>
+export type GetDosmLabourForceQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get validated monthly labour-force observations from OpenDOSM
+ */
+
+export function useGetDosmLabourForce<TData = Awaited<ReturnType<typeof getDosmLabourForce>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetDosmLabourForceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDosmLabourForce>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDosmLabourForceQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDosmJobMarketInsightsUrl = () => {
+
+
+
+
+  return `/api/dosm/job-market-insights`
+}
+
+/**
+ * Counts are online job offerings, not a complete vacancy count or skill-demand measure.
+ * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+ */
+export const getDosmJobMarketInsights = async ( options?: Parameters<typeof customFetch>[1]): Promise<DosmJobMarketInsightsResponse> => {
+
+  return customFetch<DosmJobMarketInsightsResponse>(getGetDosmJobMarketInsightsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDosmJobMarketInsightsQueryKey = () => {
+    return [
+    `/api/dosm/job-market-insights`
+    ] as const;
+    }
+
+
+export const getGetDosmJobMarketInsightsQueryOptions = <TData = Awaited<ReturnType<typeof getDosmJobMarketInsights>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDosmJobMarketInsights>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDosmJobMarketInsightsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDosmJobMarketInsights>>> = ({ signal }) => getDosmJobMarketInsights({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDosmJobMarketInsights>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDosmJobMarketInsightsQueryResult = NonNullable<Awaited<ReturnType<typeof getDosmJobMarketInsights>>>
+export type GetDosmJobMarketInsightsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+ */
+
+export function useGetDosmJobMarketInsights<TData = Awaited<ReturnType<typeof getDosmJobMarketInsights>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDosmJobMarketInsights>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDosmJobMarketInsightsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRefreshDosmLabourForceUrl = () => {
+
+
+
+
+  return `/api/dosm/refresh`
+}
+
+/**
+ * Refreshes only the OpenDOSM monthly series; the reviewed quarterly JMI workbook snapshot is not refreshed.
+ * @summary Force a refresh of the monthly OpenDOSM labour-force dataset
+ */
+export const refreshDosmLabourForce = async ( options?: Parameters<typeof customFetch>[1]): Promise<DosmRefreshResponse> => {
+
+  return customFetch<DosmRefreshResponse>(getRefreshDosmLabourForceUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRefreshDosmLabourForceMutationKey = () => ['refreshDosmLabourForce'] as const;
+
+export const getRefreshDosmLabourForceMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshDosmLabourForce>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshDosmLabourForce>>, TError,void, TContext> => {
+
+const mutationKey = getRefreshDosmLabourForceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshDosmLabourForce>>, void> = () => {
+
+
+          return  refreshDosmLabourForce(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshDosmLabourForceMutationResult = NonNullable<Awaited<ReturnType<typeof refreshDosmLabourForce>>>
+
+    export type RefreshDosmLabourForceMutationError = ErrorType<ErrorResponse>
+
+
+    /**
+ * @summary Force a refresh of the monthly OpenDOSM labour-force dataset
+ */
+export const useRefreshDosmLabourForce = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshDosmLabourForce>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshDosmLabourForce>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshDosmLabourForceMutationOptions(options));
     }
 

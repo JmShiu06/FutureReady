@@ -191,6 +191,119 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface DosmLabourForceObservation {
+  date: string;
+  /** @minimum 0 */
+  labourForceThousands: number;
+  /** @minimum 0 */
+  employedThousands: number;
+  /** @minimum 0 */
+  unemployedThousands: number;
+  /** @minimum 0 */
+  outsideLabourForceThousands: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  participationRate: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  employmentPopulationRatio: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  unemploymentRate: number;
+  /**
+     * Not supplied per observation by the OpenDOSM API; null is intentional.
+     * @nullable
+     */
+  publicationDate: string | null;
+}
+
+export interface DosmLabourForceMetadata {
+  datasetId: string;
+  sourceName: string;
+  sourceUrl: string;
+  apiUrl: string;
+  license: string;
+  licenseUrl: string;
+  attribution: string;
+  coverage: string;
+  countUnit: string;
+  rateUnit: string;
+  methodology: string;
+  caveats: string[];
+  retrievedAt: string;
+  latestObservationDate: string;
+}
+
+export interface DosmLabourForceResponse {
+  metadata: DosmLabourForceMetadata;
+  observations: DosmLabourForceObservation[];
+  isStale: boolean;
+  /** @nullable */
+  warning: string | null;
+}
+
+export type DosmJobMarketObservationQuarter = typeof DosmJobMarketObservationQuarter[keyof typeof DosmJobMarketObservationQuarter];
+
+
+export const DosmJobMarketObservationQuarter = {
+  '2026-Q1': '2026-Q1',
+  '2026-Q2': '2026-Q2',
+} as const;
+
+export interface DosmJobMarketObservation {
+  quarter: DosmJobMarketObservationQuarter;
+  /** @minimum 0 */
+  jobOfferings: number;
+  publicationDate: string;
+  reportUrl: string;
+  dataUrl: string;
+}
+
+export interface DosmOccupationGroup {
+  /** Application-owned stable key; the source workbook provides a label, not a standard occupation code. */
+  id: string;
+  label: string;
+  observations: DosmJobMarketObservation[];
+}
+
+export interface DosmJobMarketInsightsResponse {
+  datasetId: string;
+  sourceName: string;
+  sourceUrl: string;
+  termsUrl: string;
+  attribution: string;
+  reuseNote: string;
+  coverage: string;
+  measure: string;
+  classification: string;
+  methodology: string;
+  caveats: string[];
+  reviewedAt: string;
+  totalByQuarter: DosmJobMarketObservation[];
+  occupationGroups: DosmOccupationGroup[];
+}
+
+export type DosmRefreshResponseStatus = typeof DosmRefreshResponseStatus[keyof typeof DosmRefreshResponseStatus];
+
+
+export const DosmRefreshResponseStatus = {
+  refreshed: 'refreshed',
+} as const;
+
+export interface DosmRefreshResponse {
+  status: DosmRefreshResponseStatus;
+  retrievedAt: string;
+  /** @minimum 1 */
+  observationsLoaded: number;
+  latestObservationDate: string;
+}
+
 export type JobPageParameter = number;
 
 export type JobLimitParameter = number;
@@ -331,5 +444,18 @@ city?: JobCityParameter;
 remote?: JobRemoteParameter;
 employmentType?: JobEmploymentTypeParameter;
 sort?: JobSortParameter;
+};
+
+export type GetDosmLabourForceParams = {
+/**
+ * Inclusive month filter in YYYY-MM format.
+ * @pattern ^[0-9]{4}-(0[1-9]|1[0-2])$
+ */
+fromMonth?: string;
+/**
+ * Inclusive month filter in YYYY-MM format.
+ * @pattern ^[0-9]{4}-(0[1-9]|1[0-2])$
+ */
+toMonth?: string;
 };
 

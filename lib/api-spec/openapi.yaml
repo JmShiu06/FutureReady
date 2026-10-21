@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: career
     description: Dataset-based career skill matching
+  - name: dosm
+    description: Official DOSM labour-force and Job Market Insights data
 paths:
   /healthz:
     get:
@@ -243,6 +245,78 @@ paths:
                 $ref: "#/components/schemas/JobMatchScores"
         "400":
           description: Invalid match request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /dosm/labour-force:
+    get:
+      operationId: getDosmLabourForce
+      tags: [dosm]
+      summary: Get validated monthly labour-force observations from OpenDOSM
+      description: National labour-force context only; these observations are not occupation or skill-demand data.
+      parameters:
+        - name: fromMonth
+          in: query
+          required: false
+          description: Inclusive month filter in YYYY-MM format.
+          schema:
+            type: string
+            pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$"
+        - name: toMonth
+          in: query
+          required: false
+          description: Inclusive month filter in YYYY-MM format.
+          schema:
+            type: string
+            pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$"
+      responses:
+        "200":
+          description: Validated monthly observations and source metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DosmLabourForceResponse"
+        "400":
+          description: Invalid month range
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: OpenDOSM is unavailable and no usable cached copy exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /dosm/job-market-insights:
+    get:
+      operationId: getDosmJobMarketInsights
+      tags: [dosm]
+      summary: Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+      description: Counts are online job offerings, not a complete vacancy count or skill-demand measure.
+      responses:
+        "200":
+          description: Reviewed occupation-group counts with report and terms links
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DosmJobMarketInsightsResponse"
+  /dosm/refresh:
+    post:
+      operationId: refreshDosmLabourForce
+      tags: [dosm]
+      summary: Force a refresh of the monthly OpenDOSM labour-force dataset
+      description: Refreshes only the OpenDOSM monthly series; the reviewed quarterly JMI workbook snapshot is not refreshed.
+      responses:
+        "200":
+          description: OpenDOSM data was retrieved, validated and cached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DosmRefreshResponse"
+        "502":
+          description: OpenDOSM refresh failed; any previous cached copy is retained
           content:
             application/json:
               schema:
@@ -622,4 +696,218 @@ components:
           type: string
       required:
         - status
+    DosmLabourForceObservation:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        labourForceThousands:
+          type: number
+          minimum: 0
+        employedThousands:
+          type: number
+          minimum: 0
+        unemployedThousands:
+          type: number
+          minimum: 0
+        outsideLabourForceThousands:
+          type: number
+          minimum: 0
+        participationRate:
+          type: number
+          minimum: 0
+          maximum: 100
+        employmentPopulationRatio:
+          type: number
+          minimum: 0
+          maximum: 100
+        unemploymentRate:
+          type: number
+          minimum: 0
+          maximum: 100
+        publicationDate:
+          type: [string, "null"]
+          format: date
+          description: Not supplied per observation by the OpenDOSM API; null is intentional.
+      required:
+        - date
+        - labourForceThousands
+        - employedThousands
+        - unemployedThousands
+        - outsideLabourForceThousands
+        - participationRate
+        - employmentPopulationRatio
+        - unemploymentRate
+        - publicationDate
+    DosmLabourForceMetadata:
+      type: object
+      properties:
+        datasetId:
+          type: string
+        sourceName:
+          type: string
+        sourceUrl:
+          type: string
+          format: uri
+        apiUrl:
+          type: string
+          format: uri
+        license:
+          type: string
+        licenseUrl:
+          type: string
+          format: uri
+        attribution:
+          type: string
+        coverage:
+          type: string
+        countUnit:
+          type: string
+        rateUnit:
+          type: string
+        methodology:
+          type: string
+        caveats:
+          type: array
+          items:
+            type: string
+        retrievedAt:
+          type: string
+          format: date-time
+        latestObservationDate:
+          type: string
+          format: date
+      required:
+        - datasetId
+        - sourceName
+        - sourceUrl
+        - apiUrl
+        - license
+        - licenseUrl
+        - attribution
+        - coverage
+        - countUnit
+        - rateUnit
+        - methodology
+        - caveats
+        - retrievedAt
+        - latestObservationDate
+    DosmLabourForceResponse:
+      type: object
+      properties:
+        metadata:
+          $ref: "#/components/schemas/DosmLabourForceMetadata"
+        observations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DosmLabourForceObservation"
+        isStale:
+          type: boolean
+        warning:
+          type: [string, "null"]
+      required: [metadata, observations, isStale, warning]
+    DosmJobMarketObservation:
+      type: object
+      properties:
+        quarter:
+          type: string
+          enum: ["2026-Q1", "2026-Q2"]
+        jobOfferings:
+          type: integer
+          minimum: 0
+        publicationDate:
+          type: string
+          format: date
+        reportUrl:
+          type: string
+          format: uri
+        dataUrl:
+          type: string
+          format: uri
+      required: [quarter, jobOfferings, publicationDate, reportUrl, dataUrl]
+    DosmOccupationGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Application-owned stable key; the source workbook provides a label, not a standard occupation code.
+        label:
+          type: string
+        observations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DosmJobMarketObservation"
+      required: [id, label, observations]
+    DosmJobMarketInsightsResponse:
+      type: object
+      properties:
+        datasetId:
+          type: string
+        sourceName:
+          type: string
+        sourceUrl:
+          type: string
+          format: uri
+        termsUrl:
+          type: string
+          format: uri
+        attribution:
+          type: string
+        reuseNote:
+          type: string
+        coverage:
+          type: string
+        measure:
+          type: string
+        classification:
+          type: string
+        methodology:
+          type: string
+        caveats:
+          type: array
+          items:
+            type: string
+        reviewedAt:
+          type: string
+          format: date
+        totalByQuarter:
+          type: array
+          items:
+            $ref: "#/components/schemas/DosmJobMarketObservation"
+        occupationGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/DosmOccupationGroup"
+      required:
+        - datasetId
+        - sourceName
+        - sourceUrl
+        - termsUrl
+        - attribution
+        - reuseNote
+        - coverage
+        - measure
+        - classification
+        - methodology
+        - caveats
+        - reviewedAt
+        - totalByQuarter
+        - occupationGroups
+    DosmRefreshResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [refreshed]
+        retrievedAt:
+          type: string
+          format: date-time
+        observationsLoaded:
+          type: integer
+          minimum: 1
+        latestObservationDate:
+          type: string
+          format: date
+      required: [status, retrievedAt, observationsLoaded, latestObservationDate]
 

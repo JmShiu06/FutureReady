@@ -20,3 +20,9 @@ Readiness, observed market evidence and scenario assumptions are different conce
 **Why:** The user explicitly prohibits fake live signals, random match scores, fabricated sources, unvalidated forecasts and individual hiring decisions from aggregate planning views.
 
 **How to apply:** Use documented deterministic prototype calculations; keep source URLs nullable and show missing/stale evidence. Do not make synthetic refresh controls pretend to fetch live data. New hackathon profile entry uses fictional samples/manual skills rather than CV extraction claims.
+
+For official labour-market data integrations, use DOSM sources only unless the user explicitly approves additional providers.
+
+**Why:** The user set DOSM as the official-source scope for the workforce data milestone and asked that other providers not be added without approval.
+
+**How to apply:** Verify the requested official DOSM pages, API endpoints and data files before implementation. If a DOSM link is unavailable, document the official replacement; do not broaden the provider list on your own.

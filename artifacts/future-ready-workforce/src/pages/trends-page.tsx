@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { RefreshCw } from 'lucide-react';
 import { demoRoles, marketRecords } from '@/domain/demo-data';
 import { demoService } from '@/domain/services';
 import type { RadarFilters } from '@/domain/types';
 import { EmptyBlock, ErrorBlock, EvidencePanel, LoadingBlock, PageHead, SectionTitle, useAsync } from '@/components/workspace/ui';
+import { DosmDataPanels } from '@/components/workspace/dosm-data-panels';
 
 const uniq = (xs: string[]) => Array.from(new Set(xs)).sort();
-const colors = ['#b84d11', '#8e6a52', '#d9973f', '#5f6f3a', '#a0522d', '#c97b5a', '#6b4e3d', '#e0a36b', '#7a7a3a', '#9c3d1b'];
+const colors = ['#3478d4', '#159a9a', '#7b61c9', '#5f8d45', '#d27b28', '#a9578f', '#5b7187', '#32908a', '#7f6c42', '#6c72b5'];
 
 export default function TrendsPage() {
   const [filters, setFilters] = useState<RadarFilters>({});
@@ -23,8 +23,8 @@ export default function TrendsPage() {
   const sel = (label: string, k: keyof RadarFilters, opts: [string, string][]) => <div className="field"><label htmlFor={`f-${k}`}>{label}</label>
     <select id={`f-${k}`} className="fr-select" value={filters[k] ?? ''} onChange={e => set(k, e.target.value)} data-testid={`select-filter-${k}`}><option value="">All</option>{opts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></div>;
   return <>
-    <PageHead eyebrow="Skills radar · synthetic history" title="Signals to discuss, not to bet on." subtitle="Synthetic posting counts across four sample dates. No live feed is connected."
-      action={<button className="btn btn-secondary" disabled data-testid="button-refresh-market" title="Unavailable in demo mode"><RefreshCw size={14} /> Unavailable in demo mode</button>} />
+    <PageHead eyebrow="Skills radar · DOSM context + synthetic examples" title="Signals to discuss, not to bet on." subtitle="Official national labour-force and quarterly online-posting data are shown separately from the synthetic skill examples below." />
+    <DosmDataPanels />
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
       <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))' }}>
         {sel('Category', 'category', uniq(marketRecords.map(r => r.category)).map(v => [v, v]))}
@@ -48,7 +48,7 @@ export default function TrendsPage() {
         <SectionTitle title="Synthetic history" note="SYNTHETIC POSTING COUNT BY DATE" />
         <div className="chart-box" role="img" aria-label="Line chart of synthetic posting counts; see the data table below for values">
           <ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}>
-            <CartesianGrid stroke="#f0e4d8" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip /><Legend wrapperStyle={{ fontSize: 10 }} />
+            <CartesianGrid stroke="#e4ebf4" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip /><Legend wrapperStyle={{ fontSize: 10 }} />
             {records.map((r, i) => <Line key={r.id} dataKey={r.id} name={`${r.skill} (${r.region})`} stroke={colors[i % colors.length]} strokeWidth={2} dot isAnimationActive={false} connectNulls />)}
           </LineChart></ResponsiveContainer>
         </div>

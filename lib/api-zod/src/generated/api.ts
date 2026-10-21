@@ -375,3 +375,127 @@ export const CalculateJobMatchScoresResponse = zod.object({
 })
 
 
+/**
+ * National labour-force context only; these observations are not occupation or skill-demand data.
+ * @summary Get validated monthly labour-force observations from OpenDOSM
+ */
+export const getDosmLabourForceQueryFromMonthRegExp = new RegExp('^[0-9]{4}-(0[1-9]|1[0-2])$');
+export const getDosmLabourForceQueryToMonthRegExp = new RegExp('^[0-9]{4}-(0[1-9]|1[0-2])$');
+
+
+export const GetDosmLabourForceQueryParams = zod.object({
+  "fromMonth": zod.coerce.string().regex(getDosmLabourForceQueryFromMonthRegExp).optional().describe('Inclusive month filter in YYYY-MM format.'),
+  "toMonth": zod.coerce.string().regex(getDosmLabourForceQueryToMonthRegExp).optional().describe('Inclusive month filter in YYYY-MM format.')
+})
+
+export const getDosmLabourForceResponseObservationsItemLabourForceThousandsMin = 0;
+
+export const getDosmLabourForceResponseObservationsItemEmployedThousandsMin = 0;
+
+export const getDosmLabourForceResponseObservationsItemUnemployedThousandsMin = 0;
+
+export const getDosmLabourForceResponseObservationsItemOutsideLabourForceThousandsMin = 0;
+
+export const getDosmLabourForceResponseObservationsItemParticipationRateMin = 0;
+export const getDosmLabourForceResponseObservationsItemParticipationRateMax = 100;
+
+export const getDosmLabourForceResponseObservationsItemEmploymentPopulationRatioMin = 0;
+export const getDosmLabourForceResponseObservationsItemEmploymentPopulationRatioMax = 100;
+
+export const getDosmLabourForceResponseObservationsItemUnemploymentRateMin = 0;
+export const getDosmLabourForceResponseObservationsItemUnemploymentRateMax = 100;
+
+
+
+export const GetDosmLabourForceResponse = zod.object({
+  "metadata": zod.object({
+  "datasetId": zod.string(),
+  "sourceName": zod.string(),
+  "sourceUrl": zod.string().url(),
+  "apiUrl": zod.string().url(),
+  "license": zod.string(),
+  "licenseUrl": zod.string().url(),
+  "attribution": zod.string(),
+  "coverage": zod.string(),
+  "countUnit": zod.string(),
+  "rateUnit": zod.string(),
+  "methodology": zod.string(),
+  "caveats": zod.array(zod.string()),
+  "retrievedAt": zod.coerce.date(),
+  "latestObservationDate": zod.coerce.date()
+}),
+  "observations": zod.array(zod.object({
+  "date": zod.coerce.date(),
+  "labourForceThousands": zod.number().min(getDosmLabourForceResponseObservationsItemLabourForceThousandsMin),
+  "employedThousands": zod.number().min(getDosmLabourForceResponseObservationsItemEmployedThousandsMin),
+  "unemployedThousands": zod.number().min(getDosmLabourForceResponseObservationsItemUnemployedThousandsMin),
+  "outsideLabourForceThousands": zod.number().min(getDosmLabourForceResponseObservationsItemOutsideLabourForceThousandsMin),
+  "participationRate": zod.number().min(getDosmLabourForceResponseObservationsItemParticipationRateMin).max(getDosmLabourForceResponseObservationsItemParticipationRateMax),
+  "employmentPopulationRatio": zod.number().min(getDosmLabourForceResponseObservationsItemEmploymentPopulationRatioMin).max(getDosmLabourForceResponseObservationsItemEmploymentPopulationRatioMax),
+  "unemploymentRate": zod.number().min(getDosmLabourForceResponseObservationsItemUnemploymentRateMin).max(getDosmLabourForceResponseObservationsItemUnemploymentRateMax),
+  "publicationDate": zod.coerce.date().nullable().describe('Not supplied per observation by the OpenDOSM API; null is intentional.')
+})),
+  "isStale": zod.boolean(),
+  "warning": zod.string().nullable()
+})
+
+
+/**
+ * Counts are online job offerings, not a complete vacancy count or skill-demand measure.
+ * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+ */
+export const getDosmJobMarketInsightsResponseTotalByQuarterItemJobOfferingsMin = 0;
+
+export const getDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemJobOfferingsMin = 0;
+
+
+
+export const GetDosmJobMarketInsightsResponse = zod.object({
+  "datasetId": zod.string(),
+  "sourceName": zod.string(),
+  "sourceUrl": zod.string().url(),
+  "termsUrl": zod.string().url(),
+  "attribution": zod.string(),
+  "reuseNote": zod.string(),
+  "coverage": zod.string(),
+  "measure": zod.string(),
+  "classification": zod.string(),
+  "methodology": zod.string(),
+  "caveats": zod.array(zod.string()),
+  "reviewedAt": zod.coerce.date(),
+  "totalByQuarter": zod.array(zod.object({
+  "quarter": zod.enum(['2026-Q1', '2026-Q2']),
+  "jobOfferings": zod.number().int().min(getDosmJobMarketInsightsResponseTotalByQuarterItemJobOfferingsMin),
+  "publicationDate": zod.coerce.date(),
+  "reportUrl": zod.string().url(),
+  "dataUrl": zod.string().url()
+})),
+  "occupationGroups": zod.array(zod.object({
+  "id": zod.string().describe('Application-owned stable key; the source workbook provides a label, not a standard occupation code.'),
+  "label": zod.string(),
+  "observations": zod.array(zod.object({
+  "quarter": zod.enum(['2026-Q1', '2026-Q2']),
+  "jobOfferings": zod.number().int().min(getDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemJobOfferingsMin),
+  "publicationDate": zod.coerce.date(),
+  "reportUrl": zod.string().url(),
+  "dataUrl": zod.string().url()
+}))
+}))
+})
+
+
+/**
+ * Refreshes only the OpenDOSM monthly series; the reviewed quarterly JMI workbook snapshot is not refreshed.
+ * @summary Force a refresh of the monthly OpenDOSM labour-force dataset
+ */
+
+
+
+export const RefreshDosmLabourForceResponse = zod.object({
+  "status": zod.enum(['refreshed']),
+  "retrievedAt": zod.coerce.date(),
+  "observationsLoaded": zod.number().int().min(1),
+  "latestObservationDate": zod.coerce.date()
+})
+
+
