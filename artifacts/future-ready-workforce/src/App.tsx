@@ -17,7 +17,6 @@ const RoadmapPage = lazy(() => import('@/pages/roadmap-page'));
 const SdgsPage = lazy(() => import('@/pages/sdgs-page'));
 const ScenariosPage = lazy(() => import('@/pages/scenarios-page'));
 const TeamPage = lazy(() => import('@/pages/team-page'));
-const DatasetMatchingPage = lazy(() => import('@/pages/dataset-matching-page'));
 
 const JobSearchPage = lazy(() => import('@/components/job-search-page'));
 const JobDetailsPage = lazy(() => import('@/components/job-details-page'));
@@ -55,7 +54,6 @@ function App() {
         <Route path="/team" component={TeamPage} />
         <Route path="/jobs" component={JobsRoute} />
         <Route path="/jobs/:id" component={JobDetailsRoute} />
-        <Route path="/dataset-matching" component={DatasetMatchingPage} />
         <Route component={NotFoundPage} />
       </Switch>
       </Suspense>

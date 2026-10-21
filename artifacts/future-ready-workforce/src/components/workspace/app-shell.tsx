@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
-  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, Database, FlaskConical,
+  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, FlaskConical,
   Globe2, Map, Radar, ShieldCheck, UserRound, Users, Workflow,
 } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
@@ -20,7 +20,6 @@ const nav = [
   { href: '/sdgs', label: 'SDG explorer', icon: Globe2, key: 'sdgs' },
   { href: '/team', label: 'Team & cohort', icon: Users, key: 'team' },
   { href: '/jobs', label: 'Job search', icon: BriefcaseBusiness, key: 'jobs' },
-  { href: '/dataset-matching', label: 'Dataset matching', icon: Database, key: 'dataset' },
 ];
 const titles: Record<string, string> = { '/roles': 'Role detail', '/jobs/': 'Job details' };
 
@@ -67,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="top-actions"><span><i className="live-dot" />Demo mode</span><AudienceSelect id="top" className="top-audience" /></div>
       </header>
       <main className="main-content page-enter" key={location}>
-        <div className="banner banner-demo" role="note" data-testid="banner-demo"><ShieldCheck size={14} /><span>{location === '/dataset-matching' ? <><strong>Existing dataset tool.</strong> This separate screen uses the existing backend and displays its own dataset source. It is not the frontend demo scoring service.</> : <><strong>Demo workspace.</strong> Synthetic records for exploration only — scores are illustrative skill coverage, not hiring predictions or forecasts.</>}</span></div>
+        <div className="banner banner-demo" role="note" data-testid="banner-demo"><ShieldCheck size={14} /><span><strong>Demo workspace.</strong> Synthetic records for exploration only — scores are illustrative skill coverage, not hiring predictions or forecasts.</span></div>
         {storageWarning && <div className="banner banner-warn" role="alert" data-testid="banner-storage"><AlertTriangle size={14} /><span>{storageWarning}</span></div>}
         {children}
       </main>
