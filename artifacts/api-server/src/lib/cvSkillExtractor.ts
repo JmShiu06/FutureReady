@@ -168,7 +168,9 @@ function validateImage(buffer: Buffer, extension: string): void {
   }
 }
 
-async function recognizeImages(images: Buffer[], signal?: AbortSignal): Promise<string> {
+type OcrPage = { image: Buffer; detailImage?: Buffer };
+
+async function recognizeImages(images: OcrPage[], signal?: AbortSignal): Promise<string> {
   checkProcessing(signal);
   let worker: Tesseract.Worker | undefined;
   let terminating = false;
@@ -190,11 +192,23 @@ async function recognizeImages(images: Buffer[], signal?: AbortSignal): Promise<
     });
     checkProcessing(signal);
     const pages: string[] = [];
-    for (const image of images) {
-      checkProcessing(signal);
-      pages.push((await worker.recognize(image)).data.text);
+    for (const { image, detailImage } of images) {
+      // A single layout assumption can discard narrow columns as watermark/noise.
+      // Keep each pass separate: only complete, explicitly recognised names go
+      // through the existing deterministic detector; never repair/guess words.
+      const passes = [
+        { image, mode: Tesseract.PSM.AUTO },
+        { image, mode: Tesseract.PSM.SPARSE_TEXT },
+        ...(detailImage ? [{ image: detailImage, mode: Tesseract.PSM.SINGLE_COLUMN }] : []),
+      ];
+      for (const pass of passes) {
+        checkProcessing(signal);
+        await worker.setParameters({ tessedit_pageseg_mode: pass.mode });
+        pages.push((await worker.recognize(pass.image)).data.text);
+      }
     }
-    return pages.join("\n");
+    // A phrase must never be invented across independent OCR passes/pages.
+    return pages.join("\n|\n");
   } catch (error) {
     if (signal?.aborted) throw processingError(signal);
     throw new CvError(422, "Local OCR could not read this image. Try a clearer JPG, JPEG, PNG or PDF, or enter skills manually.");
@@ -204,7 +218,7 @@ async function recognizeImages(images: Buffer[], signal?: AbortSignal): Promise<
   }
 }
 
-async function renderPdfPages(buffer: Buffer, pageCount: number, signal?: AbortSignal): Promise<Buffer[]> {
+async function renderPdfPages(buffer: Buffer, pageCount: number, signal?: AbortSignal): Promise<OcrPage[]> {
   const loadingTask = getDocument({
     data: new Uint8Array(buffer),
     isEvalSupported: false,
@@ -216,7 +230,7 @@ async function renderPdfPages(buffer: Buffer, pageCount: number, signal?: AbortS
   try {
     checkProcessing(signal);
     document = await awaitWithAbort(loadingTask.promise, signal);
-    const images: Buffer[] = [];
+    const images: OcrPage[] = [];
     const count = Math.min(pageCount, MAX_OCR_PDF_PAGES);
     for (let index = 1; index <= count; index++) {
       checkProcessing(signal);
@@ -224,26 +238,33 @@ async function renderPdfPages(buffer: Buffer, pageCount: number, signal?: AbortS
       try {
         checkProcessing(signal);
         const original = page.getViewport({ scale: 1 });
-        const scale = Math.min(2, MAX_RENDER_EDGE / original.width, MAX_RENDER_EDGE / original.height);
-        const viewport = page.getViewport({ scale });
-        const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
-        const renderTask = page.render({
-          canvas: null,
-          canvasContext: canvas.getContext("2d") as unknown as NonNullable<Parameters<typeof page.render>[0]["canvasContext"]>,
-          viewport,
-        });
-        const abortRender = () => renderTask.cancel();
-        signal?.addEventListener("abort", abortRender, { once: true });
-        if (signal?.aborted) abortRender();
-        try {
-          await renderTask.promise;
+        const variants: Buffer[] = [];
+        // Rasterise the PDF itself at two bounded resolutions rather than
+        // enlarging an already-rasterised page (which loses small glyph detail).
+        for (const [targetScale, maxEdge] of [[2, MAX_RENDER_EDGE], [2.5, 2400]]) {
           checkProcessing(signal);
-          images.push(canvas.toBuffer("image/png"));
-        } finally {
-          signal?.removeEventListener("abort", abortRender);
-          canvas.width = 1;
-          canvas.height = 1;
+          const scale = Math.min(targetScale, maxEdge / original.width, maxEdge / original.height);
+          const viewport = page.getViewport({ scale });
+          const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+          const renderTask = page.render({
+            canvas: null,
+            canvasContext: canvas.getContext("2d") as unknown as NonNullable<Parameters<typeof page.render>[0]["canvasContext"]>,
+            viewport,
+          });
+          const abortRender = () => renderTask.cancel();
+          signal?.addEventListener("abort", abortRender, { once: true });
+          if (signal?.aborted) abortRender();
+          try {
+            await renderTask.promise;
+            checkProcessing(signal);
+            variants.push(canvas.toBuffer("image/png"));
+          } finally {
+            signal?.removeEventListener("abort", abortRender);
+            canvas.width = 1;
+            canvas.height = 1;
+          }
         }
+        images.push({ image: variants[0], detailImage: variants[1] });
       } finally {
         page.cleanup();
       }
@@ -282,6 +303,7 @@ export async function extractCvSkills(buffer: Buffer, filename: string, requestS
           const pageImages = await renderPdfPages(buffer, info.total, signal);
           const recognized = await recognizeImages(pageImages, signal);
           text = `${text}\n${recognized}`;
+          warnings.push("Scanned pages were read with local OCR. Small text and watermarks can cause missed or incorrect skills; check the list carefully.");
           if (info.total > MAX_OCR_PDF_PAGES) {
             warnings.push(`For privacy and speed, OCR was limited to the first ${MAX_OCR_PDF_PAGES} pages.`);
           }
@@ -302,7 +324,7 @@ export async function extractCvSkills(buffer: Buffer, filename: string, requestS
       }
     } else {
       validateImage(buffer, extension!);
-      text = await recognizeImages([buffer], signal);
+      text = await recognizeImages([{ image: buffer }], signal);
     }
   } catch (error) {
     if (error instanceof CvError) throw error;

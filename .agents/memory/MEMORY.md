@@ -1,1 +1,2 @@
 - [CV workflow boundaries](cv-workflow-boundaries.md) — CV privacy and confirmation rules; separate FPS canvas references must not replace the app's warm theme without approval.
+- [Watermarked CV OCR](watermarked-cv-ocr.md) — compare layout/resolution variants before applying destructive watermark thresholding.

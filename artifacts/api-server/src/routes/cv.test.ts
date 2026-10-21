@@ -7,6 +7,7 @@ import { createCanvas } from "@napi-rs/canvas";
 import JSZip from "jszip";
 import app from "../app";
 import { CvError, detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
+import { watermarkedCvPdf } from "../test-fixtures/watermarkedCv";
 
 let server: Server;
 let base: string;
@@ -144,6 +145,16 @@ describe("CV extraction and upload API", () => {
       assert.ok(response.json.skills?.includes("python"), `${name}: Python should be recognized`);
       assert.ok(response.json.skills?.includes("sql"), `${name}: SQL should be recognized`);
     }
+  });
+  it("reads canonical skills from a synthetic two-column watermarked scan through the upload endpoint", async () => {
+    const response = await upload(await watermarkedCvPdf(), "synthetic-watermark.pdf");
+    assert.equal(response.status, 200, JSON.stringify(response.json));
+    for (const skill of ["machine learning", "python", "data analysis", "sql"]) {
+      assert.ok(response.json.skills?.includes(skill), `Missing canonical skill: ${skill}`);
+    }
+    // Problem solving is visible, but is not in the role-skill catalogue.
+    assert.ok(!response.json.skills?.includes("problem solving"));
+    assert.ok(response.json.warnings?.some(warning => warning.includes("local OCR")));
   });
   it("returns an honest retry/manual-entry error when OCR sees a blank scanned page", async () => {
     const document = await PDFDocument.create();
