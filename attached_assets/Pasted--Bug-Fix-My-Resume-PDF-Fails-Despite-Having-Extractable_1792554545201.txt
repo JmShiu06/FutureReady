@@ -1,0 +1,69 @@
+# Bug Fix — My Resume PDF Fails Despite Having Extractable Text
+
+The CV upload feature still fails on my actual résumé, `Resume Shiu Jun MIng.pdf`, even after Task #11 improved scanned-PDF OCR.
+
+I inspected this exact PDF locally:
+- It is a one-page PDF created with Canva.
+- A standard PDF text-extraction tool successfully extracts meaningful résumé text.
+- Therefore, do not assume this file is image-only or that OCR accuracy is necessarily the problem.
+
+Please investigate the actual failure before making changes.
+
+## 1. Reproduce the problem
+
+Use my résumé only as a temporary debugging input. Do not commit it, add it to permanent fixtures, store its contents, or print its text in logs.
+
+Upload it through the existing CV upload UI and trace the actual request through the backend.
+
+Determine:
+- Whether the frontend sends the intended file.
+- Whether the backend receives a non-empty PDF buffer.
+- Which PDF text-extraction library and method are actually being called.
+- How many characters the initial extractor returns.
+- Whether the application incorrectly concludes that the PDF contains no selectable text.
+- Whether the OCR fallback is unnecessarily invoked or the request is going to an outdated route or deployment.
+
+## 2. Add privacy-safe diagnostics
+
+Temporarily report safe metadata at each stage, such as:
+- File size and detected file type.
+- PDF page count.
+- Text-extraction method used.
+- Number of extracted characters.
+- Whether the result passed the meaningful-text check.
+- Whether OCR was invoked and which stage failed.
+
+Never log raw résumé text, phone numbers, email addresses, or other personal information.
+
+## 3. Fix the actual cause
+
+Compare the existing parser's behaviour with the fact that a standard PDF extractor can read this file.
+
+Investigate parser compatibility, PDF buffer handling, text-item aggregation, text-length thresholds, and error handling.
+
+Do not merely suppress the error or treat every uploaded PDF as successfully extracted.
+
+Use ordinary text extraction whenever it produces meaningful text. Fall back to PDF rendering and OCR only when needed.
+
+Preserve the existing deterministic canonical-skill extraction, editable skill-review UI, and career-matching API.
+
+## 4. Regression tests
+
+Use synthetic PDFs and fixtures to cover:
+- A normal text-based PDF.
+- A PDF containing extractable text arranged in multiple columns.
+- A scanned, image-only PDF that requires OCR.
+- A malformed PDF.
+- A PDF from which the parser returns no meaningful text.
+
+Do not retain my personal résumé in the repository. If its exact problem is reproduced, create a non-personal synthetic fixture that tests the same failure.
+
+## 5. Verify the fix
+
+Run the actual upload flow with my résumé transiently, confirm that the backend extracts meaningful text, and verify that the skill-review interface receives the detected canonical skills.
+
+Then run API tests, typechecks, production builds, and a browser test. Verify production asset paths and the deployed version if the local flow succeeds.
+
+Report the exact root cause, the files changed, and which checks passed. Do not claim success unless my résumé upload has actually been tested successfully.
+
+Do not add an LLM, paid service, new OCR engine, or unrelated redesign unless the investigation demonstrates a specific technical need.

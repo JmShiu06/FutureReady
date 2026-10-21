@@ -102,6 +102,18 @@ describe("CV extraction and upload API", () => {
       assert.ok(!role.matchedSkills.includes("sql"));
     }
   });
+  it("uses ordinary text extraction for a multi-column PDF without invoking OCR", async () => {
+    const document = await PDFDocument.create();
+    const page = document.addPage([595, 842]);
+    page.drawText("Skills\nPython\nMachine learning\nGit", { x: 35, y: 720, size: 12, lineHeight: 24 });
+    page.drawText("Experience\nCommunication and leadership\nSQL and data analysis", { x: 280, y: 720, size: 12, lineHeight: 24 });
+    const response = await upload(Buffer.from(await document.save()), "synthetic-columns.pdf");
+    assert.equal(response.status, 200, JSON.stringify(response.json));
+    for (const skill of ["python", "machine learning", "git", "communication", "leadership", "sql", "data analysis"]) {
+      assert.ok(response.json.skills?.includes(skill), `Missing text-layer skill: ${skill}`);
+    }
+    assert.ok(!response.json.warnings?.some(warning => warning.includes("local OCR")));
+  });
   it("returns an honest empty skill list for readable but unrecognised text", async () => {
     const result = await upload(Buffer.from("A synthetic curriculum vitae with no catalogue terms."), "cv.txt");
     assert.equal(result.status, 200);
