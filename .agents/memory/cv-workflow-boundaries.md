@@ -14,3 +14,9 @@ CV files and full extracted document text must remain transient and must not be 
 **Why:** The user explicitly treats CVs as sensitive personal documents and requires a non-LLM, no-paid-service workflow.
 
 **How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics.
+
+The CV import review is one popup: open it automatically after extraction and keep detected skills, skill selection, warnings and self-assessed proficiency choices together. Do not show the review list inline on the profile page; leave a button to reopen it if dismissed.
+
+**Why:** The user clarified that both detected-skill review and proficiency selection should happen in the popup immediately after upload.
+
+**How to apply:** Keep upload results transient until the user confirms the selected skills and levels, then add them to the profile draft for the user to save.
