@@ -50,9 +50,11 @@ export interface CareerMatcherProps {
   onTopMatch?: (match: CareerMatch | null) => void;
   onConfirmSkills: (skills: string[]) => void;
   savedSkills: string[];
+  /** When false, every CV upload/extraction path is hidden; manual and saved-skill entry remain. */
+  cvEnabled?: boolean;
 }
 
-export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: CareerMatcherProps) {
+export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnabled = true }: CareerMatcherProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [fileMeta, setFileMeta] = useState<{ name: string; size: number } | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
@@ -254,6 +256,7 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
 
     {/* 01 Upload */}
     <section className="cm-step" aria-labelledby="cm-s1">
+      {cvEnabled ? <>
       <Step n={1} title="Upload your CV" sub="Discover careers that fit your skills. Your CV and document text are not saved." />
       <span id="cm-s1" className="sr-only">Step 1, upload your CV</span>
       <div
@@ -295,8 +298,12 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
           <button type="button" className="btn btn-quiet btn-small" onClick={() => seed([], 'manual')} data-testid="button-manual-after-error">Enter skills manually</button>
         </div>
       </div>}
+      </> : <>
+        <Step n={1} title="Enter skills" sub="CV upload is disabled in this view. Enter skills manually or use your saved demo profile." />
+        <p className="cm-note" data-testid="text-cv-disabled"><Info size={12} /> CV upload and extraction are turned off here. No document is read.</p>
+      </>}
       {(phase === 'idle') && <div className="cm-row cm-alt">
-        <span>No CV to hand?</span>
+        <span>{cvEnabled ? 'No CV to hand?' : 'Start with:'}</span>
         <button type="button" className="text-link" onClick={() => seed([], 'manual')} data-testid="button-manual-entry">Enter skills manually</button>
         {savedSkills.length > 0 && <button type="button" className="text-link" onClick={() => seed(savedSkills, 'profile')} data-testid="button-use-saved-skills">Use saved profile skills ({savedSkills.length})</button>}
       </div>}
@@ -304,9 +311,9 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
 
     {/* 02 Review */}
     <section className={`cm-step${showReview ? '' : ' is-locked'}`}>
-      <Step n={2} title="Extract and review skills" sub="Keep what is true, remove what is not, add what is missing." />
+      <Step n={2} title={cvEnabled ? 'Extract and review skills' : 'Review your skills'} sub="Keep what is true, remove what is not, add what is missing." />
       {phase === 'extracting' && <div className="cm-skeleton" aria-hidden="true">{[64, 88, 52, 76, 60, 94].map((w, i) => <i key={i} style={{ width: w }} />)}</div>}
-      {!showReview && phase !== 'extracting' && <p className="cm-empty">Detected skills will appear here for you to check.</p>}
+      {!showReview && phase !== 'extracting' && <p className="cm-empty">{cvEnabled ? 'Detected skills will appear here for you to check.' : 'Your manually entered or saved demo skills will appear here for review.'}</p>}
       {showReview && <>
         <div className="cm-origin" data-testid="text-skill-origin">
           {origin === 'cv' && <>Detected in your CV · {skills.length} skill{skills.length === 1 ? '' : 's'}</>}
@@ -335,12 +342,12 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills }: Care
           <button type="submit" className="btn btn-secondary btn-small" data-testid="button-add-skill-review"><Plus size={11} /> Add</button>
         </form>
         {inputError && <div className="match-error" role="alert" data-testid="error-add-skill">{inputError}</div>}
-        <p className="cm-note"><Info size={12} /> Extraction can make mistakes. Only confirmed skills are used for matching and saved to your profile.</p>
+        <p className="cm-note"><Info size={12} /> {cvEnabled ? 'Extraction can make mistakes. Only confirmed skills are used for matching and saved to your profile.' : 'Check this list before confirming. Skills are used for this matching session only; your profile is unchanged.'}</p>
         <div className="cm-row">
           {phase === 'review'
             ? <button type="button" className="btn btn-primary" disabled={!canConfirm} onClick={confirm} data-testid="button-confirm-skills"><Check size={13} /> Confirm {skills.length} skill{skills.length === 1 ? '' : 's'}</button>
             : <span className="cm-confirmed" data-testid="status-skills-confirmed"><Check size={13} /> Skills confirmed. Editing will ask you to confirm again.</span>}
-          {origin !== 'cv' && phase === 'review' && <label htmlFor="cm-cv-input" className="btn btn-quiet btn-small" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }}>Upload a CV instead</label>}
+          {cvEnabled && origin !== 'cv' && phase === 'review' && <label htmlFor="cm-cv-input" className="btn btn-quiet btn-small" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }}>Upload a CV instead</label>}
           {origin !== 'cv' && <button type="button" className="btn btn-quiet btn-small" onClick={reset} data-testid="button-reset-review"><RotateCcw size={11} /> Start again</button>}
         </div>
       </>}
