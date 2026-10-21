@@ -112,12 +112,25 @@ test('blank About You values are valid while numeric and skill bounds remain enf
     assert.equal(profileSchema.safeParse({ ...profile, ...change }).success, false);
   }
 });
-test('synthetic aggregates and SDG mappings do not imply universal impact', () => {
+test('SDG mappings distinguish source-supported relevance from unverified examples', () => {
   assert.equal(aggregateRecords.length, 12);
   assert.equal(sdgGoals.length, 17);
   assert.equal(new Set(sdgGoals.map(s => s.number)).size, 17);
   assert.ok(sdgMappings.length < sdgGoals.length);
-  assert.ok(sdgMappings.every(m => !m.verified && m.citationUrl === null));
+  const supported = sdgMappings.filter(mapping => mapping.status === 'source-supported');
+  const unverified = sdgMappings.filter(mapping => mapping.status === 'unverified');
+  assert.deepEqual(supported.map(mapping => mapping.goal).sort((a, b) => a - b), [4, 10]);
+  assert.ok(supported.every(mapping =>
+    mapping.sourceTitle?.includes('2030 Agenda') &&
+    mapping.sourceUrl === 'https://docs.un.org/en/A/RES/70/1' &&
+    mapping.sourceDate === '2015-09-25' &&
+    Boolean(mapping.sourceObservation),
+  ));
+  assert.ok(unverified.length > 0);
+  assert.ok(unverified.every(mapping =>
+    mapping.sourceTitle === null && mapping.sourceUrl === null &&
+    mapping.sourceDate === null && mapping.sourceObservation === null,
+  ));
   assert.ok(evidenceWarnings(demoRoles[0].evidence).some(w => w.includes('Synthetic')));
   assert.ok(evidenceWarnings(demoRoles[0].evidence, new Date('2027-04-01')).some(w => w.includes('stale')));
 });

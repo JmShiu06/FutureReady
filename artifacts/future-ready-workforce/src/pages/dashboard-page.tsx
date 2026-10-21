@@ -80,20 +80,23 @@ function AggregateOverview() {
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="Sample SDG associations" note="ROLES IN THIS SYNTHETIC COHORT" />
-        {cohortMappings.length ? <div className="stack">{cohortMappings.map(mapping => {
+        {cohortMappings.length ? <>
+          {!cohortMappings.some(mapping => mapping.status === 'source-supported') && <div className="state-box sdg-summary-empty"><strong>No source-supported SDG associations in this cohort</strong><span>Unverified examples are listed below, but are not evidence.</span></div>}
+          <div className="stack">{cohortMappings.map(mapping => {
           const goal = sdgGoals.find(item => item.number === mapping.goal);
           const role = demoRoles.find(item => item.id === mapping.roleId);
           return <article className="sdg-summary-card" key={`${mapping.roleId}-${mapping.goal}`} data-testid={`card-dashboard-cohort-sdg-${mapping.roleId}-${mapping.goal}`}>
-            <div className="spread"><span className="sdg-summary-number">{mapping.goal}</span><span className="tag tag-low">{mapping.verified ? 'Verified' : 'Unverified example'}</span></div>
+            <div className="spread"><span className="sdg-summary-number">{mapping.goal}</span><span className="tag tag-low">{mapping.status === 'source-supported' ? 'Source-supported relevance' : 'Unverified example'}</span></div>
             <strong>{goal?.name ?? `Goal ${mapping.goal}`}</strong>
             <span className="muted small">{role?.title ?? 'Sample role'}</span>
             <p className="muted small">{mapping.explanation}</p>
-            {mapping.citationUrl
-              ? <a className="text-link small" href={mapping.citationUrl} target="_blank" rel="noreferrer">{mapping.citationName ?? 'View citation'}</a>
+            {mapping.sourceUrl && mapping.sourceTitle
+              ? <div className="small"><a className="text-link" href={mapping.sourceUrl} target="_blank" rel="noreferrer">{mapping.sourceTitle}</a>{mapping.sourceDate && <span className="muted"> · {mapping.sourceDate}</span>}{mapping.sourceObservation && <p className="muted small">{mapping.sourceObservation}</p>}</div>
               : <span className="muted small">No citation supplied</span>}
           </article>;
-        })}</div> : <div className="state-box sdg-summary-empty"><strong>No sample SDG associations for these records</strong><span>We do not map every role to a goal.</span></div>}
-        <div className="disclaimer"><Info size={14} /><span>These are illustrative associations, not verified evidence of contribution or measured impact.</span></div>
+        })}</div>
+        </> : <div className="state-box sdg-summary-empty"><strong>No sample SDG associations for these records</strong><span>We do not map every role to a goal.</span></div>}
+        <div className="disclaimer"><Info size={14} /><span>Source-supported means relevant to a cited UN target, not proof of contribution or measured impact. Other examples remain unverified.</span></div>
         <Link href="/sdgs" className="text-link">Explore all 17 goals <ArrowRight size={12} /></Link>
       </div>
     </section>
@@ -199,18 +202,22 @@ function PersonalOverview() {
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="Possible SDG links" note={`SELECTED TARGET · ${target.title}`} />
-        {targetMappings.length ? <div className="stack">{targetMappings.map(mapping => {
+        {targetMappings.length ? <>
+          {!targetMappings.some(mapping => mapping.status === 'source-supported') && <div className="state-box sdg-summary-empty"><strong>No source-supported mapping for this target</strong><span>Unverified examples are listed below, but are not evidence.</span></div>}
+          <div className="stack">{targetMappings.map(mapping => {
           const goal = sdgGoals.find(item => item.number === mapping.goal);
           return <article className="sdg-summary-card" key={`${mapping.roleId}-${mapping.goal}`} data-testid={`card-dashboard-sdg-${mapping.roleId}-${mapping.goal}`}>
-            <div className="spread"><span className="sdg-summary-number">{mapping.goal}</span><span className="tag tag-low">{mapping.verified ? 'Verified' : 'Unverified example'}</span></div>
+            <div className="spread"><span className="sdg-summary-number">{mapping.goal}</span><span className="tag tag-low">{mapping.status === 'source-supported' ? 'Source-supported relevance' : 'Unverified example'}</span></div>
             <strong>{goal?.name ?? `Goal ${mapping.goal}`}</strong>
             <p className="muted small">{mapping.explanation}</p>
             <div className="row">{mapping.skills.map(skill => <span key={skill} className="chip">{skill}</span>)}</div>
-            {mapping.citationUrl && <a className="text-link small" href={mapping.citationUrl} target="_blank" rel="noreferrer">{mapping.citationName ?? 'View citation'}</a>}
-            {!mapping.citationUrl && <span className="muted small">No citation supplied</span>}
+            {mapping.sourceUrl && mapping.sourceTitle
+              ? <div className="small"><a className="text-link" href={mapping.sourceUrl} target="_blank" rel="noreferrer">{mapping.sourceTitle}</a>{mapping.sourceDate && <span className="muted"> · {mapping.sourceDate}</span>}{mapping.sourceObservation && <p className="muted small">{mapping.sourceObservation}</p>}</div>
+              : <span className="muted small">No citation supplied</span>}
           </article>;
-        })}</div> : <div className="state-box sdg-summary-empty"><strong>No sample mapping for this target</strong><span>We do not map every role to a goal. This is an honest empty result.</span></div>}
-        <div className="disclaimer"><Info size={14} /><span>These are illustrative associations, not verified evidence of contribution or measured impact.</span></div>
+        })}</div>
+        </> : <div className="state-box sdg-summary-empty"><strong>No sample mapping for this target</strong><span>We do not map every role to a goal. This is an honest empty result.</span></div>}
+        <div className="disclaimer"><Info size={14} /><span>Source-supported means relevant to a cited UN target, not proof of contribution or measured impact. Other examples remain unverified.</span></div>
         <Link href="/sdgs" className="text-link">Explore all 17 goals <ArrowRight size={12} /></Link>
       </div>
     </section>

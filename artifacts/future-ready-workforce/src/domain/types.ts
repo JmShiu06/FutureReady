@@ -45,7 +45,9 @@ export interface AggregateRecord {
 export interface SdgGoal { number: number; name: string }
 export interface SdgMapping {
   goal: number; roleId: string; skills: string[]; explanation: string;
-  verified: boolean; citationName: string | null; citationUrl: string | null;
+  status: 'source-supported' | 'unverified';
+  sourceTitle: string | null; sourceUrl: string | null; sourceDate: string | null;
+  sourceObservation: string | null;
 }
 export interface WorkspaceState {
   version: 1; audience: Audience; profiles: Record<Audience, DemoProfile>;
