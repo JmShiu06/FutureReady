@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState, type ReactNode, type ChangeEvent } from 'react';
+import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
 import { Link, Route, Switch, useLocation, useParams } from 'wouter';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen,
@@ -74,7 +74,7 @@ const scenarios: TrendScenario[] = [
 ];
 
 const skillOptions = ['Service blueprinting', 'Facilitation', 'Workforce planning', 'Learning design', 'Digital fluency', 'Excel', 'AI literacy'];
-const levelLabel = (level: number) => ['New to it', 'Exploring', 'Working knowledge', 'Confident', 'Can coach'][level - 1] || 'Working knowledge';
+const levelLabel = (level: number) => level === 0 ? 'Not assessed' : ['New to it', 'Exploring', 'Working knowledge', 'Confident', 'Can coach'][level - 1] || 'Not assessed';
 
 function useSavedSkills() {
   const [skills, setSkills] = useState<Skill[]>(() => {
@@ -139,25 +139,24 @@ function SkillMeter({ level }: { level: number }) {
 }
 
 function Dashboard({ skills, saveSkills }: { skills: Skill[]; saveSkills: (skills: Skill[]) => void }) {
-  const [upload, setUpload] = useState('');
-  const [feedback, setFeedback] = useState('');
   const [addingSkill, setAddingSkill] = useState(false);
   const [topMatch, setTopMatch] = useState<CareerMatch | null>(null);
   const available = skillOptions.filter(item => !skills.some(skill => skill.name === item));
   const addSkill = (name: string) => {
     saveSkills([...skills, { name, level: 2, trend: '+16%', category: 'Emerging' }]);
+    setTopMatch(null);
     setAddingSkill(false);
   };
   const updateLevel = (name: string, level: number) => saveSkills(skills.map(skill => skill.name === name ? { ...skill, level } : skill));
-  const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUpload(file.name);
-    setFeedback(`“${file.name}” is ready for your review. No file was uploaded or analyzed; add skills manually to update your profile.`);
+  const confirmCvSkills = (names: string[]) => {
+    saveSkills(names.map(name => {
+      const previous = skills.find(skill => skill.name.toLowerCase() === name.toLowerCase());
+      return previous ? { ...previous, name } : { name, level: 0, trend: '', category: 'Confirmed skill · level not assessed' };
+    }));
   };
   return <Shell page="My next step">
     <div className="page-head"><div><div className="eyebrow">Your career workspace · Tuesday, 18 June</div><h1>Make your next move<br />with a little more clarity.</h1><p className="page-subtitle">Explore where your skills could take you — and what might help you get there.</p></div>
-      <button className="btn btn-secondary" onClick={() => document.getElementById('cv-upload')?.click()} data-testid="button-upload-cv"><FileText size={15} /> Add a CV</button>
+      <button className="btn btn-secondary" onClick={() => { document.getElementById('recommendations')?.scrollIntoView(); document.getElementById('cm-cv-input')?.click(); }} data-testid="button-upload-cv"><FileText size={15} /> Add a CV</button>
     </div>
     <section className="hero-grid">
       <div className="welcome-card">
@@ -168,14 +167,13 @@ function Dashboard({ skills, saveSkills }: { skills: Skill[]; saveSkills: (skill
       </div>
       <div className="panel stat-card">
         <div className="stat-top"><span>Top dataset skill overlap</span><Target size={16} /></div>
-        <div><div className="stat-number" data-testid="stat-top-overlap">{topMatch ? <>{topMatch.score}<span style={{fontSize:17}}>%</span></> : <>—</>}</div><div className="stat-foot">{topMatch ? <span>{topMatch.roleFamily} · {topMatch.matchedSkills.length} of {topMatch.skillsConsidered} skills</span> : <span>Add skills below to calculate</span>}</div></div>
+        <div><div className="stat-number" data-testid="stat-top-overlap">{topMatch ? <>{topMatch.score}<span style={{fontSize:17}}>%</span></> : <>—</>}</div><div className="stat-foot">{topMatch ? <span>{topMatch.roleFamily} · {topMatch.matchedSkills.length} of {topMatch.skillsConsidered} skills</span> : <span>Confirm skills and run matching below</span>}</div></div>
         <div className="section-kicker">Skill overlap, not job probability</div>
       </div>
     </section>
     <section className="dashboard-grid" id="recommendations">
       <div className="panel panel-pad">
-        <SectionTitle title="Roles that overlap with your skills" note="CALCULATED FROM A JOB-POSTING DATASET" />
-        <CareerMatcher onTopMatch={setTopMatch} />
+        <CareerMatcher onTopMatch={setTopMatch} onConfirmSkills={confirmCvSkills} savedSkills={skills.map(skill => skill.name)} />
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="Market signals" note="ILLUSTRATIVE, NOT LIVE" action={<Link href="/trends" className="text-link">See outlook <ArrowRight size={12} /></Link>} />
@@ -192,11 +190,10 @@ function Dashboard({ skills, saveSkills }: { skills: Skill[]; saveSkills: (skill
         <SectionTitle title="Your skills profile" note="EDIT YOUR STARTING POINT" action={<button className="text-link" onClick={() => setAddingSkill(v => !v)} data-testid="button-add-skill"><Plus size={13} /> Add skill</button>} />
         {addingSkill && <div className="filter-row" style={{marginBottom:12}}>{available.length ? available.map(skill => <button className="btn btn-secondary btn-small" key={skill} onClick={() => addSkill(skill)}>{skill} <Plus size={11} /></button>) : <span className="section-kicker">All suggested skills are in your profile.</span>}<button className="icon-button" aria-label="Close skill options" onClick={() => setAddingSkill(false)}><X size={14}/></button></div>}
         <div className="skill-grid">{skills.map(skill => <div className="skill-item" key={skill.name} data-testid={`skill-item-${skill.name.toLowerCase().replaceAll(' ','-')}`}>
-          <div className="skill-top"><strong>{skill.name}</strong><select className="level-select" aria-label={`Set ${skill.name} level`} value={skill.level} onChange={e => updateLevel(skill.name, Number(e.target.value))} data-testid={`select-skill-${skill.name.toLowerCase().replaceAll(' ','-')}`}>{[1,2,3,4,5].map(n => <option key={n} value={n}>{n} · {levelLabel(n)}</option>)}</select></div>
-          <div className="skill-cat">{skill.category} <span style={{color:'#548365',float:'right'}}>{skill.trend} sample signal</span></div><SkillMeter level={skill.level} />
+          <div className="skill-top"><strong>{skill.name}</strong><select className="level-select" aria-label={`Set ${skill.name} level`} value={skill.level} onChange={e => updateLevel(skill.name, Number(e.target.value))} data-testid={`select-skill-${skill.name.toLowerCase().replaceAll(' ','-')}`}>{[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n ? `${n} · ` : ''}{levelLabel(n)}</option>)}</select></div>
+          <div className="skill-cat">{skill.category} {skill.trend && <span style={{color:'#548365',float:'right'}}>{skill.trend} sample signal</span>}</div><SkillMeter level={skill.level} />
         </div>)}</div>
-        <div className="upload-box"><span className="upload-icon"><FileText size={16}/></span><p><strong>{upload || 'Have a CV handy?'}</strong><br/>{feedback || 'Choose a file for a local-only demo check. You will add skills yourself.'}</p><button className="btn btn-quiet btn-small" onClick={() => document.getElementById('cv-upload')?.click()} data-testid="button-choose-file">{upload ? 'Choose another' : 'Choose file'}</button>
-          <input id="cv-upload" type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFile} hidden data-testid="input-cv-file" /></div>
+        <div className="upload-box"><span className="upload-icon"><ShieldCheck size={16}/></span><p><strong>Your reviewed skills, saved on this device.</strong><br/>A new CV replaces this list only after you confirm it. CV files and document text are never saved.</p><a className="btn btn-quiet btn-small" href="#recommendations">Review CV skills</a></div>
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="A few skills to build" note="FOR YOUR TOP MATCH" />
@@ -344,9 +341,9 @@ function App() {
   const [skills, saveSkills] = useSavedSkills();
   const profileSkills = skills.map(skill => skill.name);
   return <Switch>
-    <Route path="/" component={() => <Dashboard skills={skills} saveSkills={saveSkills}/>} />
-    <Route path="/jobs" component={() => <Shell page="Job Search"><Suspense fallback={<div className="panel panel-pad" role="status">Loading job search…</div>}><JobSearchPage profileSkills={profileSkills}/></Suspense></Shell>} />
-    <Route path="/jobs/:id" component={() => <Shell page="Job details"><Suspense fallback={<div className="panel panel-pad" role="status">Loading job details…</div>}><JobDetailsPage profileSkills={profileSkills}/></Suspense></Shell>} />
+    <Route path="/"><Dashboard skills={skills} saveSkills={saveSkills}/></Route>
+    <Route path="/jobs"><Shell page="Job Search"><Suspense fallback={<div className="panel panel-pad" role="status">Loading job search…</div>}><JobSearchPage profileSkills={profileSkills}/></Suspense></Shell></Route>
+    <Route path="/jobs/:id"><Shell page="Job details"><Suspense fallback={<div className="panel panel-pad" role="status">Loading job details…</div>}><JobDetailsPage profileSkills={profileSkills}/></Suspense></Shell></Route>
     <Route path="/roles/:id" component={RolePage} />
     <Route path="/team" component={TeamPage} />
     <Route path="/trends" component={TrendsPage} />

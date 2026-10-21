@@ -145,7 +145,7 @@ export function JobSearchPage({ profileSkills }: Props) {
     <div className="jobs-results-heading">
       <div><div className="eyebrow">Explore opportunities</div><h2 data-testid="text-job-results-count">{jobsQuery.isLoading ? 'Finding roles…' : `${total.toLocaleString()} sample ${total === 1 ? 'role' : 'roles'}`}</h2></div>
       {profileSkills.length > 0
-        ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from this device profile · not CV-extracted</span>
+        ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from your saved device profile · review or update them on the dashboard</span>
         : <span className="jobs-profile-note">Add skills to your profile to see overlap</span>}
     </div>
 

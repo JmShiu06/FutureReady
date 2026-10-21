@@ -1,0 +1,1 @@
+- [CV workflow boundaries](cv-workflow-boundaries.md) — CV privacy and confirmation rules; separate FPS canvas references must not replace the app's warm theme without approval.

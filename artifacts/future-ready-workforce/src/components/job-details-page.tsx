@@ -74,7 +74,7 @@ export function JobDetailsPage({ profileSkills }: Props) {
             <div className="jobs-skill-label">Skills to explore</div>
             <div className="jobs-skill-list">{missingSkills.map(skill => <span className="skill-status missing" key={skill} data-testid={`skill-missing-${skill.toLowerCase().replaceAll(' ', '-')}`}>{skill}<b>Not in profile</b></span>)}
               {!missingSkills.length && <div className="skill-empty">All listed requirements appear in your profile.</div>}</div>
-            <p className="job-profile-disclaimer">These are the skills saved in your profile on this device—not skills extracted from a CV. Exact overlap is not a hiring prediction.</p>
+            <p className="job-profile-disclaimer">These are the skills saved in your profile on this device, including any CV skills you explicitly confirmed. Exact overlap is not a hiring prediction.</p>
           </> : <>
             <div className="skill-empty">Add skills to your profile to see which requirements overlap.</div>
             <div className="jobs-skill-label">Required skills</div><div className="jobs-skill-list">{job.requiredSkills.map(skill => <span className="skill-status neutral" key={skill} data-testid={`skill-required-${skill.toLowerCase().replaceAll(' ', '-')}`}>{skill}</span>)}</div>
