@@ -228,8 +228,8 @@ export const getExtractCvSkillsUrl = () => {
 }
 
 /**
- * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. No file or raw text is retained or sent to external services.
- * @summary Extract dataset skills from an in-memory CV
+ * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. Profile details are returned only when explicitly labelled in the CV. No file or raw text is retained or sent to external services.
+ * @summary Extract dataset skills and labelled profile details from an in-memory CV
  */
 export const extractCvSkills = async (cvUploadInput: CvUploadInput, options?: Parameters<typeof customFetch>[1]): Promise<CvSkillExtraction> => {
     const formData = new FormData();
@@ -283,7 +283,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ExtractCvSkillsMutationVariables = {data: BodyType<CvUploadInput>}
 
     /**
- * @summary Extract dataset skills from an in-memory CV
+ * @summary Extract dataset skills and labelled profile details from an in-memory CV
  */
 export const useExtractCvSkills = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractCvSkills>>, TError,ExtractCvSkillsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}

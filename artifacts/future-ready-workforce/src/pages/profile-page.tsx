@@ -3,6 +3,7 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
+import type { CvProfileSuggestions } from '@workspace/api-client-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
 import { ChiliLevelPicker } from '@/components/chili-level-picker';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -44,9 +45,25 @@ export default function ProfilePage() {
     saveProfile({ ...rest, interests: interestsText.split(',').map(s => s.trim()).filter(Boolean) } as DemoProfile);
     setSaved('Profile updated for this session. Browser storage warnings, if any, are shown above.');
   };
-  const addCvSkills = (imported: ProfileSkill[]) => {
-    skills.append(imported);
-    setSaved(`${imported.length} confirmed CV skills added to the draft. Save your profile to keep them.`);
+  const applyCvImport = (imported: ProfileSkill[], details: CvProfileSuggestions) => {
+    if (imported.length) skills.append(imported);
+    const options = { shouldDirty: true, shouldValidate: true };
+    let filled = 0;
+    if (details.occupation !== undefined) { form.setValue('occupation', details.occupation, options); filled++; }
+    if (details.experienceYears !== undefined) { form.setValue('experienceYears', details.experienceYears, options); filled++; }
+    if (details.education !== undefined) { form.setValue('education', details.education, options); filled++; }
+    if (details.qualification !== undefined) { form.setValue('qualification', details.qualification, options); filled++; }
+    if (details.studyField !== undefined) { form.setValue('studyField', details.studyField, options); filled++; }
+    if (details.interests !== undefined) { form.setValue('interestsText', details.interests.join(', '), options); filled++; }
+    if (details.location !== undefined) { form.setValue('location', details.location, options); filled++; }
+    if (details.workPreference !== undefined) { form.setValue('workPreference', details.workPreference, options); filled++; }
+    if (details.learningHours !== undefined) { form.setValue('learningHours', details.learningHours, options); filled++; }
+    if (details.budgetMYR !== undefined) { form.setValue('budgetMYR', details.budgetMYR, options); filled++; }
+    if (details.goals !== undefined) { form.setValue('goals', details.goals, options); filled++; }
+    const updates = [];
+    if (filled) updates.push(`${filled} About You field${filled === 1 ? '' : 's'} filled`);
+    if (imported.length) updates.push(`${imported.length} confirmed skill${imported.length === 1 ? '' : 's'} added`);
+    setSaved(`${updates.join(' and ')} in the profile draft. Review the fields and save your profile to keep them.`);
   };
   const addSkill = () => {
     const name = newSkill.trim().replace(/\s+/g, ' ');
@@ -61,13 +78,13 @@ export default function ProfilePage() {
   };
 
   return <>
-    <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review CV-detected skills or enter your details manually. Each audience keeps its own profile." />
+    <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review suggested CV details or enter them manually. Each audience keeps its own profile." />
     <div className="source-note" style={{ marginBottom: 18 }}>
       Use fictional details for this demo. Occupation, education, interests and location provide planning context; they do not secretly change your score.
       Skill levels range from 1 (new to it) to 5 (can teach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
       Save your edits before switching audiences or pages.
     </div>
-    <ProfileCvImport existingSkills={profileSkills} onApplySkills={addCvSkills} />
+    <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
     <div className="grid-2">
       <div className="panel panel-pad">
         <SectionTitle title="Fictional sample profiles" note="REPLACES THIS AUDIENCE ONLY" />
@@ -98,7 +115,7 @@ export default function ProfilePage() {
           <SectionTitle title="About you" note="BACKGROUND AND CONSTRAINTS" />
           <div className="form-grid">
             <FormField control={form.control} name="occupation" render={({ field }) => <FormItem className="field"><FormLabel>{graduate ? 'Study programme or occupation' : 'Occupation'}</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-occupation" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="experienceYears" render={({ field }) => <FormItem className="field"><FormLabel>Years of experience</FormLabel><FormControl><input type="number" min={0} max={60} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={Number.isNaN(field.value) ? '' : field.value} onChange={numberChange(field.onChange)} data-testid="input-experience" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="experienceYears" render={({ field }) => <FormItem className="field"><FormLabel>Years of experience</FormLabel><FormControl><input type="number" min={0} max={60} step="any" className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={Number.isNaN(field.value) ? '' : field.value} onChange={numberChange(field.onChange)} data-testid="input-experience" /></FormControl><FormMessage /></FormItem>} />
             <FormField control={form.control} name="education" render={({ field }) => <FormItem className="field"><FormLabel>Education</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-education" /></FormControl><FormMessage /></FormItem>} />
             {graduate && <>
               <FormField control={form.control} name="qualification" render={({ field }) => <FormItem className="field"><FormLabel>Qualification</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-qualification" /></FormControl><FormMessage /></FormItem>} />

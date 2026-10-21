@@ -27,16 +27,55 @@ export const ListCareerSkillsResponse = zod.object({
 
 
 /**
- * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. No file or raw text is retained or sent to external services.
- * @summary Extract dataset skills from an in-memory CV
+ * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. Profile details are returned only when explicitly labelled in the CV. No file or raw text is retained or sent to external services.
+ * @summary Extract dataset skills and labelled profile details from an in-memory CV
  */
 export const ExtractCvSkillsBody = zod.object({
   "file": zod.instanceof(Blob)
 })
 
+export const extractCvSkillsResponseProfileSuggestionsOccupationMax = 120;
+
+export const extractCvSkillsResponseProfileSuggestionsExperienceYearsMin = 0;
+export const extractCvSkillsResponseProfileSuggestionsExperienceYearsMax = 60;
+
+export const extractCvSkillsResponseProfileSuggestionsEducationMax = 120;
+
+export const extractCvSkillsResponseProfileSuggestionsQualificationMax = 120;
+
+export const extractCvSkillsResponseProfileSuggestionsStudyFieldMax = 120;
+
+export const extractCvSkillsResponseProfileSuggestionsInterestsItemMax = 120;
+
+export const extractCvSkillsResponseProfileSuggestionsInterestsMax = 10;
+
+export const extractCvSkillsResponseProfileSuggestionsLocationMax = 120;
+
+export const extractCvSkillsResponseProfileSuggestionsLearningHoursMax = 40;
+
+export const extractCvSkillsResponseProfileSuggestionsBudgetMYRMin = 0;
+export const extractCvSkillsResponseProfileSuggestionsBudgetMYRMax = 100000;
+
+export const extractCvSkillsResponseProfileSuggestionsGoalsMax = 500;
+
+
+
 export const ExtractCvSkillsResponse = zod.object({
   "skills": zod.array(zod.string()),
-  "warnings": zod.array(zod.string())
+  "warnings": zod.array(zod.string()),
+  "profileSuggestions": zod.object({
+  "occupation": zod.string().max(extractCvSkillsResponseProfileSuggestionsOccupationMax).optional(),
+  "experienceYears": zod.number().min(extractCvSkillsResponseProfileSuggestionsExperienceYearsMin).max(extractCvSkillsResponseProfileSuggestionsExperienceYearsMax).optional(),
+  "education": zod.string().max(extractCvSkillsResponseProfileSuggestionsEducationMax).optional(),
+  "qualification": zod.string().max(extractCvSkillsResponseProfileSuggestionsQualificationMax).optional(),
+  "studyField": zod.string().max(extractCvSkillsResponseProfileSuggestionsStudyFieldMax).optional(),
+  "interests": zod.array(zod.string().max(extractCvSkillsResponseProfileSuggestionsInterestsItemMax)).max(extractCvSkillsResponseProfileSuggestionsInterestsMax).optional(),
+  "location": zod.string().max(extractCvSkillsResponseProfileSuggestionsLocationMax).optional(),
+  "workPreference": zod.enum(['Any', 'Remote', 'Hybrid', 'On-site']).optional(),
+  "learningHours": zod.number().int().min(1).max(extractCvSkillsResponseProfileSuggestionsLearningHoursMax).optional(),
+  "budgetMYR": zod.number().min(extractCvSkillsResponseProfileSuggestionsBudgetMYRMin).max(extractCvSkillsResponseProfileSuggestionsBudgetMYRMax).optional(),
+  "goals": zod.string().max(extractCvSkillsResponseProfileSuggestionsGoalsMax).optional()
+})
 })
 
 

@@ -9,11 +9,11 @@ The CV workflow belongs in the existing FutureReady website and retains its orig
 
 **How to apply:** Keep canvas-only explorations separate unless the user explicitly asks to integrate one. Prioritize the current user's request rather than continuing an older collaborator's design experiment.
 
-CV files and full extracted document text must remain transient and must not be persisted or sent to external services. Only the reviewed skill list may replace the device profile, after explicit confirmation. Extraction must not infer qualifications or proficiency.
+CV files and full extracted document text must remain transient and must not be persisted or sent to external services. Explicitly labelled profile suggestions and skills may enter the device profile only after user review and confirmation. Extraction must not infer qualifications or proficiency.
 
 **Why:** The user explicitly treats CVs as sensitive personal documents and requires a non-LLM, no-paid-service workflow.
 
-**How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics.
+**How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text.
 
 The CV import review is one popup: open it automatically after extraction and keep detected skills, skill selection, warnings and self-assessed proficiency choices together. Do not show the review list inline on the profile page; leave a button to reopen it if dismissed.
 

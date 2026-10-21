@@ -7,6 +7,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import Tesseract from "tesseract.js";
 import mammoth from "mammoth";
 import yauzl from "yauzl";
+import type { CvProfileSuggestions } from "@workspace/api-zod";
 import { careerDataset, normalizeSkill } from "./careerMatcher";
 
 export const MAX_CV_BYTES = 5 * 1024 * 1024;
@@ -58,6 +59,115 @@ export function detectSkills(text: string, catalogue = careerDataset.allSkills):
     }
   }
   return [...new Set(selected.map((item) => item.skill))];
+}
+
+const PROFILE_LABELS: Record<string, keyof CvProfileSuggestions> = {
+  "occupation": "occupation",
+  "current occupation": "occupation",
+  "job title": "occupation",
+  "current job title": "occupation",
+  "current role": "occupation",
+  "current position": "occupation",
+  "years of experience": "experienceYears",
+  "experience years": "experienceYears",
+  "experience in years": "experienceYears",
+  "total experience": "experienceYears",
+  "education": "education",
+  "education level": "education",
+  "highest education": "education",
+  "qualification": "qualification",
+  "professional qualification": "qualification",
+  "degree": "qualification",
+  "field of study": "studyField",
+  "study field": "studyField",
+  "major": "studyField",
+  "discipline": "studyField",
+  "career interests": "interests",
+  "interests": "interests",
+  "location": "location",
+  "based in": "location",
+  "city": "location",
+  "work preference": "workPreference",
+  "preferred work arrangement": "workPreference",
+  "work arrangement": "workPreference",
+  "learning hours per week": "learningHours",
+  "available learning hours per week": "learningHours",
+  "learning budget myr": "budgetMYR",
+  "learning budget (myr)": "budgetMYR",
+  "career goal": "goals",
+  "career goals": "goals",
+};
+
+const normalizeProfileLabel = (label: string) =>
+  label.normalize("NFKC").trim().toLowerCase().replace(/[\s_-]+/g, " ");
+
+function safeProfileValue(value: string, maxLength: number): string | undefined {
+  const cleaned = value.normalize("NFKC").replace(/^[\s•*·-]+/, "").trim().replace(/\s+/g, " ");
+  if (!cleaned || cleaned.length > maxLength || /^(?:n\/?a|none|not specified|unknown|--?)$/i.test(cleaned)) return undefined;
+  return cleaned;
+}
+
+function parseBoundedNumber(value: string | undefined, min: number, max: number, suffix?: RegExp): number | undefined {
+  if (!value) return undefined;
+  const match = value.match(/^(\d{1,6}(?:\.\d{1,2})?)\s*(.*?)$/);
+  if (!match) return undefined;
+  const rest = match[2].trim();
+  if (rest && !suffix?.test(rest)) return undefined;
+  const number = Number(match[1]);
+  return Number.isFinite(number) && number >= min && number <= max ? number : undefined;
+}
+
+/** Reads only single-line key/value facts explicitly labelled in the CV. */
+export function detectProfileSuggestions(text: string): CvProfileSuggestions {
+  const labelled = new Map<keyof CvProfileSuggestions, string>();
+  for (const line of text.normalize("NFKC").split(/\r?\n/)) {
+    const match = line.match(/^\s*([^:：]{1,60})\s*[:：]\s*(.*?)\s*$/);
+    if (!match) continue;
+    const key = PROFILE_LABELS[normalizeProfileLabel(match[1])];
+    if (key && !labelled.has(key)) labelled.set(key, match[2]);
+  }
+
+  const suggestions: CvProfileSuggestions = {};
+  const textValue = (key: keyof CvProfileSuggestions, maxLength = 120) =>
+    safeProfileValue(labelled.get(key) ?? "", maxLength);
+
+  const occupation = textValue("occupation");
+  if (occupation) suggestions.occupation = occupation;
+
+  let years = parseBoundedNumber(labelled.get("experienceYears"), 0, 60, /^(?:years?|yrs?)$/i);
+  if (years === undefined) {
+    const phrase = text.normalize("NFKC").match(/^\s*(\d{1,2}(?:\.\d+)?)\s+(?:years?|yrs?)\s+of experience\s*\.?\s*$/im);
+    if (phrase) years = parseBoundedNumber(phrase[1], 0, 60);
+  }
+  if (years !== undefined) suggestions.experienceYears = years;
+
+  for (const key of ["education", "qualification", "studyField", "goals"] as const) {
+    const value = textValue(key, key === "goals" ? 500 : 120);
+    if (value) suggestions[key] = value;
+  }
+
+  const location = textValue("location");
+  if (location && !/\b(?:street|st\.?|road|rd\.?|avenue|ave\.?|lane|ln\.?|jalan|lorong|taman|block|building|apartment|apt\.?|suite|unit|postcode|postal code)\b/i.test(location)) {
+    suggestions.location = location;
+  }
+
+  const interests = textValue("interests")?.split(/[,;|•·]/).map((item) => item.trim()).filter(Boolean).slice(0, 10);
+  if (interests?.length && interests.every((item) => item.length <= 120)) suggestions.interests = interests;
+
+  const workPreference = textValue("workPreference")?.toLowerCase().replace(/[\s_-]+/g, "");
+  if (workPreference === "remote") suggestions.workPreference = "Remote";
+  else if (workPreference === "hybrid") suggestions.workPreference = "Hybrid";
+  else if (workPreference === "onsite") suggestions.workPreference = "On-site";
+  else if (workPreference === "any") suggestions.workPreference = "Any";
+
+  const learningHours = parseBoundedNumber(labelled.get("learningHours"), 1, 40, /^(?:hours?\s*(?:per|\/)\s*week|hours?)$/i);
+  if (learningHours !== undefined && Number.isInteger(learningHours)) suggestions.learningHours = learningHours;
+
+  const budgetValue = labelled.get("budgetMYR")?.replace(/^(?:myr|rm)\s*/i, "");
+  const budgetMYR = parseBoundedNumber(budgetValue, 0, 100000);
+  if (budgetMYR !== undefined) suggestions.budgetMYR = budgetMYR;
+
+  return suggestions;
 }
 
 /** Validate and drain the archive before Mammoth opens it, bounding actual inflation. */
@@ -279,7 +389,11 @@ async function renderPdfPages(buffer: Buffer, pageCount: number, signal?: AbortS
   }
 }
 
-export async function extractCvSkills(buffer: Buffer, filename: string, requestSignal?: AbortSignal): Promise<{ skills: string[]; warnings: string[] }> {
+export async function extractCvSkills(
+  buffer: Buffer,
+  filename: string,
+  requestSignal?: AbortSignal,
+): Promise<{ skills: string[]; warnings: string[]; profileSuggestions: CvProfileSuggestions }> {
   const signal = requestSignal ?? AbortSignal.timeout(CV_PROCESSING_TIMEOUT_MS);
   checkProcessing(signal);
   if (!buffer.length) throw new CvError(400, "The file is empty. Choose a readable PDF, DOCX, TXT, JPG, JPEG or PNG.");
@@ -335,8 +449,10 @@ export async function extractCvSkills(buffer: Buffer, filename: string, requestS
   }
   if (text.length > MAX_TEXT_LENGTH) throw new CvError(422, "This document contains too much text. Upload a shorter CV.");
   const skills = detectSkills(text);
+  const profileSuggestions = detectProfileSuggestions(text);
   return {
     skills,
+    profileSuggestions,
     warnings: [
       "Only exact skill names in the career dataset are detected. Review and correct the list before matching.",
       ...warnings,

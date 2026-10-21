@@ -36,7 +36,17 @@
 .profile-cv-dialog-review-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:15px 0 8px; }
 .profile-cv-dialog-review-head strong { color:#3c2d25; font-size:11px; }
 .profile-cv-dialog-review-head span { color:#8a6f5d; font-size:9.5px; }
-.profile-cv-dialog-skills { display:grid; gap:8px; max-height:48vh; overflow:auto; margin-top:3px; padding:1px 3px 1px 1px; }
+.profile-cv-suggestions { margin-top:12px; }
+.profile-cv-suggestions-note { margin:0 0 8px; color:#806c5b; font-size:9.5px; line-height:1.45; }
+.profile-cv-no-suggestions { margin:12px 0; padding:10px 12px; border-radius:9px; background:#f8efe5; color:#806c5b; font-size:10px; line-height:1.45; }
+.profile-cv-suggestion-list { display:grid; gap:6px; max-height:25vh; overflow:auto; padding:1px 3px 1px 1px; }
+.profile-cv-suggestion { display:grid; grid-template-columns:16px minmax(0,1fr) auto; align-items:center; gap:9px; padding:8px 10px; border:1px solid #efe1d3; border-radius:9px; background:#fffdf9; cursor:pointer; }
+.profile-cv-suggestion > input { width:15px; height:15px; margin:0; accent-color:#b84d11; }
+.profile-cv-suggestion > span { display:grid; gap:3px; min-width:0; }
+.profile-cv-suggestion strong { color:#4a382e; font-size:10px; }
+.profile-cv-suggestion > span > span { color:#715944; font-size:10px; line-height:1.4; overflow-wrap:anywhere; }
+.profile-cv-suggestion small { color:#987d67; font-size:8px; white-space:nowrap; }
+.profile-cv-dialog-skills { display:grid; gap:8px; max-height:38vh; overflow:auto; margin-top:3px; padding:1px 3px 1px 1px; }
 .profile-cv-dialog-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(195px,225px); align-items:center; gap:13px; padding:10px 11px; border:1px solid #efe1d3; border-radius:10px; background:#fffdf9; }
 .profile-cv-dialog-skill-name { display:flex; align-items:center; gap:8px; min-width:0; color:#4a382e; }
 .profile-cv-dialog-skill-name input { width:15px;height:15px; flex:none; accent-color:#b84d11; }
@@ -60,6 +70,8 @@
   .profile-cv-dialog-review-head { align-items:flex-start; flex-direction:column; gap:3px; }
   .profile-cv-dialog-row { grid-template-columns:1fr; gap:8px; }
   .profile-cv-dialog-row .chili-slider { width:100%; }
+  .profile-cv-suggestion { grid-template-columns:16px minmax(0,1fr); }
+  .profile-cv-suggestion small { grid-column:2; }
   .profile-cv-dialog-footer { flex-direction:column-reverse; }
   .profile-cv-dialog-footer .btn { width:100%; }
 }

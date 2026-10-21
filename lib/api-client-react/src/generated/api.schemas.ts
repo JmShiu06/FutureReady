@@ -13,9 +13,56 @@ export interface CvUploadInput {
   file: Blob;
 }
 
+export type CvProfileSuggestionsWorkPreference = typeof CvProfileSuggestionsWorkPreference[keyof typeof CvProfileSuggestionsWorkPreference];
+
+
+export const CvProfileSuggestionsWorkPreference = {
+  Any: 'Any',
+  Remote: 'Remote',
+  Hybrid: 'Hybrid',
+  'On-site': 'On-site',
+} as const;
+
+export interface CvProfileSuggestions {
+  /** @maxLength 120 */
+  occupation?: string;
+  /**
+     * @minimum 0
+     * @maximum 60
+     */
+  experienceYears?: number;
+  /** @maxLength 120 */
+  education?: string;
+  /** @maxLength 120 */
+  qualification?: string;
+  /** @maxLength 120 */
+  studyField?: string;
+  /**
+     * @maxItems 10
+     * @items.maxLength 120
+     */
+  interests?: string[];
+  /** @maxLength 120 */
+  location?: string;
+  workPreference?: CvProfileSuggestionsWorkPreference;
+  /**
+     * @minimum 1
+     * @maximum 40
+     */
+  learningHours?: number;
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
+  budgetMYR?: number;
+  /** @maxLength 500 */
+  goals?: string;
+}
+
 export interface CvSkillExtraction {
   skills: string[];
   warnings: string[];
+  profileSuggestions: CvProfileSuggestions;
 }
 
 export interface CareerSkillList {

@@ -5,8 +5,9 @@ import type { Server } from "node:http";
 import { PDFDocument } from "pdf-lib";
 import { createCanvas } from "@napi-rs/canvas";
 import JSZip from "jszip";
+import type { CvProfileSuggestions } from "@workspace/api-zod";
 import app from "../app";
-import { CvError, detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
+import { CvError, detectProfileSuggestions, detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
 import { watermarkedCvPdf } from "../test-fixtures/watermarkedCv";
 
 let server: Server;
@@ -58,7 +59,7 @@ async function upload(buffer: Buffer, name: string) {
   const body = new FormData();
   body.append("file", new Blob([new Uint8Array(buffer)]), name);
   const res = await fetch(`${base}/career/cv-skills`, { method: "POST", body });
-  return { status: res.status, json: await res.json() as { skills?: string[]; warnings?: string[]; error?: string }, headers: res.headers };
+  return { status: res.status, json: await res.json() as { skills?: string[]; warnings?: string[]; profileSuggestions?: CvProfileSuggestions; error?: string }, headers: res.headers };
 }
 
 describe("deterministic CV skill detection", () => {
@@ -73,11 +74,40 @@ describe("deterministic CV skill detection", () => {
     assert.deepEqual(detectSkills("I maintain data and software.", ["data", "software"]), []);
     assert.deepEqual(detectSkills("Skills: data, software", ["data", "software"]), ["data", "software"]);
   });
+  it("suggests only explicitly labelled About You facts and does not infer from prose", () => {
+    const result = detectProfileSuggestions([
+      "Current Role: Operations coordinator",
+      "Years of Experience: 5 years",
+      "Education: Diploma in Business Information Systems",
+      "Qualification: Diploma",
+      "Field of Study: Business Information Systems",
+      "Career Interests: Service design, workforce planning",
+      "Location: Kuala Lumpur, Malaysia",
+      "Work Preference: Hybrid",
+      "Learning Hours per Week: 6 hours/week",
+      "Learning Budget (MYR): RM 250",
+      "Career Goals: Move into service design.",
+    ].join("\n"));
+    assert.deepEqual(result, {
+      occupation: "Operations coordinator",
+      experienceYears: 5,
+      education: "Diploma in Business Information Systems",
+      qualification: "Diploma",
+      studyField: "Business Information Systems",
+      interests: ["Service design", "workforce planning"],
+      location: "Kuala Lumpur, Malaysia",
+      workPreference: "Hybrid",
+      learningHours: 6,
+      budgetMYR: 250,
+      goals: "Move into service design.",
+    });
+    assert.deepEqual(detectProfileSuggestions("Operations coordinator with a diploma, five years of experience, and based in Kuala Lumpur."), {});
+  });
 });
 
 describe("CV extraction and upload API", () => {
   it("extracts real dataset skills from UTF-8 TXT, selectable PDF and DOCX", async () => {
-    const text = "Skills: Python, SQL, node.js, ci/cd, C++, C#.";
+    const text = "Skills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
     const fixtures: [Buffer, string][] = [[Buffer.from(text), "synthetic.txt"], [await pdf(text), "synthetic.pdf"], [await docx(text), "synthetic.docx"]];
     for (const [buffer, name] of fixtures) {
       const response = await upload(buffer, name);
@@ -86,6 +116,8 @@ describe("CV extraction and upload API", () => {
       assert.ok(response.json.skills?.includes("sql"));
       assert.ok(response.json.skills?.includes("node.js"));
       assert.ok(response.json.skills?.includes("ci/cd"));
+       assert.equal(response.json.profileSuggestions?.occupation, "Operations coordinator");
+       assert.equal(response.json.profileSuggestions?.experienceYears, 5);
       assert.equal(response.headers.get("cache-control"), "no-store");
     }
   });
@@ -118,6 +150,7 @@ describe("CV extraction and upload API", () => {
     const result = await upload(Buffer.from("A synthetic curriculum vitae with no catalogue terms."), "cv.txt");
     assert.equal(result.status, 200);
     assert.deepEqual(result.json.skills, []);
+    assert.deepEqual(result.json.profileSuggestions, {});
     assert.ok(result.json.warnings?.some(warning => warning.includes("No recognised")));
   });
   it("rejects missing, empty, unsupported, falsely named, malformed and non-UTF8 files safely", async () => {
