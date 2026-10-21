@@ -34,7 +34,8 @@ function AudienceSelect({ className, id }: { className: string; id: string }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { state, profile, storageWarning } = useWorkspace();
-  const current = nav.find(n => n.href === '/' ? location === '/' : location === n.href || location.startsWith(`${n.href}/`));
+  const audienceNav = nav.filter(item => item.key !== 'team' || state.audience === 'hr' || state.audience === 'education');
+  const current = audienceNav.find(n => n.href === '/' ? location === '/' : location === n.href || location.startsWith(`${n.href}/`));
   const page = location.startsWith('/roles/') ? titles['/roles'] : location.startsWith('/jobs/') ? titles['/jobs/'] : current?.label ?? 'Not found';
   const initials = profile.occupation.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
   return <div className="app-shell">
@@ -46,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="audience-switch"><label htmlFor="side">Viewing as</label><AudienceSelect id="side" className="" /></div>
       <div className="nav-caption">WORKSPACE</div>
       <nav className="nav-list" aria-label="Main navigation">
-        {nav.map(item => {
+        {audienceNav.map(item => {
           const Icon = item.icon;
           const active = item === current;
           return <Link key={item.key} href={item.href} data-testid={`link-nav-${item.key}`} aria-current={active ? 'page' : undefined} className={`nav-link${active ? ' active' : ''}`}>

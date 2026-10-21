@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'wouter';
-import { Info, ShieldCheck } from 'lucide-react';
+import { Link, Redirect } from 'wouter';
+import { ShieldCheck } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { aggregateRecords, demoRoles } from '@/domain/demo-data';
 import { assessRole, meanSkillGap } from '@/domain/services';
@@ -78,11 +78,9 @@ function EducationView() {
 
 export default function TeamPage() {
   const { state } = useWorkspace();
-  const [view, setView] = useState<'hr' | 'education'>(state.audience === 'education' ? 'education' : 'hr');
-  const personal = state.audience === 'adult' || state.audience === 'graduate';
+  if (state.audience !== 'hr' && state.audience !== 'education') return <Redirect to="/" />;
   return <>
-    {personal && <div className="banner banner-demo" role="note"><Info size={14} /><span>This aggregate view is built for HR and education teams. Choose a lens: <button className="text-link" onClick={() => setView('hr')} data-testid="button-view-hr">Team (HR)</button> · <button className="text-link" onClick={() => setView('education')} data-testid="button-view-education">Cohort (education)</button></span></div>}
-    {(personal ? view : state.audience) === 'education' ? <EducationView /> : <HrView />}
+    {state.audience === 'education' ? <EducationView /> : <HrView />}
     <div className="disclaimer"><ShieldCheck size={14} /><span>All records are fictional. Use real data only with consent, governance and safeguards.</span></div>
   </>;
 }
