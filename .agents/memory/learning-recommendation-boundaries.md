@@ -9,6 +9,20 @@ The user explicitly approved removing the Python learning engine and its depende
 
 **How to apply:** Keep removal scoped to the optional engine. Preserve existing database data and uploaded dataset references rather than treating feature removal as permission to delete stored data. Any future learning suggestions must remain separate from CV extraction and saved proficiency.
 
+Manifest removal and a clean dependency audit do not prove that retired Python
+packages are absent from an existing workspace.
+
+**Why:** The dependency audit omitted an orphaned ChromaDB installation that was
+still importable from the workspace's Python library directory after the engine
+had been removed. The package-management removal callback reported success
+without deleting that orphaned installation.
+
+**How to apply:** For retired Python dependencies, check installed distribution
+metadata and importability separately from the manifest audit. Keep cleanup
+idempotent and reproducible after merging; do not delete unrelated packages or
+dataset files. The workspace's uv-managed Python environment does not contain
+pip; use uv's target-directory uninstall rather than relying on `python -m pip`.
+
 Uploaded course references must remain distinct from the independently checked learning-resource library. A source rating, level, URL or certificate label is not proof of current availability or an awarded certification.
 
 **Why:** The supplied archive is reference material, not a provider verification process; existing verified resources have a stronger trust claim.

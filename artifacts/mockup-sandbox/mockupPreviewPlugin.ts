@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
-import glob from "fast-glob";
+import { glob } from "tinyglobby";
 import chokidar from "chokidar";
 import type { FSWatcher } from "chokidar";
 import type { Plugin } from "vite";
@@ -43,9 +43,11 @@ export function mockupPreviewPlugin(): Plugin {
     const files = await glob(`${MOCKUPS_DIR}/**/*.tsx`, {
       cwd: root,
       ignore: ["**/_*/**", "**/_*.tsx"],
+      onlyFiles: true,
+      followSymbolicLinks: true,
     });
 
-    return files.map((f) => ({
+    return files.sort().map((f) => ({
       globKey: "./" + f.slice("src/".length),
       importPath: path.posix.relative("src/.generated", f),
     }));

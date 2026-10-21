@@ -25,8 +25,8 @@ catalog:
   react-dom: 19.1.0
   tailwind-merge: ^3.3.1
   tailwindcss: ^4.1.14
-  tsx: 4.23.13
-  vite: ^7.3.2
+  tsx: 4.23.15
+  vite: ^7.3.7
   wouter: ^3.3.5
   zod: 3.25.76
 
@@ -64,6 +64,10 @@ overrides:
   '@tailwindcss/oxide>@tailwindcss/oxide-linux-x64-musl': '-'
   '@tailwindcss/oxide>@tailwindcss/oxide-win32-arm64-msvc': '-'
   '@tailwindcss/oxide>@tailwindcss/oxide-win32-x64-msvc': '-'
+  # Require patched source maps throughout Tailwind's dependency tree.
+  '@tailwindcss/node>source-map-js': 1.2.2
+  # Typography still pins 6.x; 7.x fixes quadratic selector parsing.
+  '@tailwindcss/typography>postcss-selector-parser': 7.1.7
   esbuild: 0.28.2
   esbuild>@esbuild/aix-ppc64: '-'
   esbuild>@esbuild/android-arm: '-'
@@ -101,6 +105,8 @@ overrides:
   lightningcss>lightningcss-linux-x64-musl: '-'
   lightningcss>lightningcss-win32-arm64-msvc: '-'
   lightningcss>lightningcss-win32-x64-msvc: '-'
+  # Argparse 2 retains legacy CLI aliases without the vulnerable sprintf-js.
+  mammoth>argparse: 2.0.1
   rollup>@rollup/rollup-android-arm-eabi: '-'
   rollup>@rollup/rollup-android-arm64: '-'
   rollup>@rollup/rollup-darwin-arm64: '-'
