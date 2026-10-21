@@ -61,3 +61,8 @@ export * from './skillFrequency';
 export * from './skillFrequencyRole';
 export * from './skillGapAnalysisInput';
 export * from './skillGapAnalysisReport';
+export * from './syntheticAiSkillReference';
+export * from './syntheticAiSkillReferenceReferencesItem';
+export * from './syntheticAiSkillReferenceReferencesItemExperienceShares';
+export * from './syntheticAiSkillReferenceReferencesItemMeans';
+export * from './syntheticAiSkillReferenceSource';

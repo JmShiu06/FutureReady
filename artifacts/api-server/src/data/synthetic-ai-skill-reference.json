@@ -1,0 +1,23 @@
+{
+  "datasetName": "User-provided synthetic hiring dataset",
+  "dataRowsIncluded": 191734,
+  "rowsExcludedMissingRole": 10266,
+  "provenance": "The archive contains generator documentation but no original publisher, source URL, or license metadata.",
+  "roles": [
+    { "role": "AI Researcher", "sampleSize": 7584, "means": { "ai": 3.45, "ml": 3.09, "deepLearning": 2.3, "generativeAi": 1.84, "promptEngineering": 1.65, "llmExperienceYears": 1.09 }, "experienceShares": { "ragPercent": 60.1, "fineTuningPercent": 53.4, "vectorDatabasePercent": 54.7 } },
+    { "role": "Business Analyst", "sampleSize": 11317, "means": { "ai": 1.09, "ml": 0.98, "deepLearning": 0.74, "generativeAi": 0.59, "promptEngineering": 0.54, "llmExperienceYears": 0.6 }, "experienceShares": { "ragPercent": 29.1, "fineTuningPercent": 20, "vectorDatabasePercent": 26 } },
+    { "role": "Cloud Architect", "sampleSize": 9538, "means": { "ai": 3.45, "ml": 3.1, "deepLearning": 2.32, "generativeAi": 1.84, "promptEngineering": 1.66, "llmExperienceYears": 1.09 }, "experienceShares": { "ragPercent": 59.9, "fineTuningPercent": 54.3, "vectorDatabasePercent": 55.1 } },
+    { "role": "Cybersecurity Analyst", "sampleSize": 9518, "means": { "ai": 1.12, "ml": 1.01, "deepLearning": 0.76, "generativeAi": 0.6, "promptEngineering": 0.54, "llmExperienceYears": 0.59 }, "experienceShares": { "ragPercent": 29.1, "fineTuningPercent": 20.5, "vectorDatabasePercent": 26.2 } },
+    { "role": "Data Analyst", "sampleSize": 19018, "means": { "ai": 1.11, "ml": 1, "deepLearning": 0.75, "generativeAi": 0.6, "promptEngineering": 0.54, "llmExperienceYears": 0.6 }, "experienceShares": { "ragPercent": 29, "fineTuningPercent": 20.1, "vectorDatabasePercent": 25.6 } },
+    { "role": "Data Scientist", "sampleSize": 23263, "means": { "ai": 3.46, "ml": 3.1, "deepLearning": 2.33, "generativeAi": 1.87, "promptEngineering": 1.68, "llmExperienceYears": 1.1 }, "experienceShares": { "ragPercent": 60.4, "fineTuningPercent": 54, "vectorDatabasePercent": 55.6 } },
+    { "role": "DevOps Engineer", "sampleSize": 15230, "means": { "ai": 1.12, "ml": 1, "deepLearning": 0.76, "generativeAi": 0.6, "promptEngineering": 0.54, "llmExperienceYears": 0.6 }, "experienceShares": { "ragPercent": 28.9, "fineTuningPercent": 20.1, "vectorDatabasePercent": 25.9 } },
+    { "role": "Finance Analyst", "sampleSize": 3865, "means": { "ai": 1.13, "ml": 1.01, "deepLearning": 0.76, "generativeAi": 0.61, "promptEngineering": 0.54, "llmExperienceYears": 0.61 }, "experienceShares": { "ragPercent": 29.8, "fineTuningPercent": 20.4, "vectorDatabasePercent": 26.3 } },
+    { "role": "HR Specialist", "sampleSize": 3850, "means": { "ai": 1.11, "ml": 1.01, "deepLearning": 0.75, "generativeAi": 0.6, "promptEngineering": 0.54, "llmExperienceYears": 0.59 }, "experienceShares": { "ragPercent": 28.4, "fineTuningPercent": 20, "vectorDatabasePercent": 25.1 } },
+    { "role": "ML Engineer", "sampleSize": 17401, "means": { "ai": 3.46, "ml": 3.1, "deepLearning": 2.31, "generativeAi": 1.85, "promptEngineering": 1.66, "llmExperienceYears": 1.1 }, "experienceShares": { "ragPercent": 60, "fineTuningPercent": 53.4, "vectorDatabasePercent": 54.7 } },
+    { "role": "Product Manager", "sampleSize": 11419, "means": { "ai": 1.1, "ml": 0.99, "deepLearning": 0.75, "generativeAi": 0.59, "promptEngineering": 0.54, "llmExperienceYears": 0.61 }, "experienceShares": { "ragPercent": 28.7, "fineTuningPercent": 19.4, "vectorDatabasePercent": 25.5 } },
+    { "role": "QA Engineer", "sampleSize": 11789, "means": { "ai": 1.1, "ml": 0.99, "deepLearning": 0.74, "generativeAi": 0.59, "promptEngineering": 0.53, "llmExperienceYears": 0.6 }, "experienceShares": { "ragPercent": 28.6, "fineTuningPercent": 19.9, "vectorDatabasePercent": 25.4 } },
+    { "role": "Sales Executive", "sampleSize": 5812, "means": { "ai": 1.11, "ml": 1, "deepLearning": 0.75, "generativeAi": 0.6, "promptEngineering": 0.54, "llmExperienceYears": 0.6 }, "experienceShares": { "ragPercent": 29.4, "fineTuningPercent": 19.7, "vectorDatabasePercent": 25.7 } },
+    { "role": "Software Engineer", "sampleSize": 34553, "means": { "ai": 1.11, "ml": 1, "deepLearning": 0.75, "generativeAi": 0.6, "promptEngineering": 0.54, "llmExperienceYears": 0.6 }, "experienceShares": { "ragPercent": 29, "fineTuningPercent": 20.5, "vectorDatabasePercent": 25.8 } },
+    { "role": "UX Designer", "sampleSize": 7577, "means": { "ai": 1.1, "ml": 0.99, "deepLearning": 0.74, "generativeAi": 0.59, "promptEngineering": 0.54, "llmExperienceYears": 0.59 }, "experienceShares": { "ragPercent": 28.4, "fineTuningPercent": 19.8, "vectorDatabasePercent": 25.7 } }
+  ]
+}

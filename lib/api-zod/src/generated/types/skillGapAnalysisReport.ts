@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CareerSource } from './careerSource';
+import type { SyntheticAiSkillReference } from './syntheticAiSkillReference';
 
 export interface SkillGapAnalysisReport {
   target_role: string;
@@ -18,5 +19,6 @@ export interface SkillGapAnalysisReport {
   overlap_score: number;
   methodology: string;
   limitations: string[];
+  synthetic_ai_skill_reference: SyntheticAiSkillReference;
   source: CareerSource;
 }

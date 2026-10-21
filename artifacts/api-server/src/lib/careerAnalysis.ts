@@ -6,6 +6,7 @@ import {
   type CareerMatch,
 } from "./careerMatcher";
 import { detectProfileSuggestions, detectSkills } from "./cvSkillExtractor";
+import { getSyntheticAiSkillReference } from "./syntheticAiSkillReference";
 
 const METHOD_NOTE =
   "Deterministic exact-skill comparison against the bundled role-skill dataset. This is not an AI prediction, employment probability, or validated readiness assessment.";
@@ -37,6 +38,7 @@ export interface SkillGapReport {
   overlap_score: number;
   methodology: string;
   limitations: string[];
+  synthetic_ai_skill_reference: ReturnType<typeof getSyntheticAiSkillReference>;
   source: typeof careerDataset.source;
 }
 
@@ -119,12 +121,15 @@ export function analyzeSkillGap(
     recommended_learning_path: match.missingSkills.slice(0, 8),
     estimated_learning_time: null,
     overlap_score: match.score,
-    methodology: METHOD_NOTE,
+    methodology:
+      `${METHOD_NOTE} A separate synthetic AI-skill reference is provided when a documented role mapping exists; it does not affect the overlap score.`,
     limitations: [
       "The learning sequence follows the dataset's listed skill order; it is not a validated prerequisite sequence.",
       "No verified course catalogue or duration estimates are connected.",
       "The overlap score is not a probability of employment or a readiness score.",
+      ...getSyntheticAiSkillReference(targetRole).limitations,
     ],
+    synthetic_ai_skill_reference: getSyntheticAiSkillReference(targetRole),
     source: careerDataset.source,
   };
 }

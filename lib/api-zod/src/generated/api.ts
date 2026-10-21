@@ -215,6 +215,38 @@ export const AnalyzeSkillGapBody = zod.object({
   "target_role": zod.string().min(1).max(analyzeSkillGapBodyTargetRoleMax)
 })
 
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansAiMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansAiMax = 5;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansMlMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansMlMax = 5;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansDeepLearningMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansDeepLearningMax = 5;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansGenerativeAiMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansGenerativeAiMax = 5;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansPromptEngineeringMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansPromptEngineeringMax = 5;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansLlmExperienceYearsMin = 0;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesRagPercentMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesRagPercentMax = 100;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesFineTuningPercentMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesFineTuningPercentMax = 100;
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesVectorDatabasePercentMin = 0;
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesVectorDatabasePercentMax = 100;
+
+
+export const analyzeSkillGapResponseSyntheticAiSkillReferenceSourceRowsExcludedMissingRoleMin = 0;
+
+
+
 export const AnalyzeSkillGapResponse = zod.object({
   "target_role": zod.string(),
   "current_skills": zod.array(zod.string()),
@@ -225,6 +257,32 @@ export const AnalyzeSkillGapResponse = zod.object({
   "overlap_score": zod.number(),
   "methodology": zod.string(),
   "limitations": zod.array(zod.string()),
+  "synthetic_ai_skill_reference": zod.object({
+  "references": zod.array(zod.object({
+  "role": zod.string(),
+  "sampleSize": zod.number().int().min(1),
+  "means": zod.object({
+  "ai": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansAiMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansAiMax),
+  "ml": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansMlMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansMlMax),
+  "deepLearning": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansDeepLearningMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansDeepLearningMax),
+  "generativeAi": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansGenerativeAiMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansGenerativeAiMax),
+  "promptEngineering": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansPromptEngineeringMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansPromptEngineeringMax),
+  "llmExperienceYears": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansLlmExperienceYearsMin)
+}),
+  "experienceShares": zod.object({
+  "ragPercent": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesRagPercentMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesRagPercentMax),
+  "fineTuningPercent": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesFineTuningPercentMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesFineTuningPercentMax),
+  "vectorDatabasePercent": zod.number().min(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesVectorDatabasePercentMin).max(analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemExperienceSharesVectorDatabasePercentMax)
+})
+})),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "dataRowsIncluded": zod.number().int().min(1),
+  "rowsExcludedMissingRole": zod.number().int().min(analyzeSkillGapResponseSyntheticAiSkillReferenceSourceRowsExcludedMissingRoleMin),
+  "provenance": zod.string()
+}),
+  "limitations": zod.array(zod.string())
+}),
   "source": zod.object({
   "datasetName": zod.string(),
   "publisher": zod.string(),

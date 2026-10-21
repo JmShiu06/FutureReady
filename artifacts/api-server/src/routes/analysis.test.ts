@@ -62,6 +62,8 @@ describe("resume skill analysis endpoints", () => {
     assert.equal(result.json.overlap_score, 10);
     assert.deepEqual(result.json.recommended_courses, []);
     assert.equal(result.json.estimated_learning_time, null);
+    assert.deepEqual(result.json.synthetic_ai_skill_reference.references, []);
+    assert.ok(result.json.synthetic_ai_skill_reference.limitations.some((item: string) => item.includes("synthetic")));
 
     const noOverlap = await post("/skill-gap-analysis", {
       resume_text: "Skills: knitting",
@@ -70,6 +72,22 @@ describe("resume skill analysis endpoints", () => {
     assert.equal(noOverlap.status, 200);
     assert.equal(noOverlap.json.overlap_score, 0);
     assert.equal(noOverlap.json.missing_skills.length, 30);
+    assert.deepEqual(noOverlap.json.synthetic_ai_skill_reference.references, []);
+  });
+
+  it("adds separate synthetic AI-skill context for deliberately crosswalked roles only", async () => {
+    const result = await post("/skill-gap-analysis", {
+      resume_text: "Skills: Python, SQL",
+      target_role: "Data Scientist / ML",
+    });
+    assert.equal(result.status, 200);
+    assert.equal(result.json.overlap_score, 6.7);
+    assert.deepEqual(
+      result.json.synthetic_ai_skill_reference.references.map((item: any) => item.role),
+      ["Data Scientist", "ML Engineer"],
+    );
+    assert.equal(result.json.synthetic_ai_skill_reference.references[0].sampleSize, 23263);
+    assert.ok(result.json.synthetic_ai_skill_reference.limitations.some((item: string) => item.includes("designed into the data")));
   });
 
   it("ranks career paths deterministically and marks growth skills illustrative", async () => {

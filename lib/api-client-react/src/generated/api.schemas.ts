@@ -212,6 +212,77 @@ export interface ResumeAnalysisReport {
   source: CareerSource;
 }
 
+export type SyntheticAiSkillReferenceReferencesItemMeans = {
+  /**
+     * @minimum 0
+     * @maximum 5
+     */
+  ai: number;
+  /**
+     * @minimum 0
+     * @maximum 5
+     */
+  ml: number;
+  /**
+     * @minimum 0
+     * @maximum 5
+     */
+  deepLearning: number;
+  /**
+     * @minimum 0
+     * @maximum 5
+     */
+  generativeAi: number;
+  /**
+     * @minimum 0
+     * @maximum 5
+     */
+  promptEngineering: number;
+  /** @minimum 0 */
+  llmExperienceYears: number;
+};
+
+export type SyntheticAiSkillReferenceReferencesItemExperienceShares = {
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  ragPercent: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  fineTuningPercent: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  vectorDatabasePercent: number;
+};
+
+export type SyntheticAiSkillReferenceReferencesItem = {
+  role: string;
+  /** @minimum 1 */
+  sampleSize: number;
+  means: SyntheticAiSkillReferenceReferencesItemMeans;
+  experienceShares: SyntheticAiSkillReferenceReferencesItemExperienceShares;
+};
+
+export type SyntheticAiSkillReferenceSource = {
+  datasetName: string;
+  /** @minimum 1 */
+  dataRowsIncluded: number;
+  /** @minimum 0 */
+  rowsExcludedMissingRole: number;
+  provenance: string;
+};
+
+export interface SyntheticAiSkillReference {
+  references: SyntheticAiSkillReferenceReferencesItem[];
+  source: SyntheticAiSkillReferenceSource;
+  limitations: string[];
+}
+
 export interface SkillGapAnalysisReport {
   target_role: string;
   current_skills: string[];
@@ -223,6 +294,7 @@ export interface SkillGapAnalysisReport {
   overlap_score: number;
   methodology: string;
   limitations: string[];
+  synthetic_ai_skill_reference: SyntheticAiSkillReference;
   source: CareerSource;
 }
 
