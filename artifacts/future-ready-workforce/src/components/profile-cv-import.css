@@ -41,7 +41,14 @@
 .profile-cv-dialog-skill-name { display:flex; align-items:center; gap:8px; min-width:0; color:#4a382e; }
 .profile-cv-dialog-skill-name input { width:15px;height:15px; flex:none; accent-color:#b84d11; }
 .profile-cv-dialog-row strong { color:#4a382e; font-size:11px; overflow-wrap:anywhere; }
-.profile-cv-dialog-row .chili-level-picker { justify-self:start; }
+.profile-cv-dialog-row .chili-slider { justify-self:start; display:grid; gap:3px; }
+.chili-slider-track { position:relative; display:flex; align-items:flex-end; justify-content:space-between; width:150px; height:30px; padding:0 2px; border-bottom:2px solid #efe1d3; }
+.chili-slider-step { display:grid; place-items:end center; }
+.chili-slider-step .chili-level-icon { transition:width .15s ease,height .15s ease; }
+.chili-slider-track input[type=range] { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
+.chili-slider-track:focus-within { outline:2px solid #c95b1c; outline-offset:2px; border-radius:4px; }
+.chili-slider.is-disabled { opacity:.48; }
+.chili-slider.is-disabled input { cursor:not-allowed; }
 .profile-cv-dialog-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
 .profile-cv-dialog-footer .btn:disabled { opacity:.55; cursor:not-allowed; }
 .profile-cv-empty { margin:13px 0; padding:12px; border:1px dashed #e3bfa2; border-radius:10px; background:#fff7ef; color:#785740; font-size:10.5px; line-height:1.5; }
@@ -52,7 +59,7 @@
   .profile-cv-result .btn { width:100%; justify-content:center; }
   .profile-cv-dialog-review-head { align-items:flex-start; flex-direction:column; gap:3px; }
   .profile-cv-dialog-row { grid-template-columns:1fr; gap:8px; }
-  .profile-cv-dialog-row .chili-level-picker { width:100%; }
+  .profile-cv-dialog-row .chili-slider { width:100%; }
   .profile-cv-dialog-footer { flex-direction:column-reverse; }
   .profile-cv-dialog-footer .btn { width:100%; }
 }

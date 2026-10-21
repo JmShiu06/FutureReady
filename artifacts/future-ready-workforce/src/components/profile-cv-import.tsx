@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'r
 import { AlertTriangle, Check, CloudUpload, FileText, Info, Loader2, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
-import { ChiliLevelPicker } from '@/components/chili-level-picker';
+import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import './profile-cv-import.css';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -246,8 +246,7 @@ export function ProfileCvImport({
               </label>
               {skill.alreadyInProfile
                 ? <span className="profile-cv-existing"><Check size={12} /> Already in profile</span>
-                : <ChiliLevelPicker
-                  name={`cv-skill-${index}`}
+                : <ChiliLevelSlider
                   value={skill.level}
                   disabled={!skill.selected}
                   onChange={level => setSkillLevel(index, String(level))}
