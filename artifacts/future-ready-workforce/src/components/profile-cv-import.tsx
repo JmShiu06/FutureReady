@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import { AlertTriangle, Check, CloudUpload, FileText, Info, Loader2 } from 'lucide-react';
+import { AlertTriangle, Check, CloudUpload, FileText, Info, Loader2, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
 import { levelLabel } from '@/components/workspace/ui';
@@ -40,10 +40,18 @@ export function ProfileCvImport({
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  const [levelDialogOpen, setLevelDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const levelDialogRef = useRef<HTMLDialogElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(() => {
+    const dialog = levelDialogRef.current;
+    if (!dialog) return;
+    if (levelDialogOpen && !dialog.open) dialog.showModal();
+    else if (!levelDialogOpen && dialog.open) dialog.close();
+  }, [levelDialogOpen]);
 
   const extract = async (file: File) => {
     abortRef.current?.abort();
@@ -138,6 +146,7 @@ export function ProfileCvImport({
     setReviewSkills([]);
     setWarnings([]);
     setPhase('idle');
+    setLevelDialogOpen(false);
     setAnnouncement(`${selectedSkills.length} confirmed skills added to the profile draft. Save your profile to keep them.`);
   };
 
@@ -205,26 +214,57 @@ export function ProfileCvImport({
             </label>
             {skill.alreadyInProfile
               ? <span className="profile-cv-existing"><Check size={12} /> Already in profile</span>
-              : <label className="profile-cv-level">
-                <span className="sr-only">Proficiency level for {skill.name}</span>
-                <select
-                  className="fr-select"
-                  value={skill.level}
-                  disabled={!skill.selected}
-                  onChange={event => setSkillLevel(index, event.target.value)}
-                  aria-label={`Proficiency level for ${skill.name}`}
-                >
-                  <option value="">Choose level</option>
-                  {proficiencyLevels.map(level => <option key={level} value={level}>{level} · {levelLabel(level)}</option>)}
-                </select>
-              </label>}
+              : skill.selected && <span className="profile-cv-selected">Level needed</span>}
           </div>)}
         </div>
-        {selectedSkills.length > 0 && selectedSkills.some(skill => skill.level === '') && <p className="profile-cv-level-note">Choose a proficiency level for every selected skill. The CV processor doesn’t guess your level.</p>}
-        <button type="button" className="btn btn-primary btn-small" onClick={applySkills} disabled={!canApply} data-testid="button-apply-cv-skills">
-          <Check size={14} /> Add selected skills to profile
-        </button>
+        <div className="profile-cv-review-actions">
+          <p className="profile-cv-level-note">CV extraction does not guess proficiency. Set levels in the next step.</p>
+          <button type="button" className="btn btn-primary btn-small" onClick={() => setLevelDialogOpen(true)} disabled={selectedSkills.length === 0} data-testid="button-open-cv-levels">
+            Choose skill levels{selectedSkills.length > 0 ? ` · ${selectedSkills.length}` : ''}
+          </button>
+        </div>
       </>}
     </>}
+
+    <dialog
+      ref={levelDialogRef}
+      className="profile-cv-dialog"
+      aria-labelledby="profile-cv-level-title"
+      aria-describedby="profile-cv-level-description"
+      onCancel={() => setLevelDialogOpen(false)}
+      onClose={() => setLevelDialogOpen(false)}
+      onClick={event => { if (event.target === event.currentTarget) setLevelDialogOpen(false); }}
+      data-testid="dialog-cv-levels"
+    >
+      <button type="button" className="profile-cv-dialog-close" aria-label="Close skill levels" onClick={() => setLevelDialogOpen(false)}><X size={16} /></button>
+      <header className="profile-cv-dialog-header">
+        <h2 id="profile-cv-level-title">Choose skill levels</h2>
+        <p id="profile-cv-level-description">Set your own proficiency for each selected skill. This is not inferred from your CV.</p>
+      </header>
+        <div className="profile-cv-dialog-skills">
+          {selectedSkills.map(skill => {
+            const index = reviewSkills.findIndex(item => item.name === skill.name);
+            return <div className="profile-cv-dialog-row" key={skill.name}>
+              <div><strong>{skill.name}</strong><span>Self-assessed proficiency</span></div>
+              <select
+                className="fr-select"
+                value={skill.level}
+                onChange={event => setSkillLevel(index, event.target.value)}
+                aria-label={`Proficiency level for ${skill.name}`}
+              >
+                <option value="">Choose level</option>
+                {proficiencyLevels.map(level => <option key={level} value={level}>{level} · {levelLabel(level)}</option>)}
+              </select>
+            </div>;
+          })}
+        </div>
+        {!canApply && <p className="profile-cv-level-note" role="status">Choose a level for each selected skill to continue.</p>}
+        <div className="profile-cv-dialog-footer">
+          <button type="button" className="btn btn-secondary btn-small" onClick={() => setLevelDialogOpen(false)}>Back to skills</button>
+          <button type="button" className="btn btn-primary btn-small" onClick={applySkills} disabled={!canApply} data-testid="button-apply-cv-skills">
+            <Check size={14} /> Add skills to profile
+          </button>
+        </div>
+    </dialog>
   </section>;
 }
