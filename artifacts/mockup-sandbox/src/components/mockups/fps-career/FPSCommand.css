@@ -113,8 +113,9 @@
 .fps-role-category { display: block; color: #ab633b; font: 7px var(--fps-mono); letter-spacing: .8px; }
 .fps-role-main b { display: block; margin-top: 2px; color: #33281f; font: 600 13px var(--fps-display); letter-spacing: .2px; }
 .fps-role-main small { display: block; margin-top: 2px; color: #665b50; font-size: 9px; }
-.fps-role-meter { height: 4px; background: #e1d7c8; }
-.fps-role-meter i { display: block; height: 100%; background: var(--fps-acid); }
+.fps-role-chilis { display: flex; align-items: center; justify-content: center; gap: 2px; min-width: 0; color: #d4dcd3; }
+.fps-role-chilis svg { display: block; width: 10px; height: 17px; flex: 0 0 auto; fill: currentColor; }
+.fps-role-chilis svg.is-filled { color: #a95333; }
 .fps-role-match { text-align: right; }
 .fps-role-match b { display: block; color: var(--fps-acid); font: 15px var(--fps-display); }
 .fps-role-match small { color: #71665a; font: 7px var(--fps-mono); }
@@ -383,7 +384,7 @@
 .fps-section-intro { margin-bottom: 10px; color: var(--fps-muted); font-size: 10px; line-height: 1.5; }
 .fps-role-row {
   min-height: 54px;
-  grid-template-columns: 23px minmax(140px,1fr) minmax(52px,.5fr) 42px 13px;
+  grid-template-columns: 23px minmax(140px,1fr) minmax(58px,.55fr) 42px 13px;
   gap: 9px;
   padding: 7px 8px;
   border-top-color: #e9ece6;
@@ -395,9 +396,9 @@
 .fps-role-category { color: #8d705e; font-size: 7px; letter-spacing: .45px; }
 .fps-role-main b { color: var(--fps-copy); font: 600 12px var(--fps-display); letter-spacing: -.15px; }
 .fps-role-main small { color: var(--fps-muted); font-size: 8px; }
-.fps-role-meter { height: 3px; background: #e6e9e3; border-radius: 2px; }
-.fps-role-meter i { background: #8d9a83; border-radius: 2px; }
-.fps-role-row.is-leading .fps-role-meter i { background: #a95333; }
+.fps-role-chilis { gap: 2px; color: #d4dcd3; }
+.fps-role-chilis svg { width: 10px; height: 17px; }
+.fps-role-chilis svg.is-filled { color: #a95333; }
 .fps-role-match b { color: #556d5b; font: 600 13px var(--fps-display); }
 .fps-role-match small { color: var(--fps-dim); font-size: 6px; }
 .fps-role-chevron { color: #89968d; }
@@ -537,11 +538,12 @@
   .fps-mission-body { min-height: 180px; padding: 18px; }
   .fps-mission h2 { font-size: 22px; }
   .fps-role-panel, .fps-intel-panel, .fps-skill-panel, .fps-learning-panel { padding: 14px; }
-  .fps-role-row { grid-template-columns: 17px minmax(105px,1fr) 38px 30px 11px; gap: 5px; padding-inline: 3px; }
+  .fps-role-row { grid-template-columns: 17px minmax(105px,1fr) 43px 30px 11px; gap: 5px; padding-inline: 3px; }
   .fps-role-main b { font-size: 11px; }
   .fps-role-main small { font-size: 7px; }
   .fps-role-category { font-size: 6px; }
-  .fps-role-meter { display: none; }
+  .fps-role-chilis { gap: 1px; }
+  .fps-role-chilis svg { width: 8px; height: 14px; }
   .fps-skill-row { grid-template-columns: 17px minmax(95px,1fr) 40px; gap: 6px; padding: 5px 0; }
   .fps-level-control { grid-column: 2 / 4; grid-row: 2; margin-bottom: 5px; }
   .fps-level-control select { padding: 5px; }

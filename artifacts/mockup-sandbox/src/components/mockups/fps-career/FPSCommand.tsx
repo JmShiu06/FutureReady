@@ -160,7 +160,20 @@ export function FPSCommand() {
               <p className="fps-section-intro">Sorted by matched skills in the demo dataset. Select a role to inspect matched and missing skills.</p>
               <div className="fps-role-list">{matches.map((role, index) => <button key={role.name} className={`fps-role-row${index === 0 ? ' is-leading' : ''}`} onClick={() => setDetail(role)} data-testid={`role-${role.name.toLowerCase().replaceAll(' ', '-')}`}>
                 <span className="fps-role-rank">0{index + 1}</span><span className="fps-role-main"><span className="fps-role-category">{role.family}</span><b>{role.name}</b><small>{role.matched.length} of {role.skills.length} listed skills overlap</small></span>
-                <span className="fps-role-meter"><i style={{ width: `${Math.max(8, role.matched.length / role.skills.length * 100)}%` }} /></span>
+                <span className="fps-role-chilis" role="img" aria-label={`${role.matched.length} of ${role.skills.length} listed skills overlap`}>
+                  {Array.from({ length: 5 }, (_, chiliIndex) => (
+                    <svg
+                      key={chiliIndex}
+                      className={chiliIndex < Math.round((role.matched.length / role.skills.length) * 5) ? 'is-filled' : ''}
+                      viewBox="0 0 16 24"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path d="M8.7 5.5c1.1 2.7 1 5.5-.4 8.3-1.5 3-3.7 5.2-3.4 7.4.2 1.6 1.6 2.4 3.1 1.7 4.5-2.1 7.2-8.2 5.2-13.1-.8-1.9-2.2-3.3-4.5-4.3Z" />
+                      <path d="M8.2 6.3c-.7-1.4-.5-3 .7-4.4.5-.6 1.1-1.1 1.8-1.5.3 1.1.1 2.1-.5 3.1-.5.9-1.2 1.7-2 2.8Z" />
+                    </svg>
+                  ))}
+                </span>
                 <span className="fps-role-match"><b>{role.matched.length}</b><small>MATCHED</small></span><ChevronRight size={16} className="fps-role-chevron" />
               </button>)}</div>
               <div className="fps-data-foot"><InfoMark /> Dataset skill overlap is a comparison signal, not a probability of getting a job. This is not a live vacancy feed.</div>
