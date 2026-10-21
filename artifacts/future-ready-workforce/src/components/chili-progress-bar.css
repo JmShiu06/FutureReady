@@ -1,0 +1,12 @@
+.chili-progress { --chili-size:30px; --chili-ease:cubic-bezier(.34,1.3,.5,1); position:relative; width:100%; height:var(--chili-size); display:flex; align-items:center; background:transparent; }
+.chili-progress-track { position:relative; width:100%; height:10px; border-radius:999px; overflow:hidden; background:rgba(120,80,50,.13); box-shadow:inset 0 1px 2px rgba(60,35,20,.16); }
+.chili-progress-fill { position:absolute; inset:0; width:100%; overflow:hidden; transform-origin:left center; transform:scaleX(var(--chili-pct)); transition:transform .7s var(--chili-ease); }
+.chili-progress-gradient { position:absolute; inset:0; width:calc(100% / max(var(--chili-pct), .0001)); max-width:none; border-radius:999px; background:linear-gradient(90deg,#6f9f4a 0%,#9bc84f 20%,#f0d04f 40%,#ffaa28 58%,#ff7410 78%,#f0371a 100%); }
+.chili-progress-fill::after { content:''; position:absolute; left:0; right:0; top:0; height:50%; background:linear-gradient(rgba(255,255,255,.42),rgba(255,255,255,0)); border-radius:999px; }
+.chili-progress-marker { position:absolute; top:0; left:calc(var(--chili-size) / 2 + (100% - var(--chili-size)) * var(--chili-pct)); width:var(--chili-size); height:var(--chili-size); margin-left:calc(var(--chili-size) / -2); transition:left .7s var(--chili-ease); pointer-events:none; animation:chili-settle .5s var(--chili-ease) both; }
+.chili-progress-svg { display:block; width:100%; height:100%; filter:drop-shadow(0 1px 1.5px rgba(80,35,15,.3)); }
+@keyframes chili-settle { from { opacity:0; transform:translateY(4px) scale(.85); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce) {
+  .chili-progress-fill, .chili-progress-marker { transition:none; }
+  .chili-progress-marker { animation:none; }
+}

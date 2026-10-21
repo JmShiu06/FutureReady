@@ -4,7 +4,8 @@ import { ArrowLeft, BriefcaseBusiness, Check, FlaskConical, Leaf, Target, Workfl
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoRoles, sdgGoals, sdgMappings } from '@/domain/demo-data';
 import { assessRole, methodology } from '@/domain/services';
-import { Bar, EmptyBlock, EvidencePanel, GapStatus, PriorityTag, SectionTitle } from '@/components/workspace/ui';
+import { ChiliProgressBar } from '@/components/chili-progress-bar';
+import { EmptyBlock, EvidencePanel, GapStatus, PriorityTag, SectionTitle } from '@/components/workspace/ui';
 
 export default function RoleDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +37,7 @@ export default function RoleDetailPage() {
         <div className="panel panel-pad"><SectionTitle title="Task exposure" note="DESCRIPTIVE, NOT A PREDICTION" /><p className="muted">{role.taskExposure}</p></div>
       </div>
       <div className="stack">
-        <div className="panel panel-pad"><SectionTitle title="Methodology" /><p className="muted small">{methodology}</p><Bar value={a.readiness} label="coverage" /></div>
+        <div className="panel panel-pad"><SectionTitle title="Methodology" /><p className="muted small">{methodology}</p><ChiliProgressBar value={a.readiness} label={`Illustrative skill coverage ${a.readiness}%`} testId="progress-coverage" /></div>
         <div className="panel panel-pad"><SectionTitle title="Evidence" /><EvidencePanel evidence={role.evidence} /></div>
         <div className="panel panel-pad"><SectionTitle title="SDG links" note="UNVERIFIED SAMPLE MAPPINGS" />
           {sdgs.length ? sdgs.map(m => <div key={m.goal} className="row small" style={{ alignItems: 'flex-start' }}><Leaf size={14} /><span><b>SDG {m.goal}: {sdgGoals.find(g => g.number === m.goal)?.name}</b><br />{m.explanation}</span></div>)

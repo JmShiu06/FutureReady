@@ -4,6 +4,7 @@ import { Info } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoRoles } from '@/domain/demo-data';
 import { buildRoadmap, completionKey } from '@/domain/services';
+import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, PageHead, PriorityTag, SectionTitle } from '@/components/workspace/ui';
 
 export default function RoadmapPage() {
@@ -36,7 +37,7 @@ export default function RoadmapPage() {
     <div className="dashboard-grid">
       <div className="panel panel-pad">
         <SectionTitle title="Progress" note={`${done} OF ${milestones.length} MILESTONES`} />
-        <div className="progress" role="progressbar" aria-valuenow={done} aria-valuemin={0} aria-valuemax={Math.max(1, milestones.length)} aria-label="Roadmap completion"><i style={{ transform: `scaleX(${milestones.length ? done / milestones.length : 0})` }} /></div>
+        <ChiliProgressBar value={milestones.length ? 100 * done / milestones.length : 0} label="Roadmap completion" valueText={`${done} of ${milestones.length} milestones complete`} testId="progress-roadmap" />
         <p className="muted" style={{ marginTop: 10 }} data-testid="text-plan-cost">Total sample cost MYR {totalCost} · budget MYR {profile.budgetMYR}{totalCost > profile.budgetMYR ? ' — over budget; try the free filter.' : ' — within budget.'}</p>
         <p className="muted small">Priority skills: {milestones.map(m => m.skill).join(', ') || 'none'}</p>
       </div>
