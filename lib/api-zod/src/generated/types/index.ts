@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './aiAnnouncement';
+export * from './aiAnnouncementsResponse';
+export * from './aiAnnouncementsResponseSource';
 export * from './careerMatch';
 export * from './careerMatchResult';
 export * from './careerPathAnalysisReport';
@@ -52,5 +55,9 @@ export * from './profileSimilarityReport';
 export * from './resumeAnalysisReport';
 export * from './resumeTextInput';
 export * from './searchJobsParams';
+export * from './skillFrequenciesResponse';
+export * from './skillFrequenciesResponseSource';
+export * from './skillFrequency';
+export * from './skillFrequencyRole';
 export * from './skillGapAnalysisInput';
 export * from './skillGapAnalysisReport';

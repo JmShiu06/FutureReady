@@ -439,6 +439,55 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /signals/ai-announcements:
+    get:
+      operationId: getAiAnnouncements
+      tags: [signals]
+      summary: AI-related Ministry of Digital press releases
+      description: Qualitative, dated announcements read from the public listing page. Not skill-demand data.
+      responses:
+        "200":
+          description: Announcements with source, retrieval time and staleness
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiAnnouncementsResponse"
+        "502":
+          description: Source unavailable and no earlier copy exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /signals/ai-announcements/refresh:
+    post:
+      operationId: refreshAiAnnouncements
+      tags: [signals]
+      summary: Re-request the Ministry of Digital listing
+      responses:
+        "200":
+          description: Announcements were retrieved and parsed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiAnnouncementsResponse"
+        "502":
+          description: Refresh failed; any earlier copy is retained
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /signals/skill-frequencies:
+    get:
+      operationId: getSkillFrequencies
+      tags: [signals]
+      summary: Qarera global job-posting skill frequencies by role family
+      responses:
+        "200":
+          description: Top skills per role family with source and limitations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillFrequenciesResponse"
 components:
   parameters:
     JobPage:
@@ -523,6 +572,77 @@ components:
         enum: [relevance, recent]
         default: recent
   schemas:
+    AiAnnouncement:
+      type: object
+      properties:
+        title: { type: string }
+        publishedOn: { type: string, format: date }
+        category: { type: [string, "null"] }
+        url: { type: string, format: uri }
+        source: { type: string }
+      required: [title, publishedOn, category, url, source]
+    AiAnnouncementsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiAnnouncement"
+        source:
+          type: object
+          properties:
+            name: { type: string }
+            listingUrl: { type: string, format: uri }
+          required: [name, listingUrl]
+        retrievedAt: { type: string, format: date-time }
+        isStale: { type: boolean }
+        warning: { type: [string, "null"] }
+        limitations:
+          type: array
+          items: { type: string }
+      required: [items, source, retrievedAt, isStale, warning, limitations]
+    SkillFrequency:
+      type: object
+      properties:
+        skill: { type: string }
+        postingsWithSkill: { type: integer, minimum: 0 }
+        percentOfRolePostings: { type: number, minimum: 0, maximum: 100 }
+      required: [skill, postingsWithSkill, percentOfRolePostings]
+    SkillFrequencyRole:
+      type: object
+      properties:
+        roleFamily: { type: string }
+        rolePostings: { type: integer, minimum: 0 }
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillFrequency"
+      required: [roleFamily, rolePostings, skills]
+    SkillFrequenciesResponse:
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillFrequencyRole"
+        source:
+          type: object
+          properties:
+            datasetName: { type: string }
+            publisher: { type: string }
+            period: { type: string }
+            license: { type: string }
+            citation: { type: string }
+            urls:
+              type: array
+              items: { type: string }
+            geographyNote: { type: string }
+            measurementNote: { type: string }
+          required: [datasetName, publisher, period, license, citation, urls, geographyNote, measurementNote]
+        limitations:
+          type: array
+          items: { type: string }
+      required: [roles, source, limitations]
     ErrorResponse:
       type: object
       properties:

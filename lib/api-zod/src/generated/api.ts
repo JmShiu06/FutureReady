@@ -685,3 +685,84 @@ export const RefreshDosmLabourForceResponse = zod.object({
 })
 
 
+/**
+ * Qualitative, dated announcements read from the public listing page. Not skill-demand data.
+ * @summary AI-related Ministry of Digital press releases
+ */
+export const GetAiAnnouncementsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "title": zod.string(),
+  "publishedOn": zod.coerce.date(),
+  "category": zod.string().nullable(),
+  "url": zod.string().url(),
+  "source": zod.string()
+})),
+  "source": zod.object({
+  "name": zod.string(),
+  "listingUrl": zod.string().url()
+}),
+  "retrievedAt": zod.coerce.date(),
+  "isStale": zod.boolean(),
+  "warning": zod.string().nullable(),
+  "limitations": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Re-request the Ministry of Digital listing
+ */
+export const RefreshAiAnnouncementsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "title": zod.string(),
+  "publishedOn": zod.coerce.date(),
+  "category": zod.string().nullable(),
+  "url": zod.string().url(),
+  "source": zod.string()
+})),
+  "source": zod.object({
+  "name": zod.string(),
+  "listingUrl": zod.string().url()
+}),
+  "retrievedAt": zod.coerce.date(),
+  "isStale": zod.boolean(),
+  "warning": zod.string().nullable(),
+  "limitations": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Qarera global job-posting skill frequencies by role family
+ */
+export const getSkillFrequenciesResponseRolesItemRolePostingsMin = 0;
+
+export const getSkillFrequenciesResponseRolesItemSkillsItemPostingsWithSkillMin = 0;
+
+export const getSkillFrequenciesResponseRolesItemSkillsItemPercentOfRolePostingsMin = 0;
+export const getSkillFrequenciesResponseRolesItemSkillsItemPercentOfRolePostingsMax = 100;
+
+
+
+export const GetSkillFrequenciesResponse = zod.object({
+  "roles": zod.array(zod.object({
+  "roleFamily": zod.string(),
+  "rolePostings": zod.number().int().min(getSkillFrequenciesResponseRolesItemRolePostingsMin),
+  "skills": zod.array(zod.object({
+  "skill": zod.string(),
+  "postingsWithSkill": zod.number().int().min(getSkillFrequenciesResponseRolesItemSkillsItemPostingsWithSkillMin),
+  "percentOfRolePostings": zod.number().min(getSkillFrequenciesResponseRolesItemSkillsItemPercentOfRolePostingsMin).max(getSkillFrequenciesResponseRolesItemSkillsItemPercentOfRolePostingsMax)
+}))
+})),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "publisher": zod.string(),
+  "period": zod.string(),
+  "license": zod.string(),
+  "citation": zod.string(),
+  "urls": zod.array(zod.string()),
+  "geographyNote": zod.string(),
+  "measurementNote": zod.string()
+}),
+  "limitations": zod.array(zod.string())
+})
+
+

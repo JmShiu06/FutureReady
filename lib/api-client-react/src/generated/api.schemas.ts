@@ -5,6 +5,65 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AiAnnouncement {
+  title: string;
+  publishedOn: string;
+  /** @nullable */
+  category: string | null;
+  url: string;
+  source: string;
+}
+
+export type AiAnnouncementsResponseSource = {
+  name: string;
+  listingUrl: string;
+};
+
+export interface AiAnnouncementsResponse {
+  items: AiAnnouncement[];
+  source: AiAnnouncementsResponseSource;
+  retrievedAt: string;
+  isStale: boolean;
+  /** @nullable */
+  warning: string | null;
+  limitations: string[];
+}
+
+export interface SkillFrequency {
+  skill: string;
+  /** @minimum 0 */
+  postingsWithSkill: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  percentOfRolePostings: number;
+}
+
+export interface SkillFrequencyRole {
+  roleFamily: string;
+  /** @minimum 0 */
+  rolePostings: number;
+  skills: SkillFrequency[];
+}
+
+export type SkillFrequenciesResponseSource = {
+  datasetName: string;
+  publisher: string;
+  period: string;
+  license: string;
+  citation: string;
+  urls: string[];
+  geographyNote: string;
+  measurementNote: string;
+};
+
+export interface SkillFrequenciesResponse {
+  roles: SkillFrequencyRole[];
+  source: SkillFrequenciesResponseSource;
+  limitations: string[];
+}
+
 export interface ErrorResponse {
   error: string;
 }

@@ -117,7 +117,7 @@ export function DosmDataPanels() {
 
         <p className="muted" style={{ marginTop: 0 }}>
           Counts are reported in thousands of people; rates are percentages. This national series is
-          kept separate from occupation postings and the synthetic skill examples below.
+          kept separate from occupation postings and other evidence panels. It is not skill demand.
         </p>
 
         <div
@@ -201,6 +201,11 @@ export function DosmDataPanels() {
               </EmptyBlock>
             ) : (
               <>
+                <p className="small muted" style={{ marginTop: 0 }} data-testid="text-dosm-reference-period">
+                  Reference period: latest observation {fmtMonth(labourForceQuery.data.metadata.latestObservationDate)} ·
+                  Retrieved from OpenDOSM {fmtTimestamp(labourForceQuery.data.metadata.retrievedAt)} ·
+                  Publication date: not provided by the API.
+                </p>
                 {latest && (
                   <div
                     style={{

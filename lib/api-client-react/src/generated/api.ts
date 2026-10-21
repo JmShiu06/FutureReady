@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AiAnnouncementsResponse,
   CareerMatchResult,
   CareerPathAnalysisReport,
   CareerSkillList,
@@ -42,6 +43,7 @@ import type {
   ResumeAnalysisReport,
   ResumeTextInput,
   SearchJobsParams,
+  SkillFrequenciesResponse,
   SkillGapAnalysisInput,
   SkillGapAnalysisReport
 } from './api.schemas';
@@ -1406,4 +1408,233 @@ export const useRefreshDosmLabourForce = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getRefreshDosmLabourForceMutationOptions(options));
     }
+
+export const getGetAiAnnouncementsUrl = () => {
+
+
+
+
+  return `/api/signals/ai-announcements`
+}
+
+/**
+ * Qualitative, dated announcements read from the public listing page. Not skill-demand data.
+ * @summary AI-related Ministry of Digital press releases
+ */
+export const getAiAnnouncements = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiAnnouncementsResponse> => {
+
+  return customFetch<AiAnnouncementsResponse>(getGetAiAnnouncementsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiAnnouncementsQueryKey = () => {
+    return [
+    `/api/signals/ai-announcements`
+    ] as const;
+    }
+
+
+export const getGetAiAnnouncementsQueryOptions = <TData = Awaited<ReturnType<typeof getAiAnnouncements>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiAnnouncements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiAnnouncementsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiAnnouncements>>> = ({ signal }) => getAiAnnouncements({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiAnnouncements>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiAnnouncementsQueryResult = NonNullable<Awaited<ReturnType<typeof getAiAnnouncements>>>
+export type GetAiAnnouncementsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary AI-related Ministry of Digital press releases
+ */
+
+export function useGetAiAnnouncements<TData = Awaited<ReturnType<typeof getAiAnnouncements>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiAnnouncements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiAnnouncementsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRefreshAiAnnouncementsUrl = () => {
+
+
+
+
+  return `/api/signals/ai-announcements/refresh`
+}
+
+/**
+ * @summary Re-request the Ministry of Digital listing
+ */
+export const refreshAiAnnouncements = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiAnnouncementsResponse> => {
+
+  return customFetch<AiAnnouncementsResponse>(getRefreshAiAnnouncementsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRefreshAiAnnouncementsMutationKey = () => ['refreshAiAnnouncements'] as const;
+
+export const getRefreshAiAnnouncementsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshAiAnnouncements>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshAiAnnouncements>>, TError,void, TContext> => {
+
+const mutationKey = getRefreshAiAnnouncementsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshAiAnnouncements>>, void> = () => {
+
+
+          return  refreshAiAnnouncements(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshAiAnnouncementsMutationResult = NonNullable<Awaited<ReturnType<typeof refreshAiAnnouncements>>>
+
+    export type RefreshAiAnnouncementsMutationError = ErrorType<ErrorResponse>
+
+
+    /**
+ * @summary Re-request the Ministry of Digital listing
+ */
+export const useRefreshAiAnnouncements = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshAiAnnouncements>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshAiAnnouncements>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshAiAnnouncementsMutationOptions(options));
+    }
+
+export const getGetSkillFrequenciesUrl = () => {
+
+
+
+
+  return `/api/signals/skill-frequencies`
+}
+
+/**
+ * @summary Qarera global job-posting skill frequencies by role family
+ */
+export const getSkillFrequencies = async ( options?: Parameters<typeof customFetch>[1]): Promise<SkillFrequenciesResponse> => {
+
+  return customFetch<SkillFrequenciesResponse>(getGetSkillFrequenciesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSkillFrequenciesQueryKey = () => {
+    return [
+    `/api/signals/skill-frequencies`
+    ] as const;
+    }
+
+
+export const getGetSkillFrequenciesQueryOptions = <TData = Awaited<ReturnType<typeof getSkillFrequencies>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSkillFrequencies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSkillFrequenciesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSkillFrequencies>>> = ({ signal }) => getSkillFrequencies({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSkillFrequencies>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSkillFrequenciesQueryResult = NonNullable<Awaited<ReturnType<typeof getSkillFrequencies>>>
+export type GetSkillFrequenciesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Qarera global job-posting skill frequencies by role family
+ */
+
+export function useGetSkillFrequencies<TData = Awaited<ReturnType<typeof getSkillFrequencies>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSkillFrequencies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSkillFrequenciesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
