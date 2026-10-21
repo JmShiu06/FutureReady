@@ -1,14 +1,30 @@
 import { useMemo } from 'react';
 import { Link } from 'wouter';
+import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { ArrowRight, Compass, FlaskConical, Info, UserRound, Users, Workflow } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
-import { aggregateRecords, audienceLabels, demoRoles } from '@/domain/demo-data';
+import { aggregateRecords, audienceLabels, demoRoles, sdgGoals, sdgMappings } from '@/domain/demo-data';
 import { assessRole, rankCareers } from '@/domain/services';
 import { Bar, GapStatus, PageHead, PriorityTag, SectionTitle, SkillMeter } from '@/components/workspace/ui';
 
 function AggregateOverview() {
   const { state } = useWorkspace();
   const isHr = state.audience === 'hr';
+  const cohortRadar = useMemo(() => {
+    const totals = new Map<string, { total: number; count: number }>();
+    aggregateRecords.forEach(record => record.skills.forEach(skill => {
+      const key = skill.name.trim();
+      const current = totals.get(key) ?? { total: 0, count: 0 };
+      totals.set(key, { total: current.total + skill.level, count: current.count + 1 });
+    }));
+    return [...totals].map(([skill, value]) => ({
+      skill,
+      average: Number((value.total / value.count).toFixed(1)),
+      records: value.count,
+    })).sort((a, b) => b.records - a.records || a.skill.localeCompare(b.skill)).slice(0, 5);
+  }, []);
+  const representedRoles = new Set(aggregateRecords.map(record => record.targetRoleId));
+  const cohortMappings = sdgMappings.filter(mapping => representedRoles.has(mapping.roleId)).slice(0, 3);
   const stats = useMemo(() => {
     const assessed = aggregateRecords.map(r => assessRole(r, demoRoles.find(d => d.id === r.targetRoleId)!));
     const avg = Math.round(assessed.reduce((t, a) => t + a.readiness, 0) / assessed.length);
@@ -41,6 +57,46 @@ function AggregateOverview() {
         <div className="row"><Link href="/trends" className="text-link" data-testid="link-dashboard-trends">Skills radar <ArrowRight size={12} /></Link><Link href="/sdgs" className="text-link" data-testid="link-dashboard-sdgs">SDG explorer <ArrowRight size={12} /></Link></div>
       </div>
     </section>
+    <section className="dashboard-grid">
+      <div className="panel panel-pad radar-panel">
+        <SectionTitle title="Cohort skill profile" note="FIVE MOST-LISTED SKILLS · SYNTHETIC RECORDS" />
+        {cohortRadar.length === 5 ? <>
+          <div className="personal-radar-chart" role="img" aria-label="Five-axis radar chart of average listed proficiency across synthetic cohort records" data-testid="chart-cohort-skills">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={cohortRadar} outerRadius="68%">
+                <PolarGrid stroke="#dce5ef" />
+                <PolarAngleAxis dataKey="skill" tick={{ fill: '#60748b', fontSize: 10 }} />
+                <PolarRadiusAxis domain={[0, 5]} tickCount={6} axisLine={false} tick={{ fill: '#8796a8', fontSize: 8 }} />
+                <Tooltip isAnimationActive={false} formatter={value => `${Number(value).toFixed(1)}/5`} />
+                <Radar name="Average listed proficiency" dataKey="average" type="natural" stroke="#1674d1" fill="#1674d1" fillOpacity={0.2} isAnimationActive={false} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="muted small radar-note">Averages include only records that list each skill. Missing skills are not counted as zero; this is a fictional cohort example, not a workforce measurement.</p>
+          <ul className="radar-text-summary" aria-label="Text summary of cohort skill profile">
+            {cohortRadar.map(skill => <li key={skill.skill}><strong>{skill.skill}</strong><span>{skill.average}/5 · listed in {skill.records} of {aggregateRecords.length} records</span></li>)}
+          </ul>
+        </> : <p className="muted">There are not yet five distinct listed skills to show.</p>}
+      </div>
+      <div className="panel panel-pad">
+        <SectionTitle title="Sample SDG associations" note="ROLES IN THIS SYNTHETIC COHORT" />
+        {cohortMappings.length ? <div className="stack">{cohortMappings.map(mapping => {
+          const goal = sdgGoals.find(item => item.number === mapping.goal);
+          const role = demoRoles.find(item => item.id === mapping.roleId);
+          return <article className="sdg-summary-card" key={`${mapping.roleId}-${mapping.goal}`} data-testid={`card-dashboard-cohort-sdg-${mapping.roleId}-${mapping.goal}`}>
+            <div className="spread"><span className="sdg-summary-number">{mapping.goal}</span><span className="tag tag-low">{mapping.verified ? 'Verified' : 'Unverified example'}</span></div>
+            <strong>{goal?.name ?? `Goal ${mapping.goal}`}</strong>
+            <span className="muted small">{role?.title ?? 'Sample role'}</span>
+            <p className="muted small">{mapping.explanation}</p>
+            {mapping.citationUrl
+              ? <a className="text-link small" href={mapping.citationUrl} target="_blank" rel="noreferrer">{mapping.citationName ?? 'View citation'}</a>
+              : <span className="muted small">No citation supplied</span>}
+          </article>;
+        })}</div> : <div className="state-box sdg-summary-empty"><strong>No sample SDG associations for these records</strong><span>We do not map every role to a goal.</span></div>}
+        <div className="disclaimer"><Info size={14} /><span>These are illustrative associations, not verified evidence of contribution or measured impact.</span></div>
+        <Link href="/sdgs" className="text-link">Explore all 17 goals <ArrowRight size={12} /></Link>
+      </div>
+    </section>
   </>;
 }
 
@@ -49,6 +105,19 @@ function PersonalOverview() {
   const ranked = useMemo(() => rankCareers(profile), [profile]);
   const target = demoRoles.find(r => r.id === targetRoleId) ?? demoRoles[0];
   const targetAssessment = useMemo(() => assessRole(profile, target), [profile, target]);
+  const radarSkills = useMemo(() => {
+    const seen = new Set<string>();
+    return ranked.slice(0, 3).flatMap(result => result.role.requiredSkills).filter(skill => {
+      const key = skill.name.trim().toLocaleLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 5).map(required => {
+      const current = profile.skills.find(skill => skill.name.trim().toLocaleLowerCase() === required.name.trim().toLocaleLowerCase());
+      return { skill: required.name, profile: current?.level ?? 0, target: required.level, listed: Boolean(current) };
+    });
+  }, [ranked, profile.skills]);
+  const targetMappings = sdgMappings.filter(mapping => mapping.roleId === target.id);
   const transferable = profile.skills.filter(s => demoRoles.filter(r => r.requiredSkills.some(q => q.name.toLowerCase() === s.name.toLowerCase())).length >= 2);
   const graduate = state.audience === 'graduate';
   const audienceDetails = graduate
@@ -103,6 +172,46 @@ function PersonalOverview() {
         <SectionTitle title="Task exposure" note="DESCRIPTIVE, NOT A PREDICTION" />
         <p className="muted" data-testid="text-task-exposure">{target.taskExposure}</p>
         <div className="disclaimer"><Info size={14} /><span>Hand-written description of a fictional role. It does not estimate automation risk or job loss.</span></div>
+      </div>
+    </section>
+    <section className="dashboard-grid">
+      <div className="panel panel-pad radar-panel">
+        <SectionTitle title="Skill profile & sample target" note="FIVE SKILLS FROM YOUR TOP-RANKED ROLES" />
+        {radarSkills.length === 5 ? <>
+          <div className="personal-radar-chart" role="img" aria-label="Five-axis comparison of listed profile skill levels and sample role requirements" data-testid="chart-personal-skills">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarSkills} outerRadius="68%">
+                <PolarGrid stroke="#dce5ef" />
+                <PolarAngleAxis dataKey="skill" tick={{ fill: '#60748b', fontSize: 10 }} />
+                <PolarRadiusAxis domain={[0, 5]} tickCount={6} axisLine={false} tick={{ fill: '#8796a8', fontSize: 8 }} />
+                <Tooltip isAnimationActive={false} formatter={(value, name, item) => [item.payload.listed || name === 'Sample target' ? `${value}/5` : 'Not listed · drawn at 0/5', name]} />
+                <Radar name="Your listed level" dataKey="profile" type="natural" stroke="#1674d1" fill="#1674d1" fillOpacity={0.24} isAnimationActive={false} />
+                <Radar name="Sample target" dataKey="target" type="natural" stroke="#7892ad" fill="#7892ad" fillOpacity={0.08} isAnimationActive={false} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="radar-legend"><span><i className="radar-dot current" /> Your listed level</span><span><i className="radar-dot sample" /> Sample target</span></div>
+          <p className="muted small radar-note">A skill absent from your profile is “not listed,” not evidence of no ability. For chart geometry only, it is drawn at 0; level your profile to refine this illustrative comparison.</p>
+          <ul className="radar-text-summary" aria-label="Text summary of skill comparison">
+            {radarSkills.map(skill => <li key={skill.skill}><strong>{skill.skill}</strong><span>{skill.listed ? `Listed ${skill.profile}/5` : 'Not listed'} · sample target {skill.target}/5</span></li>)}
+          </ul>
+        </> : <p className="muted">Five distinct sample requirements are not available to plot yet.</p>}
+      </div>
+      <div className="panel panel-pad">
+        <SectionTitle title="Possible SDG links" note={`SELECTED TARGET · ${target.title}`} />
+        {targetMappings.length ? <div className="stack">{targetMappings.map(mapping => {
+          const goal = sdgGoals.find(item => item.number === mapping.goal);
+          return <article className="sdg-summary-card" key={`${mapping.roleId}-${mapping.goal}`} data-testid={`card-dashboard-sdg-${mapping.roleId}-${mapping.goal}`}>
+            <div className="spread"><span className="sdg-summary-number">{mapping.goal}</span><span className="tag tag-low">{mapping.verified ? 'Verified' : 'Unverified example'}</span></div>
+            <strong>{goal?.name ?? `Goal ${mapping.goal}`}</strong>
+            <p className="muted small">{mapping.explanation}</p>
+            <div className="row">{mapping.skills.map(skill => <span key={skill} className="chip">{skill}</span>)}</div>
+            {mapping.citationUrl && <a className="text-link small" href={mapping.citationUrl} target="_blank" rel="noreferrer">{mapping.citationName ?? 'View citation'}</a>}
+            {!mapping.citationUrl && <span className="muted small">No citation supplied</span>}
+          </article>;
+        })}</div> : <div className="state-box sdg-summary-empty"><strong>No sample mapping for this target</strong><span>We do not map every role to a goal. This is an honest empty result.</span></div>}
+        <div className="disclaimer"><Info size={14} /><span>These are illustrative associations, not verified evidence of contribution or measured impact.</span></div>
+        <Link href="/sdgs" className="text-link">Explore all 17 goals <ArrowRight size={12} /></Link>
       </div>
     </section>
   </>;

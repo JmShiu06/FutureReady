@@ -145,3 +145,77 @@
   .page-enter, .skeleton { animation:none; }
   .progress i, .profile-completeness-track span, .bar, .btn, .nav-link { transition:none; }
 }
+
+/* Shared workspace controls inherit the cool, low-contrast FutureReady system. */
+.audience-switch label { color:#7b8da2; }
+.audience-switch select { border-color:#dce4ed; background:rgba(255,255,255,.78); color:#415873; }
+.top-audience { border-color:#dce4ed; background:#fbfdff; color:#425a75; }
+.banner-demo { background:#edf5fd; color:#4d6681; border-color:#d7e7f7; }
+.banner-warn { background:#fff5e9; color:#845c26; border-color:#edd9b9; }
+.muted { color:#71839a; }
+.fr-input,.fr-select,.fr-textarea { border-color:#dce4ed; background:#fbfdff; color:#344860; }
+.field > label,.field-label { color:#71839a; }
+.fr-input:focus,.fr-select:focus,.fr-textarea:focus,.btn:focus-visible,.nav-link:focus-visible { outline-color:#3989d5; }
+.section-info summary { border-color:#d5e2f0; background:#f8fbff; color:#2676c1; }
+.section-info summary:hover { background:#eaf3fd; }
+.section-info-popup { border-color:#dce4ed; background:#fff; color:#536980; box-shadow:0 12px 30px rgba(42,65,92,.14); }
+.profile-completeness-heading strong,.suggested-skill-heading strong { color:#344a63; }
+.profile-completeness-heading span,.profile-refresh-note,.suggested-skill-heading span,.suggested-skill-panel > p { color:#78899d; }
+.profile-completeness-heading > b,.kpi strong,.big-num { color:#1674d1; }
+.profile-completeness-track { background:#e8eef5; }
+.profile-completeness-track span { background:#3989d5; }
+.suggested-skill-panel { border-color:#e1e8f0; background:#fbfdff; }
+.suggested-skill-chip { border-color:#d4e4f4; background:#f0f7fe; color:#286da9; }
+.suggested-skill-chip:hover { background:#e5f1fc; border-color:#a9cbe9; }
+.profile-save-bar { border-color:#dce4ed; background:rgba(249,252,255,.95); box-shadow:0 -9px 20px rgba(42,65,92,.06); }
+.chili-level-caption { color:#71839a; }
+.skill-edit { border-color:#e9eef4; }
+.btn-danger { background:#fff1ef; color:#9a514c; border-color:#f0d5d1; }
+.kpi span,.kpi small { color:#78899d; }
+.role-card { border-color:#e1e8f0; background:#fbfdff; }
+.role-card.selected { border-color:#78aee2; box-shadow:0 0 0 2px #e3f0fd; }
+.rank { color:#2472bc; background:#eaf3fd; }
+.bar-track { background:#e8eef5; }
+.bar-track i { background:#3989d5; }
+.tag-ok { background:#e8f2ee; color:#3d7464; }
+.tag-below { background:#fff3df; color:#8b641f; }
+.tag-miss { background:#f9e9e7; color:#9a514c; }
+.tag-high { background:#397eb9; }
+.tag-medium { background:#e9f1fa; color:#456783; }
+.tag-low { background:#f0f3f7; color:#687b91; }
+.evidence { border-color:#d9e3ee; background:#f8fbfe; color:#536980; }
+.evidence dt { color:#8192a5; }
+.warn-list { color:#865f2c; }
+.skeleton { background:linear-gradient(90deg,#e9eff6,#f6f9fc,#e9eff6); background-size:200% 100%; }
+.state-box { border-color:#d8e3ef; color:#657a92; }
+.milestone { border-color:#e1e8f0; background:#fbfdff; }
+.milestone.done { background:#f2f6fa; }
+.milestone input[type=checkbox] { accent-color:#1674d1; }
+.progress { background:#e8eef5; }
+.progress i { background:#3989d5; }
+.sdg-tile { border-color:#e1e8f0; background:#fbfdff; color:#344860; }
+.sdg-tile b { color:#2678c3; }
+.sdg-tile.mapped { background:#eef6fd; border-color:#d3e7f8; }
+.sdg-tile.active { border-color:#428cd0; box-shadow:0 0 0 2px #e2f0fd; }
+.chart-box { color:#5d7188; }
+.record-btn { color:#176fc9; }
+.profile-cv-heading h2,.profile-cv-drop strong,.profile-cv-dialog h2 { color:#344a63; }
+.profile-cv-heading p,.profile-cv-drop > span,.profile-cv-privacy,.profile-cv-limit,.profile-cv-dialog-header p { color:#71839a; }
+.profile-cv-icon,.profile-cv-drop { color:#2676c1; }
+.profile-cv-icon { background:#e8f2fd; }
+.profile-cv-drop { border-color:#c6d9ec; background:#f8fbff; }
+.profile-cv-drop.is-dragging { border-color:#3989d5; background:#eef6fd; }
+.profile-cv-privacy svg,.profile-cv-limit svg { color:#4384c3; }
+.profile-cv-dialog { border-color:#dce4ed; background:#fbfdff; color:#344860; }
+.profile-cv-dialog::backdrop { background:rgba(35,51,70,.48); }
+.profile-cv-dialog-close { background:#edf3fa; color:#536b86; }
+.profile-cv-suggestion,.profile-cv-dialog-row,.profile-cv-result { border-color:#e1e8f0; background:#fff; }
+.profile-cv-suggestion strong,.profile-cv-dialog-row strong,.profile-cv-result strong { color:#344a63; }
+.profile-cv-suggestion > span > span,.profile-cv-dialog-header p,.profile-cv-suggestions-note { color:#71839a; }
+.profile-cv-suggestion > input,.profile-cv-dialog-skill-name input { accent-color:#1674d1; }
+.profile-cv-warnings { border-left-color:#d39a4e; background:#fff8ed; color:#785d35; }
+.profile-linkedin-preview,.profile-cv-empty { border-color:#d7e4f0; background:#f5f9fd; }
+.profile-cv-level-note { color:#7b633c; }
+@media (max-width:780px) {
+  .audience-switch { display:none; }
+}

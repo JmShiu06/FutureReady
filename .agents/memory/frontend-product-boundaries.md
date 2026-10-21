@@ -7,7 +7,13 @@ FutureReady Workforce targets the Aiversecity Future-Ready Workforce domain: wor
 
 **Why:** The user explicitly identified these four audiences and requires a hackathon frontend before later backend, dataset, AI and database milestones.
 
-**How to apply:** Keep audience demo profiles and learning progress isolated. Preserve the existing warm visual identity and React/TypeScript, Vite and Wouter stack. Do not change the Express backend, schemas or deployment configuration for frontend-only requests.
+**How to apply:** Keep audience demo profiles and learning progress isolated. Preserve the React/TypeScript, Vite and Wouter stack. Do not change the Express backend, schemas or deployment configuration for frontend-only requests.
+
+The user explicitly approved a light, macOS-inspired site-wide direction with white and gray surfaces, subtle glass navigation and soft electric-blue accents. This supersedes the previous warm palette for the FutureReady app; FPS canvas references remain separate.
+
+**Why:** The latest visual request directly defines the current application style, while earlier FPS references were for independent canvas mockups.
+
+**How to apply:** Use the light blue direction for FutureReady app-wide visual work unless the user changes it. Do not carry separate canvas mockup styling into the app without approval.
 
 Readiness, observed market evidence and scenario assumptions are different concepts. Synthetic profiles, employment examples and cohort records must be clearly labelled. Unverified courses and role/skill-to-SDG relationships must not be presented as verified evidence.
 
