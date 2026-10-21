@@ -1,5 +1,4 @@
 - [CV workflow boundaries](cv-workflow-boundaries.md) — CV privacy and confirmation rules; separate FPS canvas references must not replace the app's warm theme without approval.
 - [Watermarked CV OCR](watermarked-cv-ocr.md) — compare layout/resolution variants before applying destructive watermark thresholding.
 - [Frontend product boundaries](frontend-product-boundaries.md) — four Aiversecity audiences, frontend-only scope and honest separation of readiness, evidence and assumptions.
-- [Learning recommendation boundaries](learning-recommendation-boundaries.md) — consume existing analysis; uploaded course references are not the verified-resource library.
-- [Python CPU package sources](python-cpu-package-sources.md) — installer-generated CPU index mappings can incorrectly capture unrelated ML packages.
+- [Learning recommendation boundaries](learning-recommendation-boundaries.md) — Python learning engine was explicitly retired; preserve existing analysis and verified learning resources.

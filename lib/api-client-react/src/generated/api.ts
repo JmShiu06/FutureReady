@@ -25,8 +25,6 @@ import type {
   CareerPathAnalysisReport,
   CareerSkillList,
   CareerSkillsInput,
-  CourseRecommendationInput,
-  CourseRecommendationsResponse,
   CvSkillExtraction,
   CvUploadInput,
   DosmJobMarketInsightsResponse,
@@ -40,8 +38,6 @@ import type {
   JobMatchInput,
   JobMatchScores,
   JobPage,
-  LearningRoadmapInput,
-  LearningRoadmapResponse,
   ListJobsParams,
   OccupationEvidenceResult,
   OccupationSkillsInput,
@@ -757,184 +753,6 @@ export const useAnalyzeProfileSimilarity = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getAnalyzeProfileSimilarityMutationOptions(options));
-    }
-
-export const getRecommendCoursesUrl = () => {
-
-
-
-
-  return `/api/recommend-courses`
-}
-
-/**
- * Consumes skill-analysis results; it does not re-analyze CVs. Matches requested skills against the supplied Coursera/edX dataset's skill tags, titles and descriptions using sentence-transformers and Chroma cosine search, then ranks by relevance, score-derived difficulty, available rating and learning priority. Courses are interleaved across skill targets. Dataset links, ratings and availability have not been independently verified.
- * @summary Recommend dataset courses from existing skill-analysis output
- */
-export const recommendCourses = async (courseRecommendationInput: CourseRecommendationInput, options?: Parameters<typeof customFetch>[1]): Promise<CourseRecommendationsResponse> => {
-
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
-    if (!h) return {};
-    if (h instanceof Headers) return Object.fromEntries(h.entries());
-    if (Symbol.iterator in h) {
-      return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
-      );
-    }
-    const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
-      if (value !== undefined) headers[name] = value;
-    }
-    return headers;
-  };
-return customFetch<CourseRecommendationsResponse>(getRecommendCoursesUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(courseRecommendationInput)
-  }
-);}
-
-
-
-
-
-export const getRecommendCoursesMutationKey = () => ['recommendCourses'] as const;
-
-export const getRecommendCoursesMutationOptions = <TError = ErrorType<ErrorResponse | void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recommendCourses>>, TError,RecommendCoursesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof recommendCourses>>, TError,RecommendCoursesMutationVariables, TContext> => {
-
-const mutationKey = getRecommendCoursesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recommendCourses>>, RecommendCoursesMutationVariables> = (props) => {
-          const {data} = props ?? {};
-
-          return  recommendCourses(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RecommendCoursesMutationResult = NonNullable<Awaited<ReturnType<typeof recommendCourses>>>
-    export type RecommendCoursesMutationBody = BodyType<CourseRecommendationInput>
-    export type RecommendCoursesMutationError = ErrorType<ErrorResponse | void>
-    export type RecommendCoursesMutationVariables = {data: BodyType<CourseRecommendationInput>}
-
-    /**
- * @summary Recommend dataset courses from existing skill-analysis output
- */
-export const useRecommendCourses = <TError = ErrorType<ErrorResponse | void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recommendCourses>>, TError,RecommendCoursesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof recommendCourses>>,
-        TError,
-        RecommendCoursesMutationVariables,
-        TContext
-      > => {
-      return useMutation(getRecommendCoursesMutationOptions(options));
-    }
-
-export const getGenerateLearningRoadmapUrl = () => {
-
-
-
-
-  return `/api/learning-roadmap`
-}
-
-/**
- * Consumes skill-analysis output and groups dataset course matches into estimated monthly phases, prioritizing missing and lower-scored skills. Reviewable skill dependencies take precedence over score order. Beginner learners are not given advanced courses. Durations and dependencies are explicitly labelled estimates, not verified provider prerequisites.
- * @summary Generate a monthly skill-learning roadmap
- */
-export const generateLearningRoadmap = async (learningRoadmapInput: LearningRoadmapInput, options?: Parameters<typeof customFetch>[1]): Promise<LearningRoadmapResponse> => {
-
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
-    if (!h) return {};
-    if (h instanceof Headers) return Object.fromEntries(h.entries());
-    if (Symbol.iterator in h) {
-      return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
-      );
-    }
-    const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
-      if (value !== undefined) headers[name] = value;
-    }
-    return headers;
-  };
-return customFetch<LearningRoadmapResponse>(getGenerateLearningRoadmapUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(learningRoadmapInput)
-  }
-);}
-
-
-
-
-
-export const getGenerateLearningRoadmapMutationKey = () => ['generateLearningRoadmap'] as const;
-
-export const getGenerateLearningRoadmapMutationOptions = <TError = ErrorType<ErrorResponse | void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateLearningRoadmap>>, TError,GenerateLearningRoadmapMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof generateLearningRoadmap>>, TError,GenerateLearningRoadmapMutationVariables, TContext> => {
-
-const mutationKey = getGenerateLearningRoadmapMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateLearningRoadmap>>, GenerateLearningRoadmapMutationVariables> = (props) => {
-          const {data} = props ?? {};
-
-          return  generateLearningRoadmap(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type GenerateLearningRoadmapMutationResult = NonNullable<Awaited<ReturnType<typeof generateLearningRoadmap>>>
-    export type GenerateLearningRoadmapMutationBody = BodyType<LearningRoadmapInput>
-    export type GenerateLearningRoadmapMutationError = ErrorType<ErrorResponse | void>
-    export type GenerateLearningRoadmapMutationVariables = {data: BodyType<LearningRoadmapInput>}
-
-    /**
- * @summary Generate a monthly skill-learning roadmap
- */
-export const useGenerateLearningRoadmap = <TError = ErrorType<ErrorResponse | void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateLearningRoadmap>>, TError,GenerateLearningRoadmapMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof generateLearningRoadmap>>,
-        TError,
-        GenerateLearningRoadmapMutationVariables,
-        TContext
-      > => {
-      return useMutation(getGenerateLearningRoadmapMutationOptions(options));
     }
 
 export const getListJobsUrl = (params?: ListJobsParams,) => {

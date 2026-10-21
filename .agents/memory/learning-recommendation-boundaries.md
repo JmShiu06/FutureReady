@@ -1,13 +1,13 @@
 ---
 name: Learning recommendation boundaries
-description: Scope and trust boundaries for dataset-based learning recommendations.
+description: Retired Python learning engine and trust boundaries for retained learning resources.
 ---
 
-The skill-learning backend consumes existing analysis rather than rebuilding the CV or skill-analysis engine. Use the uploaded course dataset as the recommendation reference. Do not silently substitute keyword matching for the explicitly requested semantic-search stack.
+The user explicitly approved removing the Python learning engine and its dependent features. Do not reintroduce that engine or its ML dependencies without a new request. Preserve unrelated CV/skill analysis and the independently reviewed learning-resource library; do not replace the removed engine with mocked recommendations.
 
-**Why:** ChewWen explicitly asked to implement the uploaded backend specification line by line and use the accompanying dataset. That request authorizes this learning backend despite the earlier frontend-only phase; it does not authorize unrelated backend expansion.
+**Why:** After repeated publish-time dependency failures, the user chose removal of the entire optional learning engine rather than another Linux/Torch configuration change. This supersedes the earlier request to implement the uploaded semantic-search specification.
 
-**How to apply:** Keep new learning suggestions separate from CV extraction and saved proficiency. Course ranking scores are not hiring probabilities or verified skill scores.
+**How to apply:** Keep removal scoped to the optional engine. Preserve existing database data and uploaded dataset references rather than treating feature removal as permission to delete stored data. Any future learning suggestions must remain separate from CV extraction and saved proficiency.
 
 Uploaded course references must remain distinct from the independently checked learning-resource library. A source rating, level, URL or certificate label is not proof of current availability or an awarded certification.
 

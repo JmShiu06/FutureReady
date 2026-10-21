@@ -24,24 +24,3 @@ PORT = "8080"
 NODE_ENV = "production"
 [services.production.health.startup]
 path = "/api/healthz"
-
-[[services]]
-localPort = 8099
-name = "Skill Learning Engine"
-paths = ["/api/recommend-courses", "/api/learning-roadmap", "/api/learning"]
-
-[services.development]
-run = "UV_PROJECT_ENVIRONMENT=.pythonlibs uv run --no-sync python run_learning.py"
-
-[services.production]
-[services.production.build]
-args = ["uv", "sync", "--frozen"]
-[services.production.build.env]
-UV_PROJECT_ENVIRONMENT = ".pythonlibs"
-[services.production.run]
-args = ["uv", "run", "--no-sync", "python", "artifacts/api-server/run_learning.py"]
-[services.production.run.env]
-PORT = "8099"
-UV_PROJECT_ENVIRONMENT = ".pythonlibs"
-[services.production.health.startup]
-path = "/api/learning/healthz"
