@@ -62,9 +62,18 @@ test('the recommendation label, comparison, and real progress remain while demo 
   await expect(page.getByTestId('section-simulator')).toHaveCount(0);
 
   await page.goto('/careers');
-  await expect(page.getByTestId('panel-comparison')).toBeVisible();
+  const occupationPanel = page.getByTestId('panel-official-occupations');
+  const comparisonPanel = page.getByTestId('panel-comparison');
+  await expect(occupationPanel).toBeVisible();
+  await expect(comparisonPanel).toBeVisible();
   await expect(page.getByTestId('select-compare-a')).toBeVisible();
-  await expect(page.getByText('Malaysian critical occupations', { exact: true })).toHaveCount(0);
+  const occupationBox = await occupationPanel.boundingBox();
+  const comparisonBox = await comparisonPanel.boundingBox();
+  expect(occupationBox).not.toBeNull();
+  expect(comparisonBox).not.toBeNull();
+  expect(occupationBox!.y + occupationBox!.height).toBeLessThanOrEqual(comparisonBox!.y);
+  await expect(page.getByTestId('text-methodology')).toHaveCount(0);
+  await expect(page.getByTestId('panel-evidence')).toHaveCount(0);
 
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Job Recommendations' })).toBeVisible();

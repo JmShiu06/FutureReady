@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, Info } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { planKey } from '@/domain/learning';
 import { useWorkspace } from '@/domain/workspace-context';
-import { demoService, methodology } from '@/domain/services';
+import { demoService } from '@/domain/services';
 import type { CareerAssessment } from '@/domain/types';
-import { Bar, EmptyBlock, ErrorBlock, EvidencePanel, GapStatus, LoadingBlock, PageHead, PriorityTag, SectionTitle, useAsync } from '@/components/workspace/ui';
+import { Bar, EmptyBlock, ErrorBlock, GapStatus, LoadingBlock, PageHead, PriorityTag, SectionTitle, useAsync } from '@/components/workspace/ui';
+import { OfficialOccupationsPanel } from '@/components/workspace/occupation-evidence';
 
 function Comparison({ list }: { list: CareerAssessment[] }) {
   const [a, setA] = useState(list[0]?.role.id ?? '');
@@ -53,12 +54,8 @@ export default function CareersPage() {
         <BuildRoadmapButton roleId={x.role.id} testId={`button-build-roadmap-${x.role.id}`} />
         <Link href={`/roles/${x.role.id}`} className="text-link" data-testid={`link-role-${x.role.id}`}>Role detail & evidence <ArrowRight size={12} /></Link>
       </article>)}</div>
+      <OfficialOccupationsPanel />
       <Comparison list={list} />
-      <div className="grid-2" style={{ marginTop: 18 }}>
-        <div className="panel panel-pad"><SectionTitle title="Methodology" note="HOW THE SCORE WORKS" /><p className="muted" data-testid="text-methodology">{methodology}</p>
-          <div className="disclaimer"><Info size={14} /><span>Uncertainty: requirements and levels are hand-authored; small edits to self-ratings can change the order.</span></div></div>
-        <div className="panel panel-pad"><SectionTitle title="Evidence" note="SHARED BY ALL SAMPLE ROLES" /><EvidencePanel evidence={list[0].role.evidence} /></div>
-      </div>
     </>)}
   </>;
 }
