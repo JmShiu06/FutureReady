@@ -147,9 +147,9 @@ paths:
       tags: [career]
       summary: Compare resume skills with one bundled role family
       description: >
-        Returns exact skill overlap and missing role skills. Course links and
-        learning durations are not supplied because no verified course catalogue
-        is connected.
+        Returns exact skill overlap and missing role skills, with resources from
+        a small reviewed catalog of official provider courses. Skills with no
+        verified resource are explicitly identified by the empty catalog status.
       requestBody:
         required: true
         content:
@@ -897,6 +897,7 @@ components:
           items: { type: string }
         estimated_learning_time:
           type: [string, "null"]
+          description: Sum of provider-listed durations for returned resources; null when none are available.
         overlap_score:
           type: number
         methodology:
@@ -904,6 +905,8 @@ components:
         limitations:
           type: array
           items: { type: string }
+        learning_resources:
+          $ref: "#/components/schemas/LearningResourcesResponse"
         synthetic_ai_skill_reference:
           $ref: "#/components/schemas/SyntheticAiSkillReference"
         source:
@@ -918,6 +921,7 @@ components:
         - overlap_score
         - methodology
         - limitations
+        - learning_resources
         - synthetic_ai_skill_reference
         - source
     SyntheticAiSkillReference:
@@ -960,6 +964,82 @@ components:
           type: array
           items: { type: string }
       required: [references, source, limitations]
+    LearningResourcesResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [available, none_verified]
+        catalog:
+          type: object
+          properties:
+            reviewed_at:
+              type: string
+              format: date
+            sources:
+              type: array
+              items:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+                required: [provider, url]
+          required: [reviewed_at, sources]
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/LearningResource"
+      required: [status, catalog, resources]
+    LearningResource:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        provider:
+          type: string
+        url:
+          type: string
+          format: uri
+        skills:
+          type: array
+          items:
+            type: string
+        duration_minutes:
+          type: integer
+          minimum: 1
+        duration_label:
+          type: string
+        prerequisites:
+          type: array
+          items:
+            type: string
+        recommended_prerequisites:
+          type: array
+          items:
+            type: string
+        cost:
+          type: string
+          enum: [Free]
+        cost_source_url:
+          type: string
+          format: uri
+      required:
+        - id
+        - title
+        - provider
+        - url
+        - skills
+        - duration_minutes
+        - duration_label
+        - prerequisites
+        - recommended_prerequisites
+        - cost
+        - cost_source_url
     CareerPathAnalysisReport:
       type: object
       properties:

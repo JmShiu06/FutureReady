@@ -212,6 +212,52 @@ export interface ResumeAnalysisReport {
   source: CareerSource;
 }
 
+export type LearningResourcesResponseStatus = typeof LearningResourcesResponseStatus[keyof typeof LearningResourcesResponseStatus];
+
+
+export const LearningResourcesResponseStatus = {
+  available: 'available',
+  none_verified: 'none_verified',
+} as const;
+
+export type LearningResourceCost = typeof LearningResourceCost[keyof typeof LearningResourceCost];
+
+
+export const LearningResourceCost = {
+  Free: 'Free',
+} as const;
+
+export interface LearningResource {
+  id: string;
+  title: string;
+  provider: string;
+  url: string;
+  skills: string[];
+  /** @minimum 1 */
+  duration_minutes: number;
+  duration_label: string;
+  prerequisites: string[];
+  recommended_prerequisites: string[];
+  cost: LearningResourceCost;
+  cost_source_url: string;
+}
+
+export type LearningResourcesResponseCatalogSourcesItem = {
+  provider: string;
+  url: string;
+};
+
+export type LearningResourcesResponseCatalog = {
+  reviewed_at: string;
+  sources: LearningResourcesResponseCatalogSourcesItem[];
+};
+
+export interface LearningResourcesResponse {
+  status: LearningResourcesResponseStatus;
+  catalog: LearningResourcesResponseCatalog;
+  resources: LearningResource[];
+}
+
 export type SyntheticAiSkillReferenceReferencesItemMeans = {
   /**
      * @minimum 0
@@ -289,11 +335,15 @@ export interface SkillGapAnalysisReport {
   missing_skills: string[];
   recommended_courses: string[];
   recommended_learning_path: string[];
-  /** @nullable */
+  /**
+     * Sum of provider-listed durations for returned resources; null when none are available.
+     * @nullable
+     */
   estimated_learning_time: string | null;
   overlap_score: number;
   methodology: string;
   limitations: string[];
+  learning_resources: LearningResourcesResponse;
   synthetic_ai_skill_reference: SyntheticAiSkillReference;
   source: CareerSource;
 }

@@ -1,5 +1,10 @@
 import type { CvProfileSuggestions } from "@workspace/api-zod";
 import {
+  learningResourceCatalog,
+  learningResources,
+  type VerifiedLearningResource,
+} from "../data/learningResources";
+import {
   careerDataset,
   matchSkills,
   normalizeSkill,
@@ -35,6 +40,11 @@ export interface SkillGapReport {
   recommended_courses: string[];
   recommended_learning_path: string[];
   estimated_learning_time: string | null;
+  learning_resources: {
+    status: "available" | "none_verified";
+    catalog: typeof learningResourceCatalog;
+    resources: VerifiedLearningResource[];
+  };
   overlap_score: number;
   methodology: string;
   limitations: string[];
@@ -42,6 +52,12 @@ export interface SkillGapReport {
   source: typeof careerDataset.source;
 }
 
+function resourcesForMissingSkills(missingSkills: string[]): VerifiedLearningResource[] {
+  const missing = new Set(missingSkills);
+  return learningResources.filter((resource) =>
+    resource.skills.some((skill) => missing.has(skill)),
+  );
+}
 export interface CareerPathReport {
   suitable_roles: CareerMatch[];
   growth_path: string[];
@@ -112,20 +128,27 @@ export function analyzeSkillGap(
     (item) => item.roleFamily === targetRole,
   );
   if (!match) return undefined;
+  const matchedResources = resourcesForMissingSkills(match.missingSkills);
 
   return {
     target_role: targetRole,
     current_skills: match.matchedSkills,
     missing_skills: match.missingSkills,
-    recommended_courses: [],
+    recommended_courses: matchedResources.map((resource) => resource.title),
     recommended_learning_path: match.missingSkills.slice(0, 8),
-    estimated_learning_time: null,
+    estimated_learning_time: estimateLearningTime(matchedResources),
+    learning_resources: {
+      status: matchedResources.length > 0 ? "available" : "none_verified",
+      catalog: learningResourceCatalog,
+      resources: matchedResources,
+    },
     overlap_score: match.score,
     methodology:
       `${METHOD_NOTE} A separate synthetic AI-skill reference is provided when a documented role mapping exists; it does not affect the overlap score.`,
     limitations: [
       "The learning sequence follows the dataset's listed skill order; it is not a validated prerequisite sequence.",
-      "No verified course catalogue or duration estimates are connected.",
+      "Learning resources are only listed for missing skills with a reviewed provider resource; other missing skills may have no verified resource.",
+      "Estimated learning time sums provider-published durations for the listed resources and may vary by learner.",
       "The overlap score is not a probability of employment or a readiness score.",
       ...getSyntheticAiSkillReference(targetRole).limitations,
     ],
@@ -171,4 +194,18 @@ export function analyzeProfileSimilarity(
     ],
     source: careerDataset.source,
   };
+}
+
+function estimateLearningTime(resources: VerifiedLearningResource[]): string | null {
+  if (resources.length === 0) return null;
+  const totalMinutes = resources.reduce(
+    (total, resource) => total + resource.duration_minutes,
+    0,
+  );
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return [
+    hours > 0 ? `${hours} hr${hours === 1 ? "" : "s"}` : "",
+    minutes > 0 ? `${minutes} min` : "",
+  ].filter(Boolean).join(" ");
 }

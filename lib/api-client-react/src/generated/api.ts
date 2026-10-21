@@ -495,7 +495,7 @@ export const getAnalyzeSkillGapUrl = () => {
 }
 
 /**
- * Returns exact skill overlap and missing role skills. Course links and learning durations are not supplied because no verified course catalogue is connected.
+ * Returns exact skill overlap and missing role skills, with resources from a small reviewed catalog of official provider courses. Skills with no verified resource are explicitly identified by the empty catalog status.
  * @summary Compare resume skills with one bundled role family
  */
 export const analyzeSkillGap = async (skillGapAnalysisInput: SkillGapAnalysisInput, options?: Parameters<typeof customFetch>[1]): Promise<SkillGapAnalysisReport> => {

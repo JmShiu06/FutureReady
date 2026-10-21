@@ -201,7 +201,7 @@ export const AnalyzeResumeResponse = zod.object({
 
 
 /**
- * Returns exact skill overlap and missing role skills. Course links and learning durations are not supplied because no verified course catalogue is connected.
+ * Returns exact skill overlap and missing role skills, with resources from a small reviewed catalog of official provider courses. Skills with no verified resource are explicitly identified by the empty catalog status.
  * @summary Compare resume skills with one bundled role family
  */
 export const analyzeSkillGapBodyResumeTextMax = 200000;
@@ -214,6 +214,7 @@ export const AnalyzeSkillGapBody = zod.object({
   "resume_text": zod.string().min(1).max(analyzeSkillGapBodyResumeTextMax),
   "target_role": zod.string().min(1).max(analyzeSkillGapBodyTargetRoleMax)
 })
+
 
 
 export const analyzeSkillGapResponseSyntheticAiSkillReferenceReferencesItemMeansAiMin = 0;
@@ -253,10 +254,33 @@ export const AnalyzeSkillGapResponse = zod.object({
   "missing_skills": zod.array(zod.string()),
   "recommended_courses": zod.array(zod.string()),
   "recommended_learning_path": zod.array(zod.string()),
-  "estimated_learning_time": zod.string().nullable(),
+  "estimated_learning_time": zod.string().nullable().describe('Sum of provider-listed durations for returned resources; null when none are available.'),
   "overlap_score": zod.number(),
   "methodology": zod.string(),
   "limitations": zod.array(zod.string()),
+  "learning_resources": zod.object({
+  "status": zod.enum(['available', 'none_verified']),
+  "catalog": zod.object({
+  "reviewed_at": zod.coerce.date(),
+  "sources": zod.array(zod.object({
+  "provider": zod.string(),
+  "url": zod.string().url()
+}))
+}),
+  "resources": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "provider": zod.string(),
+  "url": zod.string().url(),
+  "skills": zod.array(zod.string()),
+  "duration_minutes": zod.number().int().min(1),
+  "duration_label": zod.string(),
+  "prerequisites": zod.array(zod.string()),
+  "recommended_prerequisites": zod.array(zod.string()),
+  "cost": zod.enum(['Free']),
+  "cost_source_url": zod.string().url()
+}))
+}),
   "synthetic_ai_skill_reference": zod.object({
   "references": zod.array(zod.object({
   "role": zod.string(),

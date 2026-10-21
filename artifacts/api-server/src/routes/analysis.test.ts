@@ -60,10 +60,22 @@ describe("resume skill analysis endpoints", () => {
     assert.deepEqual(result.json.current_skills, ["python", "docker", "sql"]);
     assert.equal(result.json.missing_skills.length, 27);
     assert.equal(result.json.overlap_score, 10);
-    assert.deepEqual(result.json.recommended_courses, []);
-    assert.equal(result.json.estimated_learning_time, null);
+    assert.deepEqual(result.json.recommended_courses, ["AWS Cloud Practitioner Essentials"]);
+    assert.equal(result.json.learning_resources.status, "available");
+    assert.equal(result.json.estimated_learning_time, "12 hrs 45 min");
+    assert.deepEqual(
+      result.json.learning_resources.resources.map((resource: { id: string }) => resource.id),
+      ["aws-cloud-practitioner-essentials"],
+    );
+    assert.equal(result.json.learning_resources.catalog.reviewed_at, "2026-10-21");
     assert.deepEqual(result.json.synthetic_ai_skill_reference.references, []);
     assert.ok(result.json.synthetic_ai_skill_reference.limitations.some((item: string) => item.includes("synthetic")));
+    assert.ok(result.json.learning_resources.resources.every(
+      (resource: { duration_minutes: number; prerequisites: string[]; cost: string }) =>
+        resource.duration_minutes > 0 &&
+        Array.isArray(resource.prerequisites) &&
+        resource.cost === "Free",
+    ));
 
     const noOverlap = await post("/skill-gap-analysis", {
       resume_text: "Skills: knitting",
@@ -73,6 +85,21 @@ describe("resume skill analysis endpoints", () => {
     assert.equal(noOverlap.json.overlap_score, 0);
     assert.equal(noOverlap.json.missing_skills.length, 30);
     assert.deepEqual(noOverlap.json.synthetic_ai_skill_reference.references, []);
+    assert.ok(noOverlap.json.learning_resources.resources.some(
+      (resource: { skills: string[] }) => resource.skills.includes("python"),
+    ));
+  });
+
+  it("returns an explicit empty state when a role gap has no verified catalog match", async () => {
+    const result = await post("/skill-gap-analysis", {
+      resume_text: "Skills: knitting",
+      target_role: "Designer (UX/UI)",
+    });
+    assert.equal(result.status, 200);
+    assert.deepEqual(result.json.learning_resources.resources, []);
+    assert.equal(result.json.learning_resources.status, "none_verified");
+    assert.equal(result.json.estimated_learning_time, null);
+    assert.ok(result.json.learning_resources.catalog.reviewed_at);
   });
 
   it("adds separate synthetic AI-skill context for deliberately crosswalked roles only", async () => {

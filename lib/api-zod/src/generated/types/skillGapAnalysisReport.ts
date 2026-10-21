@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CareerSource } from './careerSource';
+import type { LearningResourcesResponse } from './learningResourcesResponse';
 import type { SyntheticAiSkillReference } from './syntheticAiSkillReference';
 
 export interface SkillGapAnalysisReport {
@@ -14,11 +15,15 @@ export interface SkillGapAnalysisReport {
   missing_skills: string[];
   recommended_courses: string[];
   recommended_learning_path: string[];
-  /** @nullable */
+  /**
+     * Sum of provider-listed durations for returned resources; null when none are available.
+     * @nullable
+     */
   estimated_learning_time: string | null;
   overlap_score: number;
   methodology: string;
   limitations: string[];
+  learning_resources: LearningResourcesResponse;
   synthetic_ai_skill_reference: SyntheticAiSkillReference;
   source: CareerSource;
 }
