@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
-  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, FileText, FlaskConical,
-  Globe2, Map, Radar, ShieldCheck, UserRound, Users, Workflow,
+  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, FileText,
+  Globe2, Map, Radar, ShieldCheck, UserRound, Users,
 } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { audienceLabels } from '@/domain/demo-data';
@@ -14,8 +14,6 @@ const nav = [
   { href: '/profile', label: 'My profile', icon: UserRound, key: 'profile' },
   { href: '/careers', label: 'Career explorer', icon: Map, key: 'careers' },
   { href: '/cv-analysis', label: 'CV recommendations', icon: FileText, key: 'cv-analysis' },
-  { href: '/twin', label: 'Digital twin', icon: FlaskConical, key: 'twin' },
-  { href: '/roadmap', label: 'Learning roadmap', icon: Workflow, key: 'roadmap' },
   { href: '/trends', label: 'Skills radar', icon: Radar, key: 'trends' },
   { href: '/scenarios', label: 'AI scenarios', icon: BarChart3, key: 'scenarios' },
   { href: '/sdgs', label: 'SDG explorer', icon: Globe2, key: 'sdgs' },

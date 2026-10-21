@@ -141,7 +141,7 @@ function PersonalOverview() {
         <div className="eyebrow">Starting from</div>
         <h1 data-testid="text-dashboard-occupation">{profile.occupation || 'Your career profile'}</h1>
         <p>{profileContext || 'Add relevant About You details in My profile to personalize this context.'}</p>
-        <div className="welcome-actions"><Link href="/careers" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> Explore career paths <ArrowRight size={14} /></Link><Link href="/roadmap" className="btn btn-quiet" data-testid="link-roadmap">View my roadmap</Link></div>
+        <div className="welcome-actions"><Link href="/careers" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> Explore career paths <ArrowRight size={14} /></Link><Link href="/profile?section=roadmap" className="btn btn-quiet" data-testid="link-roadmap">View my roadmap</Link></div>
       </div>
       <div className="panel stat-card">
         <div className="stat-top"><span>Coverage toward target</span><Workflow size={16} /></div>
@@ -166,10 +166,10 @@ function PersonalOverview() {
     </section>
     <section className="dashboard-grid">
       <div className="panel panel-pad">
-        <SectionTitle title={`Gaps for ${target.title}`} note="YOUR CURRENT TARGET" action={<Link href="/twin" className="text-link" data-testid="link-dashboard-twin"><FlaskConical size={12} /> Try what-if</Link>} />
+        <SectionTitle title={`Gaps for ${target.title}`} note="YOUR CURRENT TARGET" action={<Link href="/profile?section=twin" className="text-link" data-testid="link-dashboard-twin"><FlaskConical size={12} /> Try what-if</Link>} />
         {targetAssessment.gaps.length ? <div className="gap-list">{targetAssessment.gaps.map(g => <div className="gap-row" key={g.name}><span><strong>{g.name}</strong><PriorityTag priority={g.priority} /></span><GapStatus gap={g} /></div>)}</div>
           : <p className="muted">You meet every sample requirement for this role.</p>}
-        <Link href="/roadmap" className="btn btn-secondary" style={{ marginTop: 16, width: '100%' }} data-testid="link-dashboard-roadmap">Open learning roadmap <ArrowRight size={14} /></Link>
+        <Link href="/profile?section=roadmap" className="btn btn-secondary" style={{ marginTop: 16, width: '100%' }} data-testid="link-dashboard-roadmap">Open learning roadmap <ArrowRight size={14} /></Link>
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="Task exposure" note="DESCRIPTIVE, NOT A PREDICTION" />

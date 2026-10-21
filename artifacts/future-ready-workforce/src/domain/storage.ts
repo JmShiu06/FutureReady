@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { blankProfile, demoRoles } from './demo-data';
-import type { Audience, DemoProfile, WorkspaceState } from './types';
+import type { Audience, DemoProfile, RoadmapBaseline, SkillConfirmation, WorkspaceState } from './types';
 
 export const STORAGE_KEY = 'frw-demo-workspace-v1';
 export const audiences = ['adult', 'graduate', 'hr', 'education'] as const;
@@ -18,9 +18,16 @@ export const profileSchema = z.object({
   learningHours: z.number().int().min(1).max(40).nullable(), budgetMYR: z.number().min(0).max(100000).nullable(),
   goals: z.string().trim().max(500),
 });
+const isoText = z.string().min(10).max(40);
+const baselineSchema = z.object({ skills: z.array(skillSchema).max(50), startedAt: isoText });
+const confirmationSchema = z.object({
+  id: z.string().min(1).max(200), audience: z.enum(audiences), roleId: z.string().min(1).max(80),
+  milestoneId: z.string().min(1).max(200), skill: z.string().min(1).max(60),
+  fromLevel: z.number().int().min(0).max(4), toLevel: z.number().int().min(1).max(5), confirmedAt: isoText,
+});
 export function defaultWorkspace(): WorkspaceState {
   const profiles = Object.fromEntries(audiences.map(a => [a, blankProfile(a)])) as Record<Audience, DemoProfile>;
-  return { version: 1, audience: 'adult', profiles, targets: { adult: 'service-designer', graduate: 'workforce-analyst', hr: 'ai-operations', education: 'learning-partner' }, completion: {} };
+  return { version: 1, audience: 'adult', profiles, targets: { adult: 'service-designer', graduate: 'workforce-analyst', hr: 'ai-operations', education: 'learning-partner' }, completion: {}, baselines: {}, completedAt: {}, confirmations: [] };
 }
 const validRole = (value: unknown) => typeof value === 'string' && demoRoles.some(r => r.id === value);
 export function parseWorkspace(raw: string | null): { state: WorkspaceState; warning: string } {
@@ -48,6 +55,35 @@ export function parseWorkspace(raw: string | null): { state: WorkspaceState; war
         if (key.length <= 200 && typeof value === 'boolean' && audiences.some(a => key.startsWith(`${a}:`))) fallback.completion[key] = value;
         else recovered = true;
       }
+    }
+    const isPlain = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+    if (isPlain(saved.baselines)) {
+      for (const [key, raw] of Object.entries(saved.baselines).slice(0, 100)) {
+        const [audience, ...rest] = key.split(':');
+        const parsed = baselineSchema.safeParse(raw);
+        if (parsed.success && audiences.includes(audience as Audience) && validRole(rest.join(':'))) fallback.baselines[key] = parsed.data as RoadmapBaseline;
+        else recovered = true;
+      }
+    }
+    if (isPlain(saved.completedAt)) {
+      for (const [key, value] of Object.entries(saved.completedAt).slice(0, 2000)) {
+        if (key.length <= 200 && typeof value === 'string' && value.length <= 40 && fallback.completion[key]) fallback.completedAt[key] = value;
+        else recovered = true;
+      }
+    }
+    if (Array.isArray(saved.confirmations)) {
+      const seen = new Set<string>();
+      for (const raw of saved.confirmations.slice(0, 500)) {
+        const parsed = confirmationSchema.safeParse(raw);
+        if (parsed.success && validRole(parsed.data.roleId) && !seen.has(parsed.data.id)) { seen.add(parsed.data.id); fallback.confirmations.push(parsed.data as SkillConfirmation); }
+        else recovered = true;
+      }
+    }
+    // Progress saved before roadmaps had a starting snapshot: treat today's skills as the start so it is not lost.
+    for (const audience of audiences) {
+      const key = `${audience}:${fallback.targets[audience]}`;
+      const hasProgress = Object.keys(fallback.completion).some(k => k.startsWith(`${key}:`));
+      if (hasProgress && !fallback.baselines[key]) fallback.baselines[key] = { skills: fallback.profiles[audience].skills, startedAt: new Date(0).toISOString() };
     }
     return { state: fallback, warning: recovered ? 'Some saved demo fields were invalid. Safe defaults were loaded for those fields; other audience profiles were retained.' : '' };
   } catch {

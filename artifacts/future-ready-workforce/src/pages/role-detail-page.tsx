@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useParams } from 'wouter';
-import { ArrowLeft, BriefcaseBusiness, Check, FlaskConical, Leaf, Target, Workflow } from 'lucide-react';
+import { ArrowLeft, BriefcaseBusiness, Leaf, Target } from 'lucide-react';
+import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoRoles, sdgGoals, sdgMappings } from '@/domain/demo-data';
 import { assessRole, methodology } from '@/domain/services';
@@ -9,7 +10,7 @@ import { EmptyBlock, EvidencePanel, GapStatus, PriorityTag, SectionTitle } from 
 
 export default function RoleDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { profile, targetRoleId, setTargetRole } = useWorkspace();
+  const { profile } = useWorkspace();
   const role = demoRoles.find(r => r.id === id);
   const a = useMemo(() => role ? assessRole(profile, role) : null, [profile, role]);
   if (!role || !a) return <EmptyBlock title="That sample role does not exist."><Link href="/careers" className="btn btn-primary btn-small" data-testid="link-back-careers">Back to careers</Link></EmptyBlock>;
@@ -21,10 +22,7 @@ export default function RoleDetailPage() {
       <p className="muted" style={{ maxWidth: 690 }}>{role.description}</p>
       <div className="role-meta"><span><BriefcaseBusiness size={14} />{role.industry}</span><span><Target size={14} />{role.demandLabel}</span></div>
       <div className="row" style={{ marginTop: 16 }}>
-        {targetRoleId === role.id ? <span className="match-pill"><Check size={11} /> Your current target</span>
-          : <button className="btn btn-primary btn-small" onClick={() => setTargetRole(role.id)} data-testid="button-set-target">Set as my target</button>}
-        <Link href="/twin" className="btn btn-secondary btn-small" data-testid="link-role-twin"><FlaskConical size={12} /> Simulate</Link>
-        <Link href="/roadmap" className="btn btn-secondary btn-small" data-testid="link-role-roadmap"><Workflow size={12} /> Roadmap</Link>
+        <BuildRoadmapButton roleId={role.id} testId="button-build-roadmap" />
       </div>
     </div>
     <div className="detail-layout">

@@ -49,9 +49,21 @@ export interface SdgMapping {
   sourceTitle: string | null; sourceUrl: string | null; sourceDate: string | null;
   sourceObservation: string | null;
 }
+/** Skills at the moment the user chose "Build my learning roadmap" for a role. Milestones are derived from it. */
+export interface RoadmapBaseline { skills: ProfileSkill[]; startedAt: string }
+/** A user-confirmed proficiency change. Kept apart from milestone completion; one per milestone. */
+export interface SkillConfirmation {
+  id: string; audience: Audience; roleId: string; milestoneId: string; skill: string;
+  fromLevel: number; toLevel: Proficiency; confirmedAt: string;
+}
 export interface WorkspaceState {
   version: 1; audience: Audience; profiles: Record<Audience, DemoProfile>;
   targets: Record<Audience, string>; completion: Record<string, boolean>;
+  /** Keyed `${audience}:${roleId}`; presence means a roadmap was explicitly built for that role. */
+  baselines: Record<string, RoadmapBaseline>;
+  /** Completion key -> ISO time the milestone was first completed (removed when reopened). */
+  completedAt: Record<string, string>;
+  confirmations: SkillConfirmation[];
 }
 export interface SimulationResult {
   before: CareerAssessment; after: CareerAssessment; readinessChange: number;

@@ -77,6 +77,8 @@ test('storage round trip preserves all audience profiles, targets and per-audien
   state.audience = 'education';
   state.profiles.hr.budgetMYR = 800;
   state.completion['adult:service-designer:facilitation'] = true;
+  // Legacy progress without a starting snapshot gets one on load (covered in the roadmap tests).
+  state.baselines['adult:service-designer'] = { skills: state.profiles.adult.skills, startedAt: new Date(0).toISOString() };
   assert.deepEqual(parseWorkspace(JSON.stringify(state)).state, state);
 });
 test('fresh profiles are blank and storage parsing preserves valid data before the app applies its refresh policy', () => {
@@ -143,4 +145,65 @@ test('aggregate gap heatmap includes missing required skills and excludes non-ap
   assert.deepEqual(meanSkillGap(records, 'Facilitation'), { meanGap: 3, recordCount: 2 });
   assert.deepEqual(meanSkillGap(records, 'AI literacy'), { meanGap: null, recordCount: 0 });
   assert.throws(() => meanSkillGap([{ ...records[0], targetRoleId: 'invalid' }], 'Excel'), /unknown/);
+});
+
+import { clearPlanData, confirmSkillUpdate, progressReport, roadmapMilestones, setMilestoneComplete, startRoadmap } from './learning.ts';
+const started = () => {
+  const s = defaultWorkspace();
+  s.profiles.adult = { ...sampleProfile('adult'), skills: [{ name: 'Customer research', level: 2, category: 'Demo' }] };
+  return startRoadmap(s, 'service-designer', new Date('2026-01-01T00:00:00Z'));
+};
+const keyOf = (s: ReturnType<typeof started>, i = 0) => completionKey(s.audience, roadmapMilestones(s)[i].id);
+
+test('exploring does not change the target; only startRoadmap does, and it keeps the first baseline', () => {
+  const s = defaultWorkspace();
+  assert.equal(roadmapMilestones(s).length, 0);
+  const a = startRoadmap(s, 'workforce-analyst');
+  assert.equal(a.targets.adult, 'workforce-analyst');
+  const b = startRoadmap({ ...a, profiles: { ...a.profiles, adult: { ...a.profiles.adult, skills: sampleProfile('adult').skills } } }, 'workforce-analyst');
+  assert.deepEqual(b.baselines['adult:workforce-analyst'], a.baselines['adult:workforce-analyst']);
+  assert.throws(() => startRoadmap(s, 'nope'));
+});
+test('milestone completion is idempotent, persisted with a time, reversible, and never changes skill levels', () => {
+  const s = started(); const key = keyOf(s);
+  const done = setMilestoneComplete(s, key, true, new Date('2026-02-01T00:00:00Z'));
+  assert.equal(setMilestoneComplete(done, key, true), done);
+  assert.deepEqual(done.profiles, s.profiles);
+  assert.ok(done.completedAt[key]);
+  const reopened = setMilestoneComplete(done, key, false);
+  assert.equal(reopened.completion[key], undefined);
+  assert.equal(setMilestoneComplete(s, 'adult:bogus:key', true), s);
+  const other = startRoadmap(done, 'workforce-analyst');
+  assert.equal(other.completion[key], true);
+});
+test('confirmation requires completion, applies once, and keeps milestones and progress stable', () => {
+  let s = started(); const m = roadmapMilestones(s)[0]; const key = keyOf(s);
+  assert.ok(confirmSkillUpdate(s, { milestoneId: m.id, toLevel: 3 }).error);
+  s = setMilestoneComplete(s, key, true);
+  const before = progressReport(s)!;
+  const total = roadmapMilestones(s).length;
+  const r = confirmSkillUpdate(s, { milestoneId: m.id, toLevel: 3 });
+  assert.equal(r.error, undefined);
+  assert.equal(r.state.confirmations.length, 1);
+  assert.equal(roadmapMilestones(r.state).length, total);
+  assert.equal(r.state.completion[key], true);
+  assert.ok(confirmSkillUpdate(r.state, { milestoneId: m.id, toLevel: 4 }).error);
+  const after = progressReport(r.state)!;
+  assert.equal(after.start.readiness, before.start.readiness);
+  assert.equal(after.changePoints, after.current.readiness - after.start.readiness);
+  assert.ok(after.changePoints >= 0);
+  assert.ok(confirmSkillUpdate(s, { milestoneId: m.id, toLevel: 99 }).error);
+});
+test('reset clears only one audience plan data; storage round-trips new fields and migrates legacy progress', () => {
+  let s = setMilestoneComplete(started(), keyOf(started()), true);
+  s = confirmSkillUpdate(s, { milestoneId: roadmapMilestones(s)[0].id, toLevel: 3 }).state;
+  const back = parseWorkspace(JSON.stringify(s));
+  assert.equal(back.warning, '');
+  assert.deepEqual(back.state.confirmations, s.confirmations);
+  assert.deepEqual(back.state.baselines, s.baselines);
+  const cleared = clearPlanData({ ...s, baselines: { ...s.baselines, 'graduate:workforce-analyst': s.baselines['adult:service-designer'] } }, 'adult');
+  assert.deepEqual(Object.keys(cleared.baselines), ['graduate:workforce-analyst']);
+  assert.equal(cleared.confirmations.length, 0);
+  const legacy = JSON.stringify({ version: 1, audience: 'adult', profiles: s.profiles, targets: s.targets, completion: s.completion });
+  assert.ok(parseWorkspace(legacy).state.baselines['adult:service-designer']);
 });

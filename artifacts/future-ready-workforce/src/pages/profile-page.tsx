@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useSearch } from 'wouter';
+import { RoadmapSection } from '@/components/profile/roadmap-section';
+import { TwinSection } from '@/components/profile/twin-section';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +20,7 @@ import { audienceLabels, demoRoles, skillCatalogue } from '@/domain/demo-data';
 import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
 
+type ProfileSection = 'skills' | 'roadmap' | 'twin';
 const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) }).superRefine((v, ctx) => {
   const list = v.interestsText.split(',').map(s => s.trim()).filter(Boolean);
   if (list.length > 10) ctx.addIssue({ code: 'custom', path: ['interestsText'], message: 'Up to 10 interests.' });
@@ -135,8 +139,31 @@ export default function ProfilePage() {
     setSaved('');
   };
 
+  const [, navigate] = useLocation();
+  const sectionParam = new URLSearchParams(useSearch()).get('section');
+  const section: ProfileSection = sectionParam === 'roadmap' || sectionParam === 'twin' ? sectionParam : 'skills';
+  const openSection = (next: ProfileSection) => navigate(next === 'skills' ? '/profile' : `/profile?section=${next}`);
+  const tabs: { key: ProfileSection; label: string }[] = [
+    { key: 'skills', label: 'Skills profile' }, { key: 'roadmap', label: 'Learning roadmap' }, { key: 'twin', label: 'Digital twin & progress' },
+  ];
+  const onTabKey = (e: React.KeyboardEvent, index: number) => {
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = tabs[(index + step + tabs.length) % tabs.length].key;
+    openSection(next);
+    requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
+  };
+
   return <>
-    <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review suggested CV details or enter them manually. Each audience keeps its own profile." />
+    <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : section === 'roadmap' ? 'One practical step at a time.' : 'See how far you have come.'} subtitle="Skills, learning roadmap and progress in one place. Each audience keeps its own profile." />
+    <div className="profile-tabs" role="tablist" aria-label="My profile sections">
+      {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
+        className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}
+    </div>
+    <div id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden={section !== 'roadmap'} data-testid="panel-profile-roadmap">{section === 'roadmap' && <RoadmapSection onReview={() => openSection('twin')} />}</div>
+    <div id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" hidden={section !== 'twin'} data-testid="panel-profile-twin">{section === 'twin' && <TwinSection />}</div>
+    <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <section className="profile-completeness panel" aria-label="Profile completeness">
       <div className="profile-completeness-heading">
         <div>
@@ -175,7 +202,7 @@ export default function ProfilePage() {
           <AlertDialogTrigger asChild><button type="button" className="btn btn-danger btn-small" data-testid="button-reset-profile"><RotateCcw size={12} /> Reset this profile</button></AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>Reset the {audienceLabels[state.audience]} profile?</AlertDialogTitle>
-              <AlertDialogDescription>This clears About You values, restores the default demo skills and clears roadmap completion for this audience only. Other audience profiles are kept.</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogDescription>This clears About You values, restores the default demo skills and clears this audience's learning roadmap, completion history and confirmed skill updates only. Other audience profiles are kept.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter><AlertDialogCancel data-testid="button-cancel-reset">Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={() => { resetProfile(); setSaved('Profile reset to the default sample.'); }} data-testid="button-confirm-reset">Reset</AlertDialogAction></AlertDialogFooter>
           </AlertDialogContent>
@@ -268,5 +295,6 @@ export default function ProfilePage() {
         </div>
       </form>
     </Form>
+    </div>
   </>;
 }

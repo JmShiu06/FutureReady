@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { blankProfile, demoRoles, sampleProfile } from './demo-data';
+import { blankProfile, sampleProfile } from './demo-data';
+import { clearPlanData, confirmSkillUpdate as applyConfirmation, setMilestoneComplete, startRoadmap as applyStartRoadmap } from './learning';
 import { audiences, defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
 import type { Audience, DemoProfile, WorkspaceState } from './types';
 
@@ -7,7 +8,8 @@ interface WorkspaceContextValue {
   state: WorkspaceState; profile: DemoProfile; targetRoleId: string; storageWarning: string;
   setAudience(audience: Audience): void; saveProfile(profile: DemoProfile): void;
   resetProfile(): void; loadSample(variant: 'default' | 'data'): void;
-  setTargetRole(id: string): void; toggleCompletion(key: string): void;
+  startRoadmap(roleId: string): void; setMilestoneComplete(key: string, done: boolean): void;
+  confirmSkillUpdate(milestoneId: string, toLevel: number): string;
 }
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
@@ -49,6 +51,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(loaded.state);
   const [storageWarning, setStorageWarning] = useState(loaded.warning);
   const dirty = useRef(loaded.persistOnLoad);
+  const latest = useRef(loaded.state);
+  latest.current = state;
   useEffect(() => {
     if (!dirty.current) return;
     try { setStorageWarning(persistWorkspace(window.localStorage, state)); }
@@ -67,15 +71,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setAudience: audience => update(s => ({ ...s, audience })),
     saveProfile,
     resetProfile: () => update(s => ({
-      ...s, profiles: { ...s.profiles, [s.audience]: blankProfile(s.audience) },
-      completion: Object.fromEntries(Object.entries(s.completion).filter(([key]) => !key.startsWith(`${s.audience}:`))),
+      ...clearPlanData(s, s.audience), profiles: { ...s.profiles, [s.audience]: blankProfile(s.audience) },
     })),
     loadSample: variant => saveProfile(sampleProfile(state.audience, variant)),
-    setTargetRole: id => {
-      if (!demoRoles.some(role => role.id === id)) throw new Error('Choose an available demo career.');
-      update(s => ({ ...s, targets: { ...s.targets, [s.audience]: id } }));
+    startRoadmap: roleId => update(s => applyStartRoadmap(s, roleId)),
+    setMilestoneComplete: (key, done) => update(s => setMilestoneComplete(s, key, done)),
+    confirmSkillUpdate: (milestoneId, toLevel) => {
+      // Evaluate against the latest committed state so a double click cannot confirm twice.
+      const result = applyConfirmation(latest.current, { milestoneId, toLevel });
+      if (result.error) return result.error;
+      latest.current = result.state;
+      update(() => result.state);
+      return '';
     },
-    toggleCompletion: key => update(s => ({ ...s, completion: { ...s.completion, [key]: !s.completion[key] } })),
   };
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }

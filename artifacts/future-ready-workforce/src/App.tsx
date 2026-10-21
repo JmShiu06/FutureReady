@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Link, Route, Switch } from 'wouter';
+import { Link, Redirect, Route, Switch } from 'wouter';
 import { ArrowRight } from 'lucide-react';
 
 import '@/components/job-search.css';
@@ -13,8 +13,6 @@ const CareersPage = lazy(() => import('@/pages/careers-page'));
 const CvRecommendationsPage = lazy(() => import('@/pages/cv-recommendations-page'));
 const RoleDetailPage = lazy(() => import('@/pages/role-detail-page'));
 const TrendsPage = lazy(() => import('@/pages/trends-page'));
-const TwinPage = lazy(() => import('@/pages/twin-page'));
-const RoadmapPage = lazy(() => import('@/pages/roadmap-page'));
 const SdgsPage = lazy(() => import('@/pages/sdgs-page'));
 const ScenariosPage = lazy(() => import('@/pages/scenarios-page'));
 const TeamPage = lazy(() => import('@/pages/team-page'));
@@ -49,8 +47,8 @@ function App() {
         <Route path="/cv-analysis" component={CvRecommendationsPage} />
         <Route path="/roles/:id" component={RoleDetailPage} />
         <Route path="/trends" component={TrendsPage} />
-        <Route path="/twin" component={TwinPage} />
-        <Route path="/roadmap" component={RoadmapPage} />
+        <Route path="/twin"><Redirect to="/profile?section=twin" /></Route>
+        <Route path="/roadmap"><Redirect to="/profile?section=roadmap" /></Route>
         <Route path="/sdgs" component={SdgsPage} />
         <Route path="/scenarios" component={ScenariosPage} />
         <Route path="/team" component={TeamPage} />

@@ -5,7 +5,7 @@ import { audienceLabels, demoRoles } from '@/domain/demo-data';
 import { audiences } from '@/domain/storage';
 import { methodology, simulateProfile } from '@/domain/services';
 import type { Audience, CareerAssessment, ProfileSkill, Proficiency } from '@/domain/types';
-import { Bar, GapStatus, PageHead, SectionTitle, levelLabel, slug } from '@/components/workspace/ui';
+import { Bar, GapStatus, SectionTitle, levelLabel, slug } from '@/components/workspace/ui';
 
 function Column({ title, a }: { title: string; a: CareerAssessment }) {
   return <div className="role-card" data-testid={`card-twin-${slug(title)}`}><strong>{title}</strong><div className="big-num">{a.readiness}%</div><Bar value={a.readiness} label={`${title} ${a.readiness}%`} />
@@ -13,20 +13,25 @@ function Column({ title, a }: { title: string; a: CareerAssessment }) {
     <span className="small">{a.gaps.length} gap{a.gaps.length === 1 ? '' : 's'} remaining</span></div>;
 }
 
-export default function TwinPage() {
+/** Hypothetical what-if. Starts from current confirmed skills, is never saved, and resetting it touches no progress. */
+export function Simulator() {
   const { state } = useWorkspace();
   const [source, setSource] = useState<Audience>(state.audience);
   const [roleId, setRoleId] = useState(state.targets[state.audience]);
   const base = state.profiles[source];
   const [hypo, setHypo] = useState<ProfileSkill[]>(base.skills);
-  useEffect(() => { setHypo(state.profiles[source].skills); setRoleId(state.targets[source]); }, [source]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setHypo(state.profiles[source].skills); }, [state.profiles[source].skills]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setRoleId(state.targets[source]); }, [source]); // eslint-disable-line react-hooks/exhaustive-deps
   const role = demoRoles.find(r => r.id === roleId) ?? demoRoles[0];
   const sim = useMemo(() => simulateProfile(base, hypo, role.id), [base, hypo, role.id]);
   const missing = role.requiredSkills.filter(r => !hypo.some(h => h.name.toLowerCase() === r.name.toLowerCase()));
   const setLevel = (name: string, level: number) => setHypo(h => h.map(s => s.name === name ? { ...s, level: level as Proficiency } : s));
-  return <>
-    <PageHead eyebrow="Digital twin · what-if only" title="Try a future version of your skills." subtitle="Changes here are hypothetical and are never saved to your profile."
-      action={<button className="btn btn-secondary" onClick={() => setHypo(base.skills)} data-testid="button-reset-simulation"><RotateCcw size={14} /> Reset simulation</button>} />
+  return <section aria-labelledby="sim-title" data-testid="section-simulator">
+    <div className="spread" style={{ marginBottom: 10 }}>
+      <div><div className="eyebrow">Digital twin · what-if only</div><h2 id="sim-title" style={{ margin: '2px 0' }}>Try a future version of your skills</h2>
+        <p className="muted small" style={{ margin: 0 }}>Hypothetical changes here are never saved and never change your progress or profile.</p></div>
+      <button className="btn btn-secondary" onClick={() => setHypo(base.skills)} data-testid="button-reset-simulation"><RotateCcw size={14} /> Reset simulation</button>
+    </div>
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
       <div className="form-grid">
         <div className="field"><label htmlFor="twin-source">Profile to simulate</label><select id="twin-source" className="fr-select" value={source} onChange={e => setSource(e.target.value as Audience)} data-testid="select-twin-profile">{audiences.map(a => <option key={a} value={a}>{audienceLabels[a]}{state.profiles[a].occupation ? ` — ${state.profiles[a].occupation}` : ''}</option>)}</select></div>
@@ -51,5 +56,5 @@ export default function TwinPage() {
       </div>
     </div>
     <div className="side-by-side"><Column title="Before" a={sim.before} /><Column title="After" a={sim.after} /></div>
-  </>;
+  </section>;
 }

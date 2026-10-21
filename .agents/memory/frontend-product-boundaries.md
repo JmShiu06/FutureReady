@@ -26,3 +26,11 @@ For official labour-market data integrations, use DOSM sources only unless the u
 **Why:** The user set DOSM as the official-source scope for the workforce data milestone and asked that other providers not be added without approval.
 
 **How to apply:** Verify the requested official DOSM pages, API endpoints and data files before implementation. If a DOSM link is unavailable, document the official replacement; do not broaden the provider list on your own.
+
+## Roadmap and confirmation rules (My Profile)
+- Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.
+- Roadmap milestones derive from a baseline snapshot taken at build time, so confirmed level changes never shrink the roadmap or lose progress.
+- Milestone completion never changes skill levels; levels change only via a separate user-confirmed update (one per milestone).
+- Roadmap/twin live under `/profile?section=…`; old `/roadmap` and `/twin` redirect there.
+- Known pre-existing failing Playwright check: dashboard spec expecting "illustrative associations, not verified evidence" text.
+**Why:** user spec required progress to be tracked without silently inflating readiness.

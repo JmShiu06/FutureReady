@@ -1,0 +1,52 @@
+## Important Correction: Career Explorer Must Remain Separate
+
+Revise the proposed My Profile integration to follow this product workflow.
+
+### 1. Keep Career Explorer as the career discovery tool
+
+Do not move Career Explorer into My Profile or replace it with a static Career Goal form.
+
+Users should be able to search for and explore different careers. For each career, display the required skills supported by the existing dataset, the user's matching skills, and their skill gaps.
+
+Clearly distinguish the target role's listed skills from verified mandatory job requirements. Keep the existing skill-matching formula and market-demand evidence separate.
+
+Add or reuse an explicit action such as "Build my learning roadmap" or "Use this career for my roadmap".
+
+### 2. Pass the selected career to Learning Roadmap
+
+When a user chooses to build a roadmap for a career, save that role as the current roadmap target.
+
+Inside My Profile > Learning Roadmap, display:
+- The selected target career.
+- The skills required by the target role, where available.
+- The user's existing skills and remaining gaps.
+- Recommended learning tasks linked to those gaps.
+- Course details, verified resource links and completion status.
+
+Users must still be able to explore other roles without automatically changing their current roadmap. Changing the roadmap target should require an explicit user action.
+
+### 3. My Profile has three main sections
+
+A. Skills Profile: current confirmed skills, CV processing and proficiency editing.
+
+B. Learning Roadmap: the selected target career, relevant skill gaps, courses and learning taskboard.
+
+C. Digital Twin & Progress: actual learning improvements, starting-versus-current skill comparison, career-readiness score changes, and the existing separate hypothetical simulation.
+
+Remove unused basic profile fields only after confirming they are not needed elsewhere. Remove the old standalone Learning Roadmap and Digital Twin navigation items if their functionality is fully integrated into My Profile.
+
+### 4. Connect completed learning to Digital Twin
+
+Each course should be associated with its supported skills. When the user completes a course, persist the completion record and let the user review or confirm any proposed proficiency changes.
+
+Recalculate career-readiness progress against the same selected target role using the existing scoring logic. Do not automatically assume that finishing a course proves mastery, and do not invent improvement points.
+
+Keep confirmed progress separate from hypothetical Digital Twin experiments. Resetting a simulation must never erase completed courses or confirmed proficiency changes.
+
+### 5. Implementation requirements
+
+Inspect the current repository and reuse existing components, data structures, APIs, and services. Do not rebuild working features unnecessarily or introduce duplicate skill and career data models.
+
+Preserve Career Explorer as a separate navigation item. Update tests to verify career selection, explicit roadmap targeting, task completion, persistence, scoring consistency, and separation between real progress and hypothetical simulations.
+
+Run the relevant tests, type checks, and production build. Report the actual changes and any remaining limitations. Do not claim the public deployment is verified unless it has been tested.

@@ -219,3 +219,9 @@
 @media (max-width:780px) {
   .audience-switch { display:none; }
 }
+.profile-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 18px; border-bottom:1px solid #eadfd3; }
+.profile-tab { border:0; background:none; padding:10px 14px; font:600 12px var(--body-font, inherit); color:#7d6252; border-bottom:3px solid transparent; margin-bottom:-1px; min-height:44px; }
+.profile-tab:hover { color:#a94710; }
+.profile-tab.active { color:#a94710; border-bottom-color:#b84d11; }
+.profile-tab:focus-visible { outline:2px solid #b84d11; outline-offset:2px; }
+[role=tabpanel][hidden] { display:none; }
