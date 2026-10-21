@@ -1,0 +1,86 @@
+# Enhancement — Add OCR Support for Scanned CVs and Images
+
+The current CV upload workflow works with text-based PDFs, DOCX and TXT, but fails when a PDF was created from a JPG or contains scanned/image-based pages. The interface displays: "No selectable text was found in this PDF. Scanned or image-based PDFs may require OCR."
+
+Please extend the existing CV extraction pipeline so it supports scanned documents and image uploads.
+
+## 1. Inspect before editing
+
+Inspect the existing CV upload component, Express upload/extraction endpoint, document parsing libraries, skill extraction logic, and error states.
+
+Reuse the existing workflow. Do not create a new upload system, duplicate the skill detector, replace the career-matching API, or redesign unrelated dashboard sections.
+
+Briefly explain which files and dependencies you intend to change before implementation.
+
+## 2. Support these document formats
+
+Keep the existing support for:
+- Text-based PDF
+- DOCX
+- TXT
+
+Add support for:
+- Scanned/image-based PDF
+- JPG/JPEG
+- PNG
+
+Allow users to upload the original image directly instead of requiring them to convert it to PDF first.
+
+Retain a reasonable upload-size limit, such as 5 MB, and validate formats on the server where files are submitted to the server.
+
+## 3. Add an OCR fallback
+
+Implement this extraction flow:
+
+1. Attempt ordinary PDF text extraction first.
+2. If the extracted text is empty or contains no meaningful text, treat the document as potentially image-based.
+3. Render the scanned PDF pages to images using a compatible PDF rendering library such as PDF.js.
+4. Run OCR on those images using a suitable open-source OCR engine, such as Tesseract.js.
+5. For directly uploaded JPG/JPEG and PNG files, run OCR on the images.
+6. Send the extracted text through the existing skill-extraction logic.
+7. Return the identified skills to the same editable skill-review interface used for text-based documents.
+
+Important: Tesseract.js does not read PDFs directly, so ensure the PDF-to-image conversion step is implemented and actually works. Inspect the runtime, build configuration and deployment environment before choosing the implementation.
+
+Prefer libraries whose licences are compatible with this project, and explain any licence considerations before adding a dependency. Avoid a large new system or a paid external OCR service.
+
+## 4. Keep the existing experience
+
+After OCR succeeds:
+- Show a real processing/loading state.
+- Display detected skills as the existing animated, editable chips.
+- Let users add or remove skills before confirming.
+- Reuse the existing career-matching API and scoring logic.
+- Do not fabricate recognised text, skills, or progress percentages.
+
+If OCR returns no meaningful text, show an understandable error and let users retry, choose another file, or enter skills manually.
+
+Keep the existing orange-and-cream/Liquid Glass styling.
+
+## 5. Privacy and resource handling
+
+- Do not send CV content to external OCR services.
+- Do not store original CV files or full extracted CV text permanently.
+- Do not log CV contents.
+- Clean up temporary files and OCR resources reliably.
+- Avoid processing unlimited PDF pages; enforce sensible limits on page count, file size, and processing time.
+- Handle corrupt or unsupported documents safely.
+
+## 6. Test and verify
+
+Add tests using synthetic fixtures for:
+- Text-based PDFs continuing to work.
+- A scanned/image-only PDF.
+- Direct JPG and PNG uploads.
+- DOCX and TXT continuing to work.
+- Invalid, oversized and malformed files.
+- OCR returning no readable text.
+- Extracted skills passing correctly into the existing matching workflow.
+
+Run the relevant tests, typechecks and production builds. Test at least one real image-only PDF through the browser upload flow.
+
+Verify that OCR works in the production build and public deployment, not only in the development preview.
+
+Report which tests passed, which failed, any remaining limitations, and whether the public deployment has been verified.
+
+Do not claim OCR support is complete until the scanned-PDF test has actually succeeded.
