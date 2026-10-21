@@ -12,5 +12,6 @@ export type RecommendedCourseRecommendationType = typeof RecommendedCourseRecomm
 export const RecommendedCourseRecommendationType = {
   technical: 'technical',
   soft_skill: 'soft_skill',
+  certification: 'certification',
   career_development: 'career_development',
 } as const;

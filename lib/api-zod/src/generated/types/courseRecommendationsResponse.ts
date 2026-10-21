@@ -10,6 +10,7 @@ import type { RecommendedCourse } from './recommendedCourse';
 
 export interface CourseRecommendationsResponse {
   recommended_courses: RecommendedCourse[];
+  unmatched_skills: string[];
   methodology: string;
   limitations: string[];
   dataset: CourseDatasetMetadata;

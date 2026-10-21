@@ -10,4 +10,4 @@
 - The archive labels Coursera/edX providers, but does not establish the current availability, correctness, rating provenance, duration units, prerequisites, licensing, or course outcomes for each record. The API reports these limitations and does not call the rows verified courses.
 - This projection does not include personally identifiable CV/profile records.
 
-The matching implementation uses deterministic lexical matching on supplied skill tags, titles, and descriptions. It does not install or claim to run sentence-transformers, ChromaDB, or PostgreSQL.
+The Python Skill Learning Recommendation Engine loads this projection into PostgreSQL and builds sentence-transformer embeddings in a derived Chroma index. Course descriptions and skill tags are used because the source has no separate learning-outcome field. The original CV/skill-analysis engine is not changed.

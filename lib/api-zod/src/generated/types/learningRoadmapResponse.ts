@@ -10,6 +10,8 @@ import type { RoadmapPhase } from './roadmapPhase';
 
 export interface LearningRoadmapResponse {
   roadmap: RoadmapPhase[];
+  /** @minimum 0 */
+  estimated_months: number;
   methodology: string;
   limitations: string[];
   dataset: CourseDatasetMetadata;

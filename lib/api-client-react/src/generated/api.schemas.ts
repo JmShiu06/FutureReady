@@ -90,10 +90,16 @@ export interface CourseAnalysis {
      */
   missing_skills?: string[];
   skill_scores?: CourseAnalysisSkillScores;
-  /** @maxLength 80 */
-  candidate_level?: string;
-  /** @maxLength 160 */
-  career_path?: string;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  candidate_level?: string | null;
+  /**
+     * @maxLength 160
+     * @nullable
+     */
+  career_path?: string | null;
   [key: string]: unknown;
  }
 
@@ -123,6 +129,11 @@ export interface LearningRoadmapInput {
      * @maximum 5
      */
   courses_per_skill?: number;
+  /**
+     * @minimum 1
+     * @maximum 40
+     */
+  hours_per_week?: number;
 }
 
 export type RecommendedCourseDifficulty = typeof RecommendedCourseDifficulty[keyof typeof RecommendedCourseDifficulty];
@@ -141,35 +152,44 @@ export type RecommendedCourseRecommendationType = typeof RecommendedCourseRecomm
 export const RecommendedCourseRecommendationType = {
   technical: 'technical',
   soft_skill: 'soft_skill',
+  certification: 'certification',
   career_development: 'career_development',
 } as const;
 
 export interface RecommendedCourse {
-  course_name?: string;
-  platform?: string;
-  course_type?: string;
-  difficulty?: RecommendedCourseDifficulty;
-  skills_covered?: string[];
-  recommendation_type?: RecommendedCourseRecommendationType;
-  matched_skills?: string[];
+  course_name: string;
+  platform: string;
+  course_type: string;
+  difficulty: RecommendedCourseDifficulty;
+  skills_covered: string[];
+  recommendation_type: RecommendedCourseRecommendationType;
+  matched_skills: string[];
   /**
      * @minimum 0
      * @maximum 100
      */
-  match_score?: number;
+  match_score: number;
+  /**
+     * @minimum 0
+     * @maximum 1
+     */
+  semantic_similarity: number;
   /**
      * @minimum 0
      * @maximum 5
      * @nullable
      */
-  rating?: number | null;
+  rating: number | null;
   /**
      * @minimum 0
      * @nullable
      */
-  duration_value?: number | null;
-  duration_note?: string;
-  course_url?: string;
+  duration_value: number | null;
+  duration_note: string;
+  /** @minimum 0 */
+  estimated_hours: number;
+  duration_source: string;
+  course_url: string;
 }
 
 export interface CourseDatasetMetadata {
@@ -183,6 +203,7 @@ export interface CourseDatasetMetadata {
 
 export interface CourseRecommendationsResponse {
   recommended_courses: RecommendedCourse[];
+  unmatched_skills: string[];
   methodology: string;
   limitations: string[];
   dataset: CourseDatasetMetadata;
@@ -190,15 +211,25 @@ export interface CourseRecommendationsResponse {
 
 export interface RoadmapPhase {
   /** @minimum 1 */
+  phase: number;
+  /** @minimum 1 */
   month: number;
+  /** @minimum 1 */
+  end_month: number;
   focus: string;
   skills: string[];
   courses: RecommendedCourse[];
+  prerequisites: string[];
+  prerequisite_note: string;
+  /** @minimum 0 */
+  estimated_hours: number;
   duration_estimate: string;
 }
 
 export interface LearningRoadmapResponse {
   roadmap: RoadmapPhase[];
+  /** @minimum 0 */
+  estimated_months: number;
   methodology: string;
   limitations: string[];
   dataset: CourseDatasetMetadata;

@@ -27,9 +27,15 @@ export interface CourseAnalysis {
      */
   missing_skills?: string[];
   skill_scores?: CourseAnalysisSkillScores;
-  /** @maxLength 80 */
-  candidate_level?: string;
-  /** @maxLength 160 */
-  career_path?: string;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  candidate_level?: string | null;
+  /**
+     * @maxLength 160
+     * @nullable
+     */
+  career_path?: string | null;
   [key: string]: unknown;
  }

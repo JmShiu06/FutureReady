@@ -1,5 +1,5 @@
 kind = "api"
-previewPath = "/api" # TODO - should be excluded from preview in the first place
+previewPath = "/api"
 title = "API Server"
 version = "1.0.0"
 id = "3B4_FFSkEVBkAeYMFRJ2e"
@@ -13,20 +13,35 @@ paths = ["/api"]
 run = "pnpm --filter @workspace/api-server run dev"
 
 [services.production]
-
 [services.production.build]
 args = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
-
 [services.production.build.env]
 NODE_ENV = "production"
-
 [services.production.run]
-# we don't run through pnpm to make startup faster in production
 args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
-
 [services.production.run.env]
 PORT = "8080"
 NODE_ENV = "production"
-
 [services.production.health.startup]
 path = "/api/healthz"
+
+[[services]]
+localPort = 8099
+name = "Skill Learning Engine"
+paths = ["/api/recommend-courses", "/api/learning-roadmap", "/api/learning"]
+
+[services.development]
+run = "UV_PROJECT_ENVIRONMENT=.pythonlibs uv run --no-sync python run_learning.py"
+
+[services.production]
+[services.production.build]
+args = ["uv", "sync", "--frozen"]
+[services.production.build.env]
+UV_PROJECT_ENVIRONMENT = ".pythonlibs"
+[services.production.run]
+args = ["uv", "run", "--no-sync", "python", "artifacts/api-server/run_learning.py"]
+[services.production.run.env]
+PORT = "8099"
+UV_PROJECT_ENVIRONMENT = ".pythonlibs"
+[services.production.health.startup]
+path = "/api/learning/healthz"

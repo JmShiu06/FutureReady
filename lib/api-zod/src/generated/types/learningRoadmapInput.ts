@@ -19,4 +19,9 @@ export interface LearningRoadmapInput {
      * @maximum 5
      */
   courses_per_skill?: number;
+  /**
+     * @minimum 1
+     * @maximum 40
+     */
+  hours_per_week?: number;
 }

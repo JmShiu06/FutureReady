@@ -9,29 +9,37 @@ import type { RecommendedCourseDifficulty } from './recommendedCourseDifficulty'
 import type { RecommendedCourseRecommendationType } from './recommendedCourseRecommendationType';
 
 export interface RecommendedCourse {
-  course_name?: string;
-  platform?: string;
-  course_type?: string;
-  difficulty?: RecommendedCourseDifficulty;
-  skills_covered?: string[];
-  recommendation_type?: RecommendedCourseRecommendationType;
-  matched_skills?: string[];
+  course_name: string;
+  platform: string;
+  course_type: string;
+  difficulty: RecommendedCourseDifficulty;
+  skills_covered: string[];
+  recommendation_type: RecommendedCourseRecommendationType;
+  matched_skills: string[];
   /**
      * @minimum 0
      * @maximum 100
      */
-  match_score?: number;
+  match_score: number;
+  /**
+     * @minimum 0
+     * @maximum 1
+     */
+  semantic_similarity: number;
   /**
      * @minimum 0
      * @maximum 5
      * @nullable
      */
-  rating?: number | null;
+  rating: number | null;
   /**
      * @minimum 0
      * @nullable
      */
-  duration_value?: number | null;
-  duration_note?: string;
-  course_url?: string;
+  duration_value: number | null;
+  duration_note: string;
+  /** @minimum 0 */
+  estimated_hours: number;
+  duration_source: string;
+  course_url: string;
 }

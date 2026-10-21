@@ -5,7 +5,6 @@ import jobsRouter from "./jobs";
 import dosmRouter from "./dosm";
 import analysisRouter from "./analysis";
 import signalsRouter from "./signals";
-import learningRouter from "./learning";
 
 const router: IRouter = Router();
 
@@ -15,6 +14,5 @@ router.use(jobsRouter);
 router.use(dosmRouter);
 router.use(analysisRouter);
 router.use(signalsRouter);
-router.use(learningRouter);
 
 export default router;

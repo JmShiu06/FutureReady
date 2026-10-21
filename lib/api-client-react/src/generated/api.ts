@@ -766,7 +766,7 @@ export const getRecommendCoursesUrl = () => {
 }
 
 /**
- * Consumes skill-analysis results; it does not re-analyze CVs. Matches requested skills against the supplied Coursera/edX dataset's skill tags, titles and descriptions, then ranks by skill relevance, score-derived difficulty, available rating and an estimated learning sequence. This is deterministic lexical matching, not sentence-transformer embeddings. Dataset links, ratings and availability have not been independently verified.
+ * Consumes skill-analysis results; it does not re-analyze CVs. Matches requested skills against the supplied Coursera/edX dataset's skill tags, titles and descriptions using sentence-transformers and Chroma cosine search, then ranks by relevance, score-derived difficulty, available rating and learning priority. Courses are interleaved across skill targets. Dataset links, ratings and availability have not been independently verified.
  * @summary Recommend dataset courses from existing skill-analysis output
  */
 export const recommendCourses = async (courseRecommendationInput: CourseRecommendationInput, options?: Parameters<typeof customFetch>[1]): Promise<CourseRecommendationsResponse> => {
@@ -800,7 +800,7 @@ return customFetch<CourseRecommendationsResponse>(getRecommendCoursesUrl(),
 
 export const getRecommendCoursesMutationKey = () => ['recommendCourses'] as const;
 
-export const getRecommendCoursesMutationOptions = <TError = ErrorType<ErrorResponse>,
+export const getRecommendCoursesMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recommendCourses>>, TError,RecommendCoursesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof recommendCourses>>, TError,RecommendCoursesMutationVariables, TContext> => {
 
@@ -829,13 +829,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type RecommendCoursesMutationResult = NonNullable<Awaited<ReturnType<typeof recommendCourses>>>
     export type RecommendCoursesMutationBody = BodyType<CourseRecommendationInput>
-    export type RecommendCoursesMutationError = ErrorType<ErrorResponse>
+    export type RecommendCoursesMutationError = ErrorType<ErrorResponse | void>
     export type RecommendCoursesMutationVariables = {data: BodyType<CourseRecommendationInput>}
 
     /**
  * @summary Recommend dataset courses from existing skill-analysis output
  */
-export const useRecommendCourses = <TError = ErrorType<ErrorResponse>,
+export const useRecommendCourses = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recommendCourses>>, TError,RecommendCoursesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof recommendCourses>>,
@@ -855,7 +855,7 @@ export const getGenerateLearningRoadmapUrl = () => {
 }
 
 /**
- * Consumes skill-analysis output and groups dataset course matches into estimated monthly phases, prioritizing missing and lower-scored skills. The dataset has no validated prerequisite chains or normalized course durations, so phases are planning estimates rather than verified prerequisites.
+ * Consumes skill-analysis output and groups dataset course matches into estimated monthly phases, prioritizing missing and lower-scored skills. Reviewable skill dependencies take precedence over score order. Beginner learners are not given advanced courses. Durations and dependencies are explicitly labelled estimates, not verified provider prerequisites.
  * @summary Generate a monthly skill-learning roadmap
  */
 export const generateLearningRoadmap = async (learningRoadmapInput: LearningRoadmapInput, options?: Parameters<typeof customFetch>[1]): Promise<LearningRoadmapResponse> => {
@@ -889,7 +889,7 @@ return customFetch<LearningRoadmapResponse>(getGenerateLearningRoadmapUrl(),
 
 export const getGenerateLearningRoadmapMutationKey = () => ['generateLearningRoadmap'] as const;
 
-export const getGenerateLearningRoadmapMutationOptions = <TError = ErrorType<ErrorResponse>,
+export const getGenerateLearningRoadmapMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateLearningRoadmap>>, TError,GenerateLearningRoadmapMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof generateLearningRoadmap>>, TError,GenerateLearningRoadmapMutationVariables, TContext> => {
 
@@ -918,13 +918,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type GenerateLearningRoadmapMutationResult = NonNullable<Awaited<ReturnType<typeof generateLearningRoadmap>>>
     export type GenerateLearningRoadmapMutationBody = BodyType<LearningRoadmapInput>
-    export type GenerateLearningRoadmapMutationError = ErrorType<ErrorResponse>
+    export type GenerateLearningRoadmapMutationError = ErrorType<ErrorResponse | void>
     export type GenerateLearningRoadmapMutationVariables = {data: BodyType<LearningRoadmapInput>}
 
     /**
  * @summary Generate a monthly skill-learning roadmap
  */
-export const useGenerateLearningRoadmap = <TError = ErrorType<ErrorResponse>,
+export const useGenerateLearningRoadmap = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateLearningRoadmap>>, TError,GenerateLearningRoadmapMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof generateLearningRoadmap>>,

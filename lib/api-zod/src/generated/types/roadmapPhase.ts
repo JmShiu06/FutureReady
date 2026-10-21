@@ -9,9 +9,17 @@ import type { RecommendedCourse } from './recommendedCourse';
 
 export interface RoadmapPhase {
   /** @minimum 1 */
+  phase: number;
+  /** @minimum 1 */
   month: number;
+  /** @minimum 1 */
+  end_month: number;
   focus: string;
   skills: string[];
   courses: RecommendedCourse[];
+  prerequisites: string[];
+  prerequisite_note: string;
+  /** @minimum 0 */
+  estimated_hours: number;
   duration_estimate: string;
 }
