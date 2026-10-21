@@ -265,8 +265,8 @@ export function DosmDataPanels() {
                       <tr>
                         <th>Observation month</th>
                         <th>Labour force (thousands)</th>
-                        <th>Employed (thousands)</th>
-                        <th>Unemployed (thousands)</th>
+                        <th className="dosm-employed">Employed (thousands)</th>
+                        <th className="dosm-unemployed">Unemployed (thousands)</th>
                         <th>Participation</th>
                         <th>Employment-to-population</th>
                         <th>Unemployment</th>
@@ -277,8 +277,8 @@ export function DosmDataPanels() {
                         <tr key={row.date}>
                           <td>{fmtMonth(row.date)}</td>
                           <td className="mono">{fmtCount(row.labourForceThousands)}</td>
-                          <td className="mono">{fmtCount(row.employedThousands)}</td>
-                          <td className="mono">{fmtCount(row.unemployedThousands)}</td>
+                          <td className="mono dosm-employed">{fmtCount(row.employedThousands)}</td>
+                          <td className="mono dosm-unemployed">{fmtCount(row.unemployedThousands)}</td>
                           <td className="mono">{fmtCount(row.participationRate)}%</td>
                           <td className="mono">{fmtCount(row.employmentPopulationRatio)}%</td>
                           <td className="mono">{fmtCount(row.unemploymentRate)}%</td>

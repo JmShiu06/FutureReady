@@ -211,6 +211,8 @@ h3 { font:700 14px var(--display-font); margin:0; }
 .team-stat strong { display:block; font:700 27px var(--display-font); color:#376f5d; margin:9px 0 3px; }
 .team-stat small { color:#88948c; font-size:9px; }
 .table-wrap { overflow-x:auto; }
+.dosm-employed { color: hsl(145 63% 25%); }
+.dosm-unemployed { color: hsl(3 68% 40%); }
 table { width:100%; border-collapse:collapse; min-width:590px; }
 th { text-align:left; color:#89958c; font:500 9px var(--mono-font); letter-spacing:.7px; text-transform:uppercase; padding:10px 9px; border-bottom:1px solid #e8e4db; }
 td { padding:13px 9px; border-bottom:1px solid #efebe3; font-size:10px; color:#4e655c; }
