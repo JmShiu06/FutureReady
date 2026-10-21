@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { blankProfile, demoRoles, sampleProfile } from './demo-data';
-import { defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
+import { audiences, defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
 import type { Audience, DemoProfile, WorkspaceState } from './types';
 
 interface WorkspaceContextValue {
@@ -12,12 +12,43 @@ interface WorkspaceContextValue {
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [loaded] = useState(() => {
-    try { return loadWorkspace(window.localStorage); }
-    catch { return { state: defaultWorkspace(), warning: 'Browser storage is unavailable. Changes last for this session only.' }; }
+    try {
+      const saved = loadWorkspace(window.localStorage);
+      const profiles = audiences.reduce((profiles, audience) => {
+        const profile = saved.state.profiles[audience];
+        profiles[audience] = {
+          ...profile,
+          occupation: '',
+          experienceYears: null,
+          education: '',
+          qualification: '',
+          studyField: '',
+          interests: [],
+          location: '',
+          workPreference: '',
+          learningHours: null,
+          budgetMYR: null,
+          goals: '',
+        };
+        return profiles;
+      }, { ...saved.state.profiles });
+      const state = { ...saved.state, profiles };
+      return {
+        ...saved,
+        state,
+        persistOnLoad: JSON.stringify(saved.state.profiles) !== JSON.stringify(profiles),
+      };
+    } catch {
+      return {
+        state: defaultWorkspace(),
+        warning: 'Browser storage is unavailable. Changes last for this session only.',
+        persistOnLoad: false,
+      };
+    }
   });
   const [state, setState] = useState(loaded.state);
   const [storageWarning, setStorageWarning] = useState(loaded.warning);
-  const dirty = useRef(false);
+  const dirty = useRef(loaded.persistOnLoad);
   useEffect(() => {
     if (!dirty.current) return;
     try { setStorageWarning(persistWorkspace(window.localStorage, state)); }

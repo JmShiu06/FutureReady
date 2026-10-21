@@ -79,7 +79,7 @@ test('storage round trip preserves all audience profiles, targets and per-audien
   state.completion['adult:service-designer:facilitation'] = true;
   assert.deepEqual(parseWorkspace(JSON.stringify(state)).state, state);
 });
-test('fresh/reset profiles leave About You blank while existing saved profiles remain intact', () => {
+test('fresh profiles are blank and storage parsing preserves valid data before the app applies its refresh policy', () => {
   const workspace = defaultWorkspace();
   for (const audience of ['adult', 'graduate', 'hr', 'education'] as const) {
     const profile = workspace.profiles[audience];

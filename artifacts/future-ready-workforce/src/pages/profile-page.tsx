@@ -82,7 +82,7 @@ export default function ProfilePage() {
       <div className="source-note" style={{ marginBottom: 18 }}>
         Add only details that apply to you. Leave any field blank if it does not; About You details provide planning context and do not secretly change your score.
         Skill levels range from 1 (new to it) to 5 (can teach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
-        Save your edits before switching audiences or pages.
+        About You fields are cleared when the website is refreshed; skills and roadmap progress remain saved. Save your edits before switching audiences or pages.
     </div>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
     <div className="grid-2">
