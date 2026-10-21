@@ -112,6 +112,17 @@ async function setSkillLevel(page, index, value) {
   assert.equal(await range.inputValue(), String(value));
 }
 
+async function setProfileSkillLevel(page, index, value) {
+  const range = page.getByTestId(`select-skill-level-${index}-range`);
+  await range.focus();
+  const initial = Number(await range.inputValue());
+  const direction = value > initial ? 'ArrowRight' : 'ArrowLeft';
+  for (let current = initial; current !== value; current += value > initial ? 1 : -1) {
+    await range.press(direction);
+  }
+  assert.equal(await range.inputValue(), String(value));
+}
+
 async function saveAndWaitForStorage(page, expectedOccupation) {
   await page.getByTestId('button-save-profile').click();
   await page.waitForFunction(
@@ -153,7 +164,7 @@ test('applies only checked CV profile fields and saves/reloads them with confirm
       assert.equal(afterApply[key], before[key], `${key} must stay unchanged when it was not selected.`);
     }
     assert.equal(await page.getByTestId(`input-skill-name-${newSkillIndex}`).inputValue(), 'Python');
-    assert.equal(await page.getByTestId(`select-skill-level-${newSkillIndex}-4`).isChecked(), true);
+    assert.equal(await page.getByTestId(`select-skill-level-${newSkillIndex}-range`).inputValue(), '4');
 
     await saveAndWaitForStorage(page, 'CV role selected');
     await page.reload();
@@ -162,7 +173,7 @@ test('applies only checked CV profile fields and saves/reloads them with confirm
     assert.equal(await page.locator(profileInputs.experience).inputValue(), '7');
     assert.equal(await page.locator(profileInputs.education).inputValue(), before.education);
     assert.equal(await page.getByTestId(`input-skill-name-${newSkillIndex}`).inputValue(), 'Python');
-    assert.equal(await page.getByTestId(`select-skill-level-${newSkillIndex}-4`).isChecked(), true);
+    assert.equal(await page.getByTestId(`select-skill-level-${newSkillIndex}-range`).inputValue(), '4');
   } finally {
     await page.close();
   }
@@ -200,7 +211,7 @@ test('a CV with no profile suggestions can add a skill without changing About Yo
     const before = await readAboutYou(page);
     const newSkillIndex = await page.locator('[data-testid^="row-skill-"]').count();
     assert.match(await page.getByTestId('dialog-cv-review').innerText(), /No clearly labelled About You details were found/);
-    await setSkillLevel(page, 0, 3);
+    await setProfileSkillLevel(page, 0, 3);
     await page.getByTestId('button-apply-cv-skills').click();
     const afterApply = await readAboutYou(page);
     assert.deepEqual(afterApply, before);
@@ -211,7 +222,7 @@ test('a CV with no profile suggestions can add a skill without changing About Yo
     await page.getByTestId('input-occupation').waitFor();
     assert.deepEqual(await readAboutYou(page), before);
     assert.equal(await page.getByTestId(`input-skill-name-${newSkillIndex}`).inputValue(), 'Python');
-    assert.equal(await page.getByTestId(`select-skill-level-${newSkillIndex}-3`).isChecked(), true);
+    assert.equal(await page.getByTestId(`select-skill-level-${newSkillIndex}-range`).inputValue(), '3');
   } finally {
     await page.close();
   }

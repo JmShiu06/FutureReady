@@ -3,8 +3,17 @@ import { AlertTriangle, RotateCcw } from 'lucide-react';
 import type { Evidence, RequiredSkill, SkillGap } from '@/domain/types';
 import { evidenceWarnings } from '@/domain/services';
 
-export function SectionTitle({ title, note, action }: { title: string; note?: string; action?: ReactNode }) {
-  return <div className="section-head"><div><h2>{title}</h2>{note && <div className="section-kicker">{note}</div>}</div>{action}</div>;
+export function SectionTitle({ title, note, action, info }: { title: string; note?: string; action?: ReactNode; info?: string }) {
+  return <div className="section-head"><div>
+    <div className="section-title-line">
+      <h2>{title}</h2>
+      {info && <details className="section-info">
+        <summary aria-label={`${title} information`} title={`${title} information`} data-testid={`info-${slug(title)}`}>i</summary>
+        <div className="section-info-popup" role="note">{info}</div>
+      </details>}
+    </div>
+    {note && <div className="section-kicker">{note}</div>}
+  </div>{action}</div>;
 }
 
 export function PageHead({ eyebrow, title, subtitle, action }: { eyebrow: string; title: string; subtitle?: string; action?: ReactNode }) {

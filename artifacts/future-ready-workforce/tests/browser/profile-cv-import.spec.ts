@@ -50,7 +50,7 @@ async function uploadSyntheticCv(page: Page) {
 
 test('About You starts blank and saved fields clear on refresh while skills remain', async ({ page }) => {
   await page.goto('/profile');
-  await expect(page.getByText(/About You fields are cleared when the website is refreshed/)).toBeVisible();
+  await expect(page.getByText(/About You resets on refresh/)).toBeVisible();
 
   const adultFields = [
     ['input-occupation', 'e.g., Operations coordinator'],

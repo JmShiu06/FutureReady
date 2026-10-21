@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import type { CvProfileSuggestions } from '@workspace/api-client-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
-import { ChiliLevelPicker } from '@/components/chili-level-picker';
+import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -13,8 +13,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useWorkspace } from '@/domain/workspace-context';
 import { profileSchema } from '@/domain/storage';
-import { audienceLabels, skillCatalogue } from '@/domain/demo-data';
-import type { DemoProfile, ProfileSkill } from '@/domain/types';
+import { audienceLabels, demoRoles, skillCatalogue } from '@/domain/demo-data';
+import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
 
 const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) }).superRefine((v, ctx) => {
@@ -25,18 +25,66 @@ const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) })
 type FormValues = z.infer<typeof formSchema>;
 const toForm = (p: DemoProfile): FormValues => ({ ...p, interestsText: p.interests.join(', ') });
 const numberChange = (fn: (v: number | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => fn(e.target.value === '' ? null : Number(e.target.value));
+const normaliseSkillName = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+
+function suggestedSkillsForOccupation(occupation: string, existingSkills: ReadonlyArray<{ name: string }>) {
+  const tokens = occupation.toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter(token => token.length > 1);
+  if (!tokens.length) return [];
+
+  const rankedRoles = demoRoles.map(role => {
+    const text = `${role.title} ${role.category} ${role.industry} ${role.description}`.toLocaleLowerCase();
+    return { role, score: tokens.reduce((score, token) => score + Number(text.includes(token)), 0) };
+  }).sort((a, b) => b.score - a.score);
+  const roleSkills = rankedRoles[0]?.score
+    ? rankedRoles[0].role.requiredSkills.map(skill => skill.name)
+    : [];
+  const existing = new Set(existingSkills.map(skill => normaliseSkillName(skill.name)));
+  const seen = new Set<string>();
+  const suggestions: string[] = [];
+
+  for (const name of [...roleSkills, ...skillCatalogue]) {
+    const key = normaliseSkillName(name);
+    if (!key || seen.has(key) || existing.has(key)) continue;
+    seen.add(key);
+    suggestions.push(name);
+    if (suggestions.length === 5) break;
+  }
+
+  return suggestions;
+}
 
 export default function ProfilePage() {
   const { state, profile, saveProfile, resetProfile, loadSample } = useWorkspace();
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
   const skills = useFieldArray({ control: form.control, name: 'skills' });
   const profileSkills = form.watch('skills') ?? [];
+  const watchedProfile = form.watch();
+  const occupation = watchedProfile.occupation?.trim() ?? '';
+  const skillSuggestions = useMemo(
+    () => suggestedSkillsForOccupation(occupation, profileSkills),
+    [occupation, profileSkills],
+  );
   const [saved, setSaved] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [newCategory, setNewCategory] = useState('Custom');
   const [skillError, setSkillError] = useState('');
   const [variant, setVariant] = useState<'default' | 'data'>('default');
   const graduate = state.audience === 'graduate' || state.audience === 'education';
+  const completionItems = [
+    Boolean(watchedProfile.occupation?.trim()),
+    watchedProfile.experienceYears !== null && watchedProfile.experienceYears !== undefined,
+    Boolean(watchedProfile.education?.trim()),
+    ...(graduate ? [Boolean(watchedProfile.qualification?.trim()), Boolean(watchedProfile.studyField?.trim())] : []),
+    Boolean(watchedProfile.interestsText?.split(',').some(value => value.trim())),
+    Boolean(watchedProfile.location?.trim()),
+    Boolean(watchedProfile.workPreference),
+    watchedProfile.learningHours !== null && watchedProfile.learningHours !== undefined,
+    watchedProfile.budgetMYR !== null && watchedProfile.budgetMYR !== undefined,
+    Boolean(watchedProfile.goals?.trim()),
+    profileSkills.some(skill => Boolean(skill.name.trim()) && skill.level >= 1 && skill.level <= 5),
+  ];
+  const completedItems = completionItems.filter(Boolean).length;
+  const completeness = Math.round((completedItems / completionItems.length) * 100);
 
   useEffect(() => { form.reset(toForm(profile)); }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -71,19 +119,45 @@ export default function ProfilePage() {
     if (!name) return setSkillError('Enter a skill name.');
     if (name.length > 60) return setSkillError('Skill names must be 60 characters or fewer.');
     if (current.length >= 50) return setSkillError('A profile can hold up to 50 skills.');
-    const normalise = (s: string) => s.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
-    if (current.some(s => normalise(s.name) === normalise(name))) return setSkillError(`"${name}" is already in your profile.`);
+    if (current.some(s => normaliseSkillName(s.name) === normaliseSkillName(name))) return setSkillError(`"${name}" is already in your profile.`);
     skills.append({ name, level: 2, category: newCategory.trim().slice(0, 120) || 'Custom' });
     setNewSkill(''); setSkillError(''); setSaved('');
+  };
+  const addSuggestedSkill = (name: string) => {
+    const current = form.getValues('skills');
+    if (current.length >= 50) {
+      setSkillError('A profile can hold up to 50 skills.');
+      return;
+    }
+    if (current.some(skill => normaliseSkillName(skill.name) === normaliseSkillName(name))) return;
+    skills.append({ name, level: 1, category: 'Suggested' });
+    setSkillError('');
+    setSaved('');
   };
 
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review suggested CV details or enter them manually. Each audience keeps its own profile." />
-      <div className="source-note" style={{ marginBottom: 18 }}>
-        Add only details that apply to you. Leave any field blank if it does not; About You details provide planning context and do not secretly change your score.
-        Skill levels range from 1 (new to it) to 5 (can teach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
-        About You fields are cleared when the website is refreshed; skills and roadmap progress remain saved. Save your edits before switching audiences or pages.
+    <section className="profile-completeness panel" aria-label="Profile completeness">
+      <div className="profile-completeness-heading">
+        <div>
+          <strong data-testid="text-profile-completeness">Profile is {completeness}% complete</strong>
+          <span>{completedItems} of {completionItems.length} profile items filled</span>
+        </div>
+        <b>{completeness}%</b>
+      </div>
+      <div
+        className="profile-completeness-track"
+        role="progressbar"
+        aria-label="Profile completeness"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={completeness}
+        data-testid="progress-profile-completeness"
+      >
+        <span style={{ width: `${completeness}%` }} />
     </div>
+      <p className="profile-refresh-note">About You resets on refresh; skills and roadmap progress stay saved.</p>
+    </section>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
     <div className="grid-2">
       <div className="panel panel-pad">
@@ -112,9 +186,34 @@ export default function ProfilePage() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
           <div className="panel panel-pad profile-about-you">
-          <SectionTitle title="About you" note="BACKGROUND AND CONSTRAINTS" />
+          <SectionTitle
+            title="About you"
+            note="BACKGROUND AND CONSTRAINTS"
+            info="Only enter details that apply to you. These fields add planning context and do not change your readiness score. Leave an unmatched field blank; About You details clear when the website refreshes, while skills and roadmap progress stay saved."
+          />
           <div className="form-grid">
             <FormField control={form.control} name="occupation" render={({ field }) => <FormItem className="field"><FormLabel>{graduate ? 'Study programme or occupation' : 'Occupation'}</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Operations coordinator" {...field} data-testid="input-occupation" /></FormControl><FormMessage /></FormItem>} />
+            {occupation && <div className="suggested-skill-panel span-2" data-testid="suggested-skills-panel">
+              <div className="suggested-skill-heading">
+                <strong>Suggested skills</strong>
+                <span>Demo hints from occupation wording · not market evidence</span>
+              </div>
+              <p>Choose any that fit. New suggestions start at level 1; adjust them in Skills.</p>
+              {skills.fields.length >= 50
+                ? <span className="muted">Your profile has reached the 50-skill limit.</span>
+                : skillSuggestions.length
+                  ? <div className="suggested-skill-chips">
+                    {skillSuggestions.map(name => <button
+                      type="button"
+                      className="chip suggested-skill-chip"
+                      key={name}
+                      onClick={() => addSuggestedSkill(name)}
+                      aria-label={`Add ${name} to your skills at level 1`}
+                      data-testid={`button-suggested-skill-${slug(name)}`}
+                    >+ {name}</button>)}
+                  </div>
+                  : <span className="muted">All available demo suggestions are already in your profile.</span>}
+            </div>}
             <FormField control={form.control} name="experienceYears" render={({ field }) => <FormItem className="field"><FormLabel>Years of experience</FormLabel><FormControl><input type="number" min={0} max={60} step="any" className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 4" data-testid="input-experience" /></FormControl><FormMessage /></FormItem>} />
             <FormField control={form.control} name="education" render={({ field }) => <FormItem className="field"><FormLabel>Education</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Diploma in Business" {...field} data-testid="input-education" /></FormControl><FormMessage /></FormItem>} />
             {graduate && <>
@@ -131,7 +230,11 @@ export default function ProfilePage() {
         </div>
 
         <div className="panel panel-pad">
-          <SectionTitle title="Skills" note={`${skills.fields.length} OF 50 · LEVELS 1–5`} />
+          <SectionTitle
+            title="Skills"
+            note={`${skills.fields.length} OF 50 · LEVELS 1–5`}
+            info="Set each level yourself: 1 is new to it and 5 means you can teach it. CV verification only confirms a skill name; it never sets proficiency."
+          />
           {skills.fields.length === 0 && <p className="muted">No skills yet. Add one below.</p>}
           {skills.fields.map((f, i) => <div className="skill-edit" key={f.id} data-testid={`row-skill-${i}`}>
             <FormField control={form.control} name={`skills.${i}.name`} render={({ field }) => <FormItem className="field"><FormControl><div className="skill-name-control">
@@ -139,9 +242,8 @@ export default function ProfilePage() {
               {(profileSkills[i]?.cvDetected || profileSkills[i]?.category === 'CV detected') && <span className="cv-skill-check" title="Found in CV" role="img" aria-label="Found in CV"><Check size={12} /></span>}
             </div></FormControl><FormMessage /></FormItem>} />
             <FormField control={form.control} name={`skills.${i}.category`} render={({ field }) => <FormItem className="field"><FormControl><input className="fr-input" aria-label={`Skill ${i + 1} category`} {...field} data-testid={`input-skill-category-${i}`} /></FormControl></FormItem>} />
-            <FormField control={form.control} name={`skills.${i}.level`} render={({ field }) => <FormItem className="field"><FormControl><ChiliLevelPicker
-              name={field.name}
-              value={Number(field.value) as 1 | 2 | 3 | 4 | 5}
+            <FormField control={form.control} name={`skills.${i}.level`} render={({ field }) => <FormItem className="field"><FormControl><ChiliLevelSlider
+              value={Number(field.value) as Proficiency}
               onChange={field.onChange}
               label={`Proficiency for ${f.name}`}
               testId={`select-skill-level-${i}`}
@@ -160,7 +262,7 @@ export default function ProfilePage() {
           <div className="row" style={{ marginTop: 10 }}>{skillCatalogue.filter(s => !skills.fields.some(f => f.name.toLowerCase() === s.toLowerCase())).slice(0, 8).map(s => <button type="button" key={s} className="chip" style={{ border: 0 }} onClick={() => setNewSkill(s)} data-testid={`button-suggest-${slug(s)}`}>{s}</button>)}</div>
         </div>
 
-        <div className="spread">
+        <div className="profile-save-bar" role="region" aria-label="Profile save controls">
           <span className="muted" role="status" data-testid="status-save">{saved && <><Check size={12} /> {saved}</>}{!saved && form.formState.isDirty && 'Unsaved changes'}</span>
           <button type="submit" className="btn btn-primary" data-testid="button-save-profile"><Save size={14} /> Save profile</button>
         </div>

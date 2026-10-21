@@ -62,8 +62,10 @@ export function ProfileCvImport({
   const [dragging, setDragging] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [linkedInPreviewOpen, setLinkedInPreviewOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const reviewDialogRef = useRef<HTMLDialogElement>(null);
+  const linkedInPreviewRef = useRef<HTMLDialogElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -73,6 +75,12 @@ export function ProfileCvImport({
     if (reviewDialogOpen && !dialog.open) dialog.showModal();
     else if (!reviewDialogOpen && dialog.open) dialog.close();
   }, [reviewDialogOpen]);
+  useEffect(() => {
+    const dialog = linkedInPreviewRef.current;
+    if (!dialog) return;
+    if (linkedInPreviewOpen && !dialog.open) dialog.showModal();
+    else if (!linkedInPreviewOpen && dialog.open) dialog.close();
+  }, [linkedInPreviewOpen]);
 
   const extract = async (file: File) => {
     abortRef.current?.abort();
@@ -221,9 +229,14 @@ export function ProfileCvImport({
       {phase === 'extracting' ? <Loader2 size={22} className="profile-cv-spinner" aria-hidden="true" /> : <FileText size={22} aria-hidden="true" />}
       <strong>{phase === 'extracting' ? 'Reading your CV' : 'Drop your CV here'}</strong>
       <span>PDF, DOCX, TXT, JPG or PNG · up to 5 MB</span>
-      <button type="button" className="btn btn-secondary btn-small" onClick={() => inputRef.current?.click()} disabled={phase === 'extracting'} data-testid="button-choose-cv">
-        Choose a file
-      </button>
+      <div className="profile-cv-actions">
+        <button type="button" className="btn btn-secondary btn-small" onClick={() => inputRef.current?.click()} disabled={phase === 'extracting'} data-testid="button-choose-cv">
+          Choose a file
+        </button>
+        <button type="button" className="btn btn-secondary btn-small" onClick={() => setLinkedInPreviewOpen(true)} data-testid="button-linkedin-import">
+          Import from LinkedIn
+        </button>
+      </div>
       <input
         ref={inputRef}
         className="profile-cv-input"
@@ -346,6 +359,28 @@ export function ProfileCvImport({
               ? 'Fill About You'
               : 'Add selected skills'}
         </button>}
+      </div>
+    </dialog>
+    <dialog
+      ref={linkedInPreviewRef}
+      className="profile-cv-dialog profile-linkedin-dialog"
+      aria-labelledby="linkedin-preview-title"
+      aria-describedby="linkedin-preview-description"
+      onCancel={() => setLinkedInPreviewOpen(false)}
+      onClose={() => setLinkedInPreviewOpen(false)}
+      data-testid="dialog-linkedin-preview"
+    >
+      <button type="button" className="profile-cv-dialog-close" aria-label="Close LinkedIn import preview" onClick={() => setLinkedInPreviewOpen(false)}><X size={16} /></button>
+      <header className="profile-cv-dialog-header">
+        <h2 id="linkedin-preview-title">LinkedIn import preview</h2>
+        <p id="linkedin-preview-description">LinkedIn import is a UI preview only. No account connection or profile data access is configured. Use the CV upload or enter your details manually.</p>
+      </header>
+      <div className="profile-linkedin-preview">
+        <strong>Import from LinkedIn</strong>
+        <span>Connection unavailable in demo mode</span>
+      </div>
+      <div className="profile-cv-dialog-footer">
+        <button type="button" className="btn btn-primary btn-small" onClick={() => setLinkedInPreviewOpen(false)} data-testid="button-close-linkedin-preview">Close</button>
       </div>
     </dialog>
   </section>;

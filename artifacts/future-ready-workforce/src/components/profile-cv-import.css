@@ -9,6 +9,8 @@
 .profile-cv-drop strong { color:#3c2d25; font:700 13px var(--display-font); }
 .profile-cv-drop > span { color:#8a6f5d; font-size:10px; }
 .profile-cv-drop .btn { margin-top:3px; }
+.profile-cv-actions { display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap; width:100%; margin-top:3px; }
+.profile-cv-actions .btn { margin-top:0; }
 .profile-cv-drop:focus-within { outline:2px solid #c95b1c;outline-offset:2px; }
 .profile-cv-input { position:absolute; width:1px;height:1px; padding:0;margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;border:0; }
 .profile-cv-spinner { animation:profile-cv-spin 1s linear infinite; }
@@ -61,12 +63,17 @@
 .chili-slider.is-disabled input { cursor:not-allowed; }
 .profile-cv-dialog-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
 .profile-cv-dialog-footer .btn:disabled { opacity:.55; cursor:not-allowed; }
+.profile-linkedin-preview { display:grid; gap:4px; margin-top:17px; padding:13px; border:1px dashed #e3bfa2; border-radius:10px; background:#fff7ef; }
+.profile-linkedin-preview strong { color:#4a382e; font-size:11px; }
+.profile-linkedin-preview span { color:#806c5b; font-size:10px; }
 .profile-cv-empty { margin:13px 0; padding:12px; border:1px dashed #e3bfa2; border-radius:10px; background:#fff7ef; color:#785740; font-size:10.5px; line-height:1.5; }
 .profile-cv-card .btn:disabled { opacity:.55; cursor:not-allowed; }
 .profile-cv-card .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
 @media (max-width:560px) {
   .profile-cv-result { align-items:flex-start; flex-direction:column; }
   .profile-cv-result .btn { width:100%; justify-content:center; }
+  .profile-cv-actions { display:grid; grid-template-columns:1fr; max-width:240px; }
+  .profile-cv-actions .btn { width:100%; justify-content:center; }
   .profile-cv-dialog-review-head { align-items:flex-start; flex-direction:column; gap:3px; }
   .profile-cv-dialog-row { grid-template-columns:1fr; gap:8px; }
   .profile-cv-dialog-row .chili-slider { width:100%; }

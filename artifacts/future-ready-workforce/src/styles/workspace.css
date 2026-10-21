@@ -25,6 +25,33 @@
 .field { display:grid; gap:5px; }
 .field > label, .field-label { font:600 10px var(--mono-font); color:#7b5b47; text-transform:uppercase; letter-spacing:.6px; }
 .field-error { color:#a5321f; font-size:10px; }
+.section-title-line { display:flex; align-items:center; gap:7px; }
+.section-info { position:relative; display:inline-flex; flex:none; }
+.section-info summary { display:grid; place-items:center; width:19px; height:19px; border:1px solid #d9b79d; border-radius:50%; background:#fffaf4; color:#a94710; font:700 11px var(--display-font); cursor:pointer; list-style:none; }
+.section-info summary::-webkit-details-marker { display:none; }
+.section-info summary:hover { background:#fae7d6; }
+.section-info summary:focus-visible { outline:2px solid #c95b1c; outline-offset:2px; }
+.section-info-popup { position:absolute; top:calc(100% + 8px); left:0; z-index:20; width:min(280px,calc(100vw - 48px)); padding:11px 12px; border:1px solid #e6d7c9; border-radius:10px; background:#fffaf4; color:#6f5444; box-shadow:0 12px 30px rgba(65,42,28,.16); font-size:10px; font-weight:400; line-height:1.55; letter-spacing:normal; text-transform:none; }
+.profile-completeness { margin:0 0 18px; padding:14px 16px; }
+.profile-completeness-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:9px; }
+.profile-completeness-heading > div { display:grid; gap:2px; }
+.profile-completeness-heading strong { color:#4a382e; font:700 13px var(--display-font); }
+.profile-completeness-heading span { color:#8a7466; font-size:10px; }
+.profile-completeness-heading > b { color:#a94710; font:700 16px var(--display-font); }
+.profile-completeness-track { height:8px; overflow:hidden; border-radius:10px; background:#f0e4d8; }
+.profile-completeness-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#86a94b,#e1a333,#c84a16); transition:width .2s ease; }
+.profile-refresh-note { margin:8px 0 0; color:#806955; font-size:9.5px; line-height:1.45; }
+.suggested-skill-panel { display:grid; gap:6px; padding:11px 12px; border:1px solid #eadfd3; border-radius:10px; background:#fffaf4; }
+.suggested-skill-heading { display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.suggested-skill-heading strong { color:#4a382e; font-size:11px; }
+.suggested-skill-heading span { color:#8a7466; font-size:9px; }
+.suggested-skill-panel > p { margin:0; color:#806955; font-size:9.5px; line-height:1.45; }
+.suggested-skill-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.suggested-skill-chip { min-height:34px; padding:7px 10px; border:1px solid #e9c8ad; background:#fff5eb; color:#8e431c; font-size:10px; cursor:pointer; }
+.suggested-skill-chip:hover { background:#f7e3d1; border-color:#d9a47e; }
+.suggested-skill-chip:focus-visible { outline:2px solid #c95b1c; outline-offset:2px; }
+.profile-save-bar { position:sticky; bottom:0; z-index:6; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:2px; padding:12px 2px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid #e6d7c9; background:rgba(255,250,244,.96); box-shadow:0 -9px 20px rgba(65,42,28,.08); backdrop-filter:blur(8px); }
+.profile-save-bar .btn { min-width:145px; }
 .skill-name-control { display:flex; align-items:center; gap:7px; min-width:0; }
 .skill-name-control .fr-input { flex:1; }
 .cv-skill-check { display:inline-grid; place-items:center; flex:none; width:17px; height:17px; border-radius:50%; background:#edf2e8; color:#54764a; }
@@ -108,7 +135,13 @@
   .twin-skill-edit { grid-template-columns:minmax(0,1fr) 34px; }
   .twin-skill-edit > span { grid-column:1 / -1; }
 }
+@media (max-width:480px) {
+  .profile-completeness { padding:12px; }
+  .profile-save-bar { align-items:stretch; }
+  .profile-save-bar .btn { width:100%; }
+  .section-info-popup { width:min(250px,calc(100vw - 40px)); }
+}
 @media (prefers-reduced-motion:reduce) {
   .page-enter, .skeleton { animation:none; }
-  .progress i, .bar, .btn, .nav-link { transition:none; }
+  .progress i, .profile-completeness-track span, .bar, .btn, .nav-link { transition:none; }
 }
