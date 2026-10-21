@@ -10,6 +10,7 @@ import { LoadingBlock } from '@/components/workspace/ui';
 import DashboardPage from '@/pages/dashboard-page';
 const ProfilePage = lazy(() => import('@/pages/profile-page'));
 const CareersPage = lazy(() => import('@/pages/careers-page'));
+const CvRecommendationsPage = lazy(() => import('@/pages/cv-recommendations-page'));
 const RoleDetailPage = lazy(() => import('@/pages/role-detail-page'));
 const TrendsPage = lazy(() => import('@/pages/trends-page'));
 const TwinPage = lazy(() => import('@/pages/twin-page'));
@@ -45,6 +46,7 @@ function App() {
         <Route path="/" component={DashboardPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/careers" component={CareersPage} />
+        <Route path="/cv-analysis" component={CvRecommendationsPage} />
         <Route path="/roles/:id" component={RoleDetailPage} />
         <Route path="/trends" component={TrendsPage} />
         <Route path="/twin" component={TwinPage} />

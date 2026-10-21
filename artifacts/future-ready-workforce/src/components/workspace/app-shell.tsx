@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
-  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, FlaskConical,
+  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, FileText, FlaskConical,
   Globe2, Map, Radar, ShieldCheck, UserRound, Users, Workflow,
 } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
@@ -13,6 +13,7 @@ const nav = [
   { href: '/', label: 'Overview', icon: Compass, key: 'home' },
   { href: '/profile', label: 'My profile', icon: UserRound, key: 'profile' },
   { href: '/careers', label: 'Career explorer', icon: Map, key: 'careers' },
+  { href: '/cv-analysis', label: 'CV recommendations', icon: FileText, key: 'cv-analysis' },
   { href: '/twin', label: 'Digital twin', icon: FlaskConical, key: 'twin' },
   { href: '/roadmap', label: 'Learning roadmap', icon: Workflow, key: 'roadmap' },
   { href: '/trends', label: 'Skills radar', icon: Radar, key: 'trends' },
