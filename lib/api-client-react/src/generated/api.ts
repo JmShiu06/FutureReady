@@ -24,7 +24,14 @@ import type {
   CareerSkillList,
   CareerSkillsInput,
   ErrorResponse,
-  HealthStatus
+  FilterJobsParams,
+  HealthStatus,
+  Job,
+  JobMatchInput,
+  JobMatchScores,
+  JobPage,
+  ListJobsParams,
+  SearchJobsParams
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -297,5 +304,423 @@ export const useMatchCareers = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getMatchCareersMutationOptions(options));
+    }
+
+export const getListJobsUrl = (params?: ListJobsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/jobs?${stringifiedParams}` : `/api/jobs`
+}
+
+/**
+ * @summary List job listings
+ */
+export const listJobs = async (params?: ListJobsParams, options?: Parameters<typeof customFetch>[1]): Promise<JobPage> => {
+
+  return customFetch<JobPage>(getListJobsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListJobsQueryKey = (params?: ListJobsParams,) => {
+    return [
+    `/api/jobs`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListJobsQueryOptions = <TData = Awaited<ReturnType<typeof listJobs>>, TError = ErrorType<ErrorResponse>>(params?: ListJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListJobsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listJobs>>> = ({ signal }) => listJobs(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListJobsQueryResult = NonNullable<Awaited<ReturnType<typeof listJobs>>>
+export type ListJobsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List job listings
+ */
+
+export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError = ErrorType<ErrorResponse>>(
+ params?: ListJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListJobsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSearchJobsUrl = (params: SearchJobsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/jobs/search?${stringifiedParams}` : `/api/jobs/search`
+}
+
+/**
+ * @summary Search jobs by title, company, or skills
+ */
+export const searchJobs = async (params: SearchJobsParams, options?: Parameters<typeof customFetch>[1]): Promise<JobPage> => {
+
+  return customFetch<JobPage>(getSearchJobsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchJobsQueryKey = (params?: SearchJobsParams,) => {
+    return [
+    `/api/jobs/search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchJobsQueryOptions = <TData = Awaited<ReturnType<typeof searchJobs>>, TError = ErrorType<ErrorResponse>>(params: SearchJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchJobsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchJobs>>> = ({ signal }) => searchJobs(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchJobsQueryResult = NonNullable<Awaited<ReturnType<typeof searchJobs>>>
+export type SearchJobsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Search jobs by title, company, or skills
+ */
+
+export function useSearchJobs<TData = Awaited<ReturnType<typeof searchJobs>>, TError = ErrorType<ErrorResponse>>(
+ params: SearchJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchJobsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getFilterJobsUrl = (params?: FilterJobsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/jobs/filter?${stringifiedParams}` : `/api/jobs/filter`
+}
+
+/**
+ * @summary Filter jobs by salary, location, and employment type
+ */
+export const filterJobs = async (params?: FilterJobsParams, options?: Parameters<typeof customFetch>[1]): Promise<JobPage> => {
+
+  return customFetch<JobPage>(getFilterJobsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getFilterJobsQueryKey = (params?: FilterJobsParams,) => {
+    return [
+    `/api/jobs/filter`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getFilterJobsQueryOptions = <TData = Awaited<ReturnType<typeof filterJobs>>, TError = ErrorType<ErrorResponse>>(params?: FilterJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof filterJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFilterJobsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof filterJobs>>> = ({ signal }) => filterJobs(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof filterJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type FilterJobsQueryResult = NonNullable<Awaited<ReturnType<typeof filterJobs>>>
+export type FilterJobsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Filter jobs by salary, location, and employment type
+ */
+
+export function useFilterJobs<TData = Awaited<ReturnType<typeof filterJobs>>, TError = ErrorType<ErrorResponse>>(
+ params?: FilterJobsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof filterJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getFilterJobsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetJobUrl = (id: string,) => {
+
+
+
+
+  return `/api/jobs/${id}`
+}
+
+/**
+ * @summary Get job details
+ */
+export const getJob = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Job> => {
+
+  return customFetch<Job>(getGetJobUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetJobQueryKey = (id: string,) => {
+    return [
+    `/api/jobs/${id}`
+    ] as const;
+    }
+
+
+export const getGetJobQueryOptions = <TData = Awaited<ReturnType<typeof getJob>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetJobQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJob>>> = ({ signal }) => getJob(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetJobQueryResult = NonNullable<Awaited<ReturnType<typeof getJob>>>
+export type GetJobQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get job details
+ */
+
+export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetJobQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCalculateJobMatchScoresUrl = () => {
+
+
+
+
+  return `/api/jobs/match-score`
+}
+
+/**
+ * Exact normalized skill-name overlap. This is not a hiring probability.
+ * @summary Calculate profile skill overlap for job listings
+ */
+export const calculateJobMatchScores = async (jobMatchInput: JobMatchInput, options?: Parameters<typeof customFetch>[1]): Promise<JobMatchScores> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<JobMatchScores>(getCalculateJobMatchScoresUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(jobMatchInput)
+  }
+);}
+
+
+
+
+
+export const getCalculateJobMatchScoresMutationKey = () => ['calculateJobMatchScores'] as const;
+
+export const getCalculateJobMatchScoresMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateJobMatchScores>>, TError,CalculateJobMatchScoresMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof calculateJobMatchScores>>, TError,CalculateJobMatchScoresMutationVariables, TContext> => {
+
+const mutationKey = getCalculateJobMatchScoresMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof calculateJobMatchScores>>, CalculateJobMatchScoresMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  calculateJobMatchScores(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CalculateJobMatchScoresMutationResult = NonNullable<Awaited<ReturnType<typeof calculateJobMatchScores>>>
+    export type CalculateJobMatchScoresMutationBody = BodyType<JobMatchInput>
+    export type CalculateJobMatchScoresMutationError = ErrorType<ErrorResponse>
+    export type CalculateJobMatchScoresMutationVariables = {data: BodyType<JobMatchInput>}
+
+    /**
+ * @summary Calculate profile skill overlap for job listings
+ */
+export const useCalculateJobMatchScores = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateJobMatchScores>>, TError,CalculateJobMatchScoresMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof calculateJobMatchScores>>,
+        TError,
+        CalculateJobMatchScoresMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCalculateJobMatchScoresMutationOptions(options));
     }
 

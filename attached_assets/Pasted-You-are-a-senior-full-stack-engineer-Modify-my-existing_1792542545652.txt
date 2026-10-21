@@ -1,0 +1,218 @@
+You are a senior full-stack engineer.
+
+Modify my existing React + FastAPI project.
+
+IMPORTANT:
+Do NOT use JobStreet scraping or JobStreet APIs.
+
+Assume the job source will be replaced later with a public Job API that will be provided in the future.
+
+Design the system to be API-agnostic so that changing the job provider later only requires updating one service file.
+
+====================================================
+NEW FEATURE: JOB SEARCH PAGE
+====================================================
+
+Create a dedicated Job Search page.
+
+Requirements:
+
+1. Navigation
+- Add a new menu item called "Job Search".
+- Keep styling consistent with the existing application.
+
+2. Job Search Page
+- Create a separate page dedicated to job searching.
+- The page should fetch jobs through a backend service layer.
+- Do not hardcode JobStreet references anywhere.
+
+3. Job Card Layout
+Display each job as a card.
+
+Each card should contain:
+- Job Title
+- Company Name
+- Location
+- Salary Range (if available)
+- Employment Type
+- Short Description
+- Match Score (if CV exists)
+- Date Posted
+- Apply Button
+
+Card Design:
+- Modern UI
+- Responsive layout
+- Hover animation
+- Clean spacing
+- Mobile-friendly
+
+4. Filters
+Create a filter system.
+
+Filters:
+- Income
+  - RM2,000+
+  - RM4,000+
+  - RM6,000+
+  - RM8,000+
+  - Custom Range
+
+- Location
+  - State
+  - City
+  - Remote
+
+- Most Relevant
+  - Sort by CV Match Score
+
+- Most Recent
+  - Sort by Posted Date
+
+- Job Type
+  - Full-Time
+  - Part-Time
+  - Contract
+  - Internship
+
+- Search by Keywords
+  - Job title
+  - Company
+  - Skills
+
+5. CV Matching
+If the user has uploaded a CV:
+
+- Read extracted skills from profile
+- Compare them against job requirements
+- Generate a Match Score
+
+Example:
+
+Python
+SQL
+Data Analysis
+
+↓
+
+Data Analyst Role
+
+Python ✅
+SQL ✅
+Power BI ❌
+
+Match Score = 67%
+
+Display score on job card.
+
+6. Job Details
+When user clicks a job card:
+
+Open a Job Details page containing:
+
+- Full Description
+- Required Skills
+- Match Score
+- Salary
+- Company Information
+- Apply Button
+
+7. Apply Functionality
+When user clicks Apply:
+
+Redirect user to the original source URL.
+
+Example:
+
+window.open(job.externalUrl, "_blank")
+
+Do NOT implement direct applications inside our platform.
+
+8. Backend Architecture
+
+Create:
+
+services/
+  job_provider.py
+
+This file should contain all job-source logic.
+
+Example:
+
+class JobProvider:
+    get_jobs()
+    search_jobs()
+    get_job_details()
+
+Future public APIs can replace the data source without changing frontend code.
+
+9. API Endpoints
+
+GET /jobs
+
+GET /jobs/search
+
+GET /jobs/filter
+
+GET /jobs/:id
+
+POST /jobs/match-score
+
+Support:
+
+?page=1
+&limit=20
+
+10. Error Handling
+
+- Empty state
+- Loading state
+- Failed API state
+- Retry button
+
+11. Performance
+
+- Pagination
+- Lazy loading
+- Caching
+- Debounced search
+- Optimized API requests
+
+12. Database Structure
+
+Suggested Job Model:
+
+Job
+- id
+- title
+- company
+- location
+- salary_min
+- salary_max
+- employment_type
+- description
+- skills
+- external_url
+- date_posted
+
+13. Code Quality
+
+- Refactor if necessary
+- Remove duplicate code
+- Type-safe implementation
+- Modular architecture
+- Reusable React components
+
+====================================================
+DELIVERABLES
+====================================================
+
+1. Implement all required code.
+2. Show modified folder structure.
+3. Create all frontend components.
+4. Create backend implementation.
+5. Create reusable job service layer.
+6. Explain architecture decisions.
+7. Explain where future public Job APIs should be integrated.
+8. Point out any scalability or security concerns.
+9. Ensure the project remains compatible with future job providers by changing only the service layer.

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode, type ChangeEvent } from 'react';
+import { lazy, Suspense, useMemo, useState, type ReactNode, type ChangeEvent } from 'react';
 import { Link, Route, Switch, useLocation, useParams } from 'wouter';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen,
@@ -9,6 +9,10 @@ import {
 
 import { CareerMatcher } from '@/components/career-matcher';
 import type { CareerMatch } from '@workspace/api-client-react';
+import '@/components/job-search.css';
+
+const JobSearchPage = lazy(() => import('@/components/job-search-page'));
+const JobDetailsPage = lazy(() => import('@/components/job-details-page'));
 
 type Skill = { name: string; level: number; trend: string; category: string };
 type Role = {
@@ -88,6 +92,7 @@ function Shell({ children, page }: { children: ReactNode; page: string }) {
   const [location] = useLocation();
   const nav = [
     { href: '/', label: 'My next step', icon: Compass, key: 'home' },
+    { href: '/jobs', label: 'Job Search', icon: BriefcaseBusiness, key: 'jobs' },
     { href: '/team', label: 'Team planning', icon: Users, key: 'team' },
     { href: '/trends', label: 'Skills outlook', icon: BarChart3, key: 'trends' },
   ];
@@ -337,8 +342,11 @@ function NotFoundPage() {
 
 function App() {
   const [skills, saveSkills] = useSavedSkills();
+  const profileSkills = skills.map(skill => skill.name);
   return <Switch>
     <Route path="/" component={() => <Dashboard skills={skills} saveSkills={saveSkills}/>} />
+    <Route path="/jobs" component={() => <Shell page="Job Search"><Suspense fallback={<div className="panel panel-pad" role="status">Loading job search…</div>}><JobSearchPage profileSkills={profileSkills}/></Suspense></Shell>} />
+    <Route path="/jobs/:id" component={() => <Shell page="Job details"><Suspense fallback={<div className="panel panel-pad" role="status">Loading job details…</div>}><JobDetailsPage profileSkills={profileSkills}/></Suspense></Shell>} />
     <Route path="/roles/:id" component={RolePage} />
     <Route path="/team" component={TeamPage} />
     <Route path="/trends" component={TrendsPage} />

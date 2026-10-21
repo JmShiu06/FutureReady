@@ -69,3 +69,256 @@ export const MatchCareersResponse = zod.object({
 })
 
 
+/**
+ * @summary List job listings
+ */
+export const listJobsQueryPageDefault = 1;
+
+export const listJobsQueryLimitDefault = 20;
+export const listJobsQueryLimitMax = 50;
+
+export const listJobsQueryQMax = 100;
+
+export const listJobsQueryMinSalaryMin = 0;
+
+export const listJobsQueryMaxSalaryMin = 0;
+
+export const listJobsQueryStateMax = 80;
+
+export const listJobsQueryCityMax = 80;
+
+export const listJobsQuerySortDefault = `recent`;
+
+export const ListJobsQueryParams = zod.object({
+  "page": zod.coerce.number().int().min(1).default(listJobsQueryPageDefault),
+  "limit": zod.coerce.number().int().min(1).max(listJobsQueryLimitMax).default(listJobsQueryLimitDefault),
+  "q": zod.coerce.string().max(listJobsQueryQMax).optional(),
+  "minSalary": zod.coerce.number().int().min(listJobsQueryMinSalaryMin).optional(),
+  "maxSalary": zod.coerce.number().int().min(listJobsQueryMaxSalaryMin).optional(),
+  "state": zod.coerce.string().max(listJobsQueryStateMax).optional(),
+  "city": zod.coerce.string().max(listJobsQueryCityMax).optional(),
+  "remote": zod.coerce.boolean().optional(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']).optional(),
+  "sort": zod.enum(['relevance', 'recent']).default(listJobsQuerySortDefault)
+})
+
+export const listJobsResponseJobsItemExternalUrlRegExp = new RegExp('^https?:/');
+
+
+export const ListJobsResponse = zod.object({
+  "jobs": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "company": zod.string(),
+  "location": zod.string(),
+  "state": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "remote": zod.boolean(),
+  "salaryMin": zod.number().int().nullable(),
+  "salaryMax": zod.number().int().nullable(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "requiredSkills": zod.array(zod.string()),
+  "externalUrl": zod.string().url().regex(listJobsResponseJobsItemExternalUrlRegExp).nullable(),
+  "datePosted": zod.coerce.date(),
+  "companyInfo": zod.string(),
+  "demo": zod.boolean()
+})),
+  "page": zod.number().int(),
+  "limit": zod.number().int(),
+  "total": zod.number().int(),
+  "totalPages": zod.number().int()
+})
+
+
+/**
+ * @summary Search jobs by title, company, or skills
+ */
+export const searchJobsQueryPageDefault = 1;
+
+export const searchJobsQueryLimitDefault = 20;
+export const searchJobsQueryLimitMax = 50;
+
+export const searchJobsQueryQMax = 100;
+
+export const searchJobsQueryMinSalaryMin = 0;
+
+export const searchJobsQueryMaxSalaryMin = 0;
+
+export const searchJobsQueryStateMax = 80;
+
+export const searchJobsQueryCityMax = 80;
+
+export const searchJobsQuerySortDefault = `recent`;
+
+export const SearchJobsQueryParams = zod.object({
+  "page": zod.coerce.number().int().min(1).default(searchJobsQueryPageDefault),
+  "limit": zod.coerce.number().int().min(1).max(searchJobsQueryLimitMax).default(searchJobsQueryLimitDefault),
+  "q": zod.coerce.string().min(1).max(searchJobsQueryQMax),
+  "minSalary": zod.coerce.number().int().min(searchJobsQueryMinSalaryMin).optional(),
+  "maxSalary": zod.coerce.number().int().min(searchJobsQueryMaxSalaryMin).optional(),
+  "state": zod.coerce.string().max(searchJobsQueryStateMax).optional(),
+  "city": zod.coerce.string().max(searchJobsQueryCityMax).optional(),
+  "remote": zod.coerce.boolean().optional(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']).optional(),
+  "sort": zod.enum(['relevance', 'recent']).default(searchJobsQuerySortDefault)
+})
+
+export const searchJobsResponseJobsItemExternalUrlRegExp = new RegExp('^https?:/');
+
+
+export const SearchJobsResponse = zod.object({
+  "jobs": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "company": zod.string(),
+  "location": zod.string(),
+  "state": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "remote": zod.boolean(),
+  "salaryMin": zod.number().int().nullable(),
+  "salaryMax": zod.number().int().nullable(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "requiredSkills": zod.array(zod.string()),
+  "externalUrl": zod.string().url().regex(searchJobsResponseJobsItemExternalUrlRegExp).nullable(),
+  "datePosted": zod.coerce.date(),
+  "companyInfo": zod.string(),
+  "demo": zod.boolean()
+})),
+  "page": zod.number().int(),
+  "limit": zod.number().int(),
+  "total": zod.number().int(),
+  "totalPages": zod.number().int()
+})
+
+
+/**
+ * @summary Filter jobs by salary, location, and employment type
+ */
+export const filterJobsQueryPageDefault = 1;
+
+export const filterJobsQueryLimitDefault = 20;
+export const filterJobsQueryLimitMax = 50;
+
+export const filterJobsQueryQMax = 100;
+
+export const filterJobsQueryMinSalaryMin = 0;
+
+export const filterJobsQueryMaxSalaryMin = 0;
+
+export const filterJobsQueryStateMax = 80;
+
+export const filterJobsQueryCityMax = 80;
+
+export const filterJobsQuerySortDefault = `recent`;
+
+export const FilterJobsQueryParams = zod.object({
+  "page": zod.coerce.number().int().min(1).default(filterJobsQueryPageDefault),
+  "limit": zod.coerce.number().int().min(1).max(filterJobsQueryLimitMax).default(filterJobsQueryLimitDefault),
+  "q": zod.coerce.string().max(filterJobsQueryQMax).optional(),
+  "minSalary": zod.coerce.number().int().min(filterJobsQueryMinSalaryMin).optional(),
+  "maxSalary": zod.coerce.number().int().min(filterJobsQueryMaxSalaryMin).optional(),
+  "state": zod.coerce.string().max(filterJobsQueryStateMax).optional(),
+  "city": zod.coerce.string().max(filterJobsQueryCityMax).optional(),
+  "remote": zod.coerce.boolean().optional(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']).optional(),
+  "sort": zod.enum(['relevance', 'recent']).default(filterJobsQuerySortDefault)
+})
+
+export const filterJobsResponseJobsItemExternalUrlRegExp = new RegExp('^https?:/');
+
+
+export const FilterJobsResponse = zod.object({
+  "jobs": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "company": zod.string(),
+  "location": zod.string(),
+  "state": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "remote": zod.boolean(),
+  "salaryMin": zod.number().int().nullable(),
+  "salaryMax": zod.number().int().nullable(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "requiredSkills": zod.array(zod.string()),
+  "externalUrl": zod.string().url().regex(filterJobsResponseJobsItemExternalUrlRegExp).nullable(),
+  "datePosted": zod.coerce.date(),
+  "companyInfo": zod.string(),
+  "demo": zod.boolean()
+})),
+  "page": zod.number().int(),
+  "limit": zod.number().int(),
+  "total": zod.number().int(),
+  "totalPages": zod.number().int()
+})
+
+
+/**
+ * @summary Get job details
+ */
+
+
+
+export const GetJobParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const getJobResponseExternalUrlRegExp = new RegExp('^https?:/');
+
+
+export const GetJobResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "company": zod.string(),
+  "location": zod.string(),
+  "state": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "remote": zod.boolean(),
+  "salaryMin": zod.number().int().nullable(),
+  "salaryMax": zod.number().int().nullable(),
+  "employmentType": zod.enum(['full-time', 'part-time', 'contract', 'internship']),
+  "shortDescription": zod.string(),
+  "description": zod.string(),
+  "requiredSkills": zod.array(zod.string()),
+  "externalUrl": zod.string().url().regex(getJobResponseExternalUrlRegExp).nullable(),
+  "datePosted": zod.coerce.date(),
+  "companyInfo": zod.string(),
+  "demo": zod.boolean()
+})
+
+
+/**
+ * Exact normalized skill-name overlap. This is not a hiring probability.
+ * @summary Calculate profile skill overlap for job listings
+ */
+export const calculateJobMatchScoresBodyCandidateSkillsItemMax = 60;
+
+export const calculateJobMatchScoresBodyCandidateSkillsMax = 50;
+
+
+export const calculateJobMatchScoresBodyJobIdsMax = 50;
+
+
+
+export const CalculateJobMatchScoresBody = zod.object({
+  "candidateSkills": zod.array(zod.string().min(1).max(calculateJobMatchScoresBodyCandidateSkillsItemMax)).min(1).max(calculateJobMatchScoresBodyCandidateSkillsMax),
+  "jobIds": zod.array(zod.string().min(1)).max(calculateJobMatchScoresBodyJobIdsMax).optional()
+})
+
+export const CalculateJobMatchScoresResponse = zod.object({
+  "scores": zod.array(zod.object({
+  "jobId": zod.string(),
+  "score": zod.number(),
+  "matchedSkills": zod.array(zod.string()),
+  "missingSkills": zod.array(zod.string()),
+  "skillsConsidered": zod.number().int()
+})),
+  "scoringNote": zod.string()
+})
+
+

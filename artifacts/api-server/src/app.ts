@@ -47,4 +47,16 @@ app.use(
   },
 );
 
+app.use(
+  (
+    err: unknown,
+    req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    req.log.error({ err }, "Unhandled API error");
+    res.status(500).json({ error: "The request could not be completed." });
+  },
+);
+
 export default app;

@@ -57,7 +57,223 @@ export interface CareerMatchResult {
   source: CareerSource;
 }
 
+export type JobEmploymentType = typeof JobEmploymentType[keyof typeof JobEmploymentType];
+
+
+export const JobEmploymentType = {
+  'full-time': 'full-time',
+  'part-time': 'part-time',
+  contract: 'contract',
+  internship: 'internship',
+} as const;
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  /** @nullable */
+  state: string | null;
+  /** @nullable */
+  city: string | null;
+  remote: boolean;
+  /** @nullable */
+  salaryMin: number | null;
+  /** @nullable */
+  salaryMax: number | null;
+  employmentType: JobEmploymentType;
+  shortDescription: string;
+  description: string;
+  requiredSkills: string[];
+  /**
+     * @nullable
+     * @pattern ^https?://
+     */
+  externalUrl: string | null;
+  datePosted: string;
+  companyInfo: string;
+  demo: boolean;
+}
+
+export interface JobPage {
+  jobs: Job[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface JobMatchInput {
+  /**
+     * @minItems 1
+     * @maxItems 50
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  candidateSkills: string[];
+  /**
+     * @maxItems 50
+     * @items.minLength 1
+     */
+  jobIds?: string[];
+}
+
+export interface JobMatchScore {
+  jobId: string;
+  score: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  skillsConsidered: number;
+}
+
+export interface JobMatchScores {
+  scores: JobMatchScore[];
+  scoringNote: string;
+}
+
 export interface HealthStatus {
   status: string;
 }
+
+export type JobPageParameter = number;
+
+export type JobLimitParameter = number;
+
+export type JobKeywordParameter = string;
+
+export type JobSearchKeywordParameter = string;
+
+export type JobMinimumSalaryParameter = number;
+
+export type JobMaximumSalaryParameter = number;
+
+export type JobStateParameter = string;
+
+export type JobCityParameter = string;
+
+export type JobRemoteParameter = boolean;
+
+export type JobEmploymentTypeParameter = typeof JobEmploymentTypeParameter[keyof typeof JobEmploymentTypeParameter];
+
+
+export const JobEmploymentTypeParameter = {
+  'full-time': 'full-time',
+  'part-time': 'part-time',
+  contract: 'contract',
+  internship: 'internship',
+} as const;
+
+export type JobSortParameter = typeof JobSortParameter[keyof typeof JobSortParameter];
+
+
+export const JobSortParameter = {
+  relevance: 'relevance',
+  recent: 'recent',
+} as const;
+
+export type ListJobsParams = {
+/**
+ * @minimum 1
+ */
+page?: JobPageParameter;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+limit?: JobLimitParameter;
+/**
+ * @maxLength 100
+ */
+q?: JobKeywordParameter;
+/**
+ * @minimum 0
+ */
+minSalary?: JobMinimumSalaryParameter;
+/**
+ * @minimum 0
+ */
+maxSalary?: JobMaximumSalaryParameter;
+/**
+ * @maxLength 80
+ */
+state?: JobStateParameter;
+/**
+ * @maxLength 80
+ */
+city?: JobCityParameter;
+remote?: JobRemoteParameter;
+employmentType?: JobEmploymentTypeParameter;
+sort?: JobSortParameter;
+};
+
+export type SearchJobsParams = {
+/**
+ * @minimum 1
+ */
+page?: JobPageParameter;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+limit?: JobLimitParameter;
+/**
+ * @minLength 1
+ * @maxLength 100
+ */
+q: JobSearchKeywordParameter;
+/**
+ * @minimum 0
+ */
+minSalary?: JobMinimumSalaryParameter;
+/**
+ * @minimum 0
+ */
+maxSalary?: JobMaximumSalaryParameter;
+/**
+ * @maxLength 80
+ */
+state?: JobStateParameter;
+/**
+ * @maxLength 80
+ */
+city?: JobCityParameter;
+remote?: JobRemoteParameter;
+employmentType?: JobEmploymentTypeParameter;
+sort?: JobSortParameter;
+};
+
+export type FilterJobsParams = {
+/**
+ * @minimum 1
+ */
+page?: JobPageParameter;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+limit?: JobLimitParameter;
+/**
+ * @maxLength 100
+ */
+q?: JobKeywordParameter;
+/**
+ * @minimum 0
+ */
+minSalary?: JobMinimumSalaryParameter;
+/**
+ * @minimum 0
+ */
+maxSalary?: JobMaximumSalaryParameter;
+/**
+ * @maxLength 80
+ */
+state?: JobStateParameter;
+/**
+ * @maxLength 80
+ */
+city?: JobCityParameter;
+remote?: JobRemoteParameter;
+employmentType?: JobEmploymentTypeParameter;
+sort?: JobSortParameter;
+};
 
