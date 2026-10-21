@@ -57,8 +57,8 @@ export default function CvRecommendationsPage() {
   return (
     <>
       <PageHead
-        eyebrow="Recommendations · your saved profile"
-        title="Job roles that match your skills."
+        eyebrow="Job recommendations · saved profile"
+        title="Your job recommendations"
         subtitle="Recommendations use the skills saved in your profile. Each role shows the exact or related skill matches that contributed."
       />
       <p className="muted small" style={{ margin: "-8px 0 18px" }} data-testid="text-recommendation-scope">

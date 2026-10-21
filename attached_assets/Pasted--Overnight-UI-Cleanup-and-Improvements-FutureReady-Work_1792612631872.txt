@@ -1,0 +1,241 @@
+# Overnight UI Cleanup and Improvements — FutureReady Workforce
+
+Implement the following changes directly in the existing FutureReady Workforce repository. Inspect the current source code and UI before making changes. Reuse existing components, APIs, datasets, and design conventions wherever possible.
+
+This is a focused cleanup and usability task, not a complete redesign.
+
+IMPORTANT:
+- Implement the requested changes; do not stop after writing a plan.
+- Do not change unrelated features or navigation.
+- Do not modify Python dependencies, `pyproject.toml`, `uv.lock`, sentence-transformers, PyTorch, or the RunPod LLM integration as part of this task.
+- Do not replace real data with synthetic data or fabricate missing observations.
+- Preserve the current visual design system, responsive layout, and working functionality unless explicitly instructed otherwise.
+
+# TASK 1 — SKILLS RADAR TAB
+
+## 1.1 Simplify the numerical presentation
+
+Reduce unnecessary numerical clutter in the Skills Radar interface.
+
+Inspect the current charts, labels, numbering, metric cards, axis ticks, and skill indicators. Remove redundant numbered labels and reduce excessive numerical precision where it does not help users understand the information.
+
+Requirements:
+- Keep the charts easy to read.
+- Avoid displaying unnecessary decimal places.
+- Reduce overcrowded axis labels and redundant numbering.
+- Preserve meaningful labels, units, legends, and data distinctions.
+- Do not remove important evidence or underlying data merely to reduce visual clutter.
+
+Use consistent number formatting across the relevant panels.
+
+## 1.2 Remove the Skill History Demo feature
+
+Remove the existing Skill History Demo feature from the Skills Radar tab.
+
+Remove its visible chart, associated demo controls, explanatory copy, and navigation or references that exist solely for this feature, if any.
+
+Do not remove the real DOSM data services or evidence panels.
+
+Check for dependencies before deleting code. Remove unused components and imports only when they are no longer needed elsewhere.
+
+## 1.3 Remove the Synthetic Examples section
+
+Remove the visible "Synthetic examples (fictional, not evidence)" section and its associated example chart or controls from the Skills Radar UI.
+
+Do not display fictional skill-history values as evidence.
+
+This removal applies to the user-facing feature only. Preserve synthetic fixtures or test data needed by automated tests, provided they remain clearly separated from production evidence.
+
+Do not silently substitute the synthetic chart with another invented dataset.
+
+## 1.4 Standardise large-number units using K
+
+Standardise large count values in Skills Radar and related market-evidence displays.
+
+Examples:
+- 1,000 → 1.0K
+- 12,500 → 12.5K
+- 555,509 → 555.5K
+- 1,250,000 → 1,250K or 1.25M, using one consistent formatting convention across the application.
+
+Prefer compact labels with sensible precision. Use the same formatting convention for chart labels, tooltips, summary cards, and supporting evidence where appropriate.
+
+Important:
+- Apply K formatting to counts, such as job offerings, where appropriate.
+- Do not convert unemployment rates or percentages into K.
+- Unemployment rates must remain percentages.
+- Do not alter the underlying numeric values, calculations, API responses, or source records solely to change their display format.
+- Avoid rounding away meaningful differences in the underlying evidence.
+
+Create or reuse a shared formatting helper if this is consistent with the current codebase.
+
+## 1.5 Make the Skills Radar heading more user-friendly
+
+Replace the existing technical or overly formal Skills Radar heading with a clear, user-friendly heading.
+
+Use:
+
+"AI & Labour Market Trends"
+
+Add a short supporting description such as:
+
+"Explore how AI developments and labour-market indicators are changing, using dated sources and clearly explained evidence."
+
+Keep the page understandable to graduates, working adults, career switchers, and other non-technical users.
+
+Do not make the heading imply that every displayed indicator is a direct measurement of AI's impact.
+
+## 1.6 Add historical-range toggles to the unemployment-rate graph
+
+Under or directly above the existing unemployment-rate graph, add a compact segmented control or toggle group with these selectable ranges:
+
+- 3 months
+- 5 months
+- 10 months
+- 1 year
+- 3 years
+- 5 years
+- 10 years
+
+The selected period must control the historical date range displayed by the graph.
+
+Implementation requirements:
+1. Inspect the current unemployment-rate data source and API response. Reuse the existing DOSM data integration wherever possible.
+2. Determine the latest available observation period from the actual data.
+3. Calculate each selected date range relative to the latest observation, rather than assuming that today's date is also the latest data period.
+4. Filter the data to the selected time range and update the chart, axis labels, and relevant summary information.
+5. Highlight the currently selected range.
+6. Make the controls keyboard-accessible and usable on mobile.
+7. Choose a sensible default period based on the currently available data, preferably 1 year if enough observations exist.
+
+For the historical ranges:
+- Month options should show their corresponding recent monthly observation windows.
+- Year options should show the corresponding historical period ending at the latest available observation.
+- Do not manufacture monthly observations or interpolate missing unemployment values.
+- Do not use synthetic chart history to fill periods that the DOSM source does not cover.
+- If a selected period exceeds the available data history, explain the limitation clearly. Disable the option or display the available period with a clear message; do not silently pretend that the full period is covered.
+- Handle missing observations, API errors, loading states, and empty data gracefully.
+
+Keep unemployment rates displayed as percentages and preserve source attribution, observation-period labels, and applicable retrieval metadata.
+
+Test all seven selectable periods and verify that each selection actually updates the chart data rather than merely changing the button appearance.
+
+# TASK 2 — CV RECOMMENDATIONS TAB
+
+## 2.1 Rename the tab to Job Recommendations
+
+Change the user-facing navigation label:
+
+"CV Recommendations" → "Job Recommendations"
+
+Update the page title, breadcrumb, and relevant explanatory copy where appropriate so the terminology is consistent.
+
+Check internal route names and API identifiers before changing them. Prefer updating display labels without unnecessary route or API contract changes.
+
+Do not imply that these are verified real vacancies unless the current data source actually provides genuine listings.
+
+## 2.2 Remove the Malaysia Critical Occupation content above the side-by-side comparison
+
+Inspect the current Job Recommendations page and identify the Malaysia Critical Occupation section.
+
+Remove all visible Malaysia Critical Occupation content above the side-by-side comparison, including related cards, charts, tables, and explanatory blocks belonging to that section.
+
+**Preserve the side-by-side comparison.** It must remain visible and functional.
+
+Do not delete the comparison or its underlying data. Do not remove unrelated job recommendations, profile matching, or other useful content.
+
+After removal, adjust spacing and layout so the comparison follows naturally without unexplained blank areas, separators, or broken headings.
+
+Verify that the retained side-by-side comparison still uses the correct data and interactions.
+
+# TASK 3 — MY PROFILE TAB
+
+## 3.1 Remove fictional sample profiles from the user interface
+
+Remove fictional sample-profile choices, cards, sections, or demo profile selectors from the My Profile user experience.
+
+The actual user's skill profile and existing CV workflow must remain available.
+
+Do not delete:
+- Real profile functionality.
+- Confirmed or user-edited skills.
+- CV upload and review features.
+- Required development fixtures or test data that are not exposed as real user profiles.
+- Backend APIs still used by other features.
+
+If sample profiles are used internally by a component that also supports real profiles, separate the demo UI from the production flow instead of breaking the component.
+
+The user-facing experience should no longer invite users to select a fictional person as their actual profile.
+
+## 3.2 Remove the hypothetical Digital Twin simulator section
+
+Inside My Profile, under "Digital Twin & Progress", remove the entire section beginning with:
+
+"Try a future version of your skills"
+
+Remove the associated hypothetical skill-editing simulator, including its controls, what-if-only labels, manual proficiency selectors, simulated score-change card, reset-simulation control, and explanatory copy associated exclusively with this simulator.
+
+Remove any empty containers or navigation links that only existed for the deleted simulator.
+
+IMPORTANT:
+- Preserve the rest of Digital Twin & Progress.
+- Keep actual learning progress, confirmed skill improvements, completed learning activities, before-and-after skill comparisons, and career-readiness tracking if those are implemented.
+- Do not delete real course-completion records, profile skill levels, or persisted learning progress.
+- Do not change the underlying career-matching formula.
+- If the simulator and actual progress share a component, remove the hypothetical portion without removing the actual-progress functionality.
+
+# TASK 4 — IMPLEMENTATION QUALITY
+
+Before editing, map the relevant components and imports for each requested change.
+
+Prefer small, targeted modifications. Remove unused imports, components, and frontend-only demo logic where safe. Avoid unrelated refactors.
+
+Do not introduce new dependencies for these UI changes.
+
+Do not change:
+- RunPod credentials or LLM integration.
+- Python dependency constraints or lockfiles.
+- Existing live DOSM integrations.
+- Existing career-match calculations.
+- Learning-roadmap persistence.
+- Unrelated navigation or application sections.
+
+If any requested display cannot be implemented because the necessary source data is unavailable, preserve the truthful current state and report the limitation rather than inventing data.
+
+# TASK 5 — TESTING AND ACCEPTANCE CRITERIA
+
+Run the relevant existing automated tests, TypeScript checks, and production build.
+
+Verify the following:
+
+### Skills Radar
+- The heading reads "AI & Labour Market Trends".
+- The Skill History Demo is removed.
+- The Synthetic Examples UI is removed.
+- Large counts use consistent compact K formatting.
+- Percentages and unemployment rates remain correctly formatted.
+- The seven historical-range controls work and change the actual chart data.
+- Periods without sufficient historical data are handled transparently.
+- Source attribution and observation periods remain visible.
+
+### Job Recommendations
+- The navigation label reads "Job Recommendations".
+- The specified Malaysia Critical Occupation content above the side-by-side comparison is gone.
+- The side-by-side comparison remains functional.
+- Layout and responsive behaviour remain correct.
+
+### My Profile
+- Fictional sample profiles are no longer exposed in the user-facing profile flow.
+- The "Try a future version of your skills" simulator is removed from Digital Twin & Progress.
+- Actual profile skills and learning-progress functionality remain intact.
+- No persisted learning records or confirmed proficiency values have been deleted.
+
+### General
+- No new dependency errors are introduced.
+- No unrelated features are broken.
+- The production build succeeds.
+- Any failing tests, unavailable data, or unresolved issues are reported honestly.
+
+At completion, provide a concise report listing the files changed, what was removed or updated, the historical-range implementation, test results, and any remaining limitations.
+
+Do not claim the public deployment is verified unless the actual deployed website has been tested separately.

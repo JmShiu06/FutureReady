@@ -2,207 +2,57 @@ import { expect, test, type Page } from '@playwright/test';
 
 const storageKey = 'frw-demo-workspace-v1';
 
-type StoredProfile = {
-  occupation: string;
-  education: string;
-  skills: { name: string; level: number; cvDetected?: boolean }[];
-};
-
-async function storedAdultProfile(page: Page): Promise<StoredProfile | null> {
+async function storedAdultProfile(page: Page) {
   return page.evaluate(key => {
     const raw = window.localStorage.getItem(key);
     if (!raw) return null;
-    const workspace = JSON.parse(raw) as { profiles?: { adult?: StoredProfile } };
+    const workspace = JSON.parse(raw) as {
+      profiles?: { adult?: { occupation?: string; education?: string; skills?: { name: string; level: number }[] } };
+    };
     return workspace.profiles?.adult ?? null;
   }, storageKey);
 }
 
-async function setInitialProfile(page: Page) {
-  await page.goto('/profile');
-  await page.getByTestId('input-occupation').fill('Existing occupation');
-  await page.getByTestId('input-education').fill('Existing education');
-  await page.getByTestId('button-save-profile').click();
-  await expect.poll(() => storedAdultProfile(page)).toMatchObject({
-    occupation: 'Existing occupation',
-    education: 'Existing education',
-  });
-}
-
-async function mockCvResponse(
-  page: Page,
-  response: { skills: string[]; warnings: string[]; profileSuggestions: Record<string, unknown> },
-) {
+test('CV review adds confirmed skills without exposing or changing About You details', async ({ page }) => {
+  const skillName = 'CV-reviewed skill';
   await page.route('**/api/career/cv-skills', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify(response),
+    body: JSON.stringify({
+      skills: [skillName],
+      warnings: [],
+      profileSuggestions: { occupation: 'Must not be displayed or applied', education: 'Private field' },
+    }),
   }));
-}
 
-async function uploadSyntheticCv(page: Page) {
+  await page.goto('/profile');
+  await expect(page.getByTestId('input-occupation')).toHaveCount(0);
+  await expect(page.getByTestId('input-education')).toHaveCount(0);
+  await expect(page.getByTestId('button-save-profile')).toBeVisible();
+
   await page.getByTestId('input-profile-cv').setInputFiles({
     name: 'synthetic-resume.txt',
     mimeType: 'text/plain',
     buffer: Buffer.from('Synthetic test document; no personal data.'),
   });
-  await expect(page.getByTestId('dialog-cv-review')).toBeVisible();
-}
+  const review = page.getByTestId('dialog-cv-review');
+  await expect(review).toBeVisible();
+  await expect(review).toContainText(skillName);
+  await expect(review).not.toContainText(/About You|Must not be displayed|Private field/i);
 
-test('About You starts blank and saved fields clear on refresh while skills remain', async ({ page }) => {
-  await page.goto('/profile');
-  await expect(page.getByText(/About You resets on refresh/)).toBeVisible();
-
-  const adultFields = [
-    ['input-occupation', 'e.g., Operations coordinator'],
-    ['input-experience', 'e.g., 4'],
-    ['input-education', 'e.g., Diploma in Business'],
-    ['input-interests', 'e.g., Data, service design'],
-    ['input-location', 'e.g., Kuala Lumpur'],
-    ['input-learning-hours', 'e.g., 5'],
-    ['input-budget', 'e.g., 200'],
-    ['input-goals', 'e.g., Move into a data analyst role'],
-  ] as const;
-  for (const [testId, placeholder] of adultFields) {
-    const field = page.getByTestId(testId);
-    await expect(field).toHaveValue('');
-    await expect(field).toHaveAttribute('placeholder', placeholder);
-  }
-
-  const occupation = page.getByTestId('input-occupation');
-  expect(await occupation.evaluate(element => getComputedStyle(element, '::placeholder').color)).toBe('rgb(124, 113, 105)');
-  await occupation.fill('Operations coordinator');
-  expect(await occupation.evaluate(element => element.matches(':placeholder-shown'))).toBe(false);
-
-  const preference = page.getByTestId('select-work-preference');
-  await expect(preference).toHaveValue('');
-  await expect(preference).toHaveClass(/is-placeholder/);
-  expect(await preference.evaluate(element => getComputedStyle(element).color)).toBe('rgb(124, 113, 105)');
-  await preference.selectOption('Hybrid');
-  await expect(preference).not.toHaveClass(/is-placeholder/);
-
-  await page.getByTestId('button-save-profile').click();
-  await page.reload();
-  await expect(page.getByTestId('input-occupation')).toHaveValue('');
-  await expect(page.getByTestId('input-experience')).toHaveValue('');
-  await expect(page.getByTestId('select-work-preference')).toHaveValue('');
-  await expect.poll(() => storedAdultProfile(page)).toMatchObject({
-    occupation: '',
-    education: '',
-  });
-
-  await page.locator('#side').selectOption('graduate');
-  await expect(page.getByTestId('input-qualification')).toHaveValue('');
-  await expect(page.getByTestId('input-qualification')).toHaveAttribute('placeholder', 'e.g., Diploma');
-  await expect(page.getByTestId('input-study-field')).toHaveValue('');
-  await expect(page.getByTestId('input-study-field')).toHaveAttribute('placeholder', 'e.g., Business information systems');
-  await page.getByTestId('input-qualification').fill('Diploma in Business');
-  await page.getByTestId('input-study-field').fill('Business');
-  await page.getByTestId('button-save-profile').click();
-  await page.reload();
-  await expect(page.getByTestId('input-qualification')).toHaveValue('');
-  await expect(page.getByTestId('input-study-field')).toHaveValue('');
-
-  for (const audience of ['hr', 'education'] as const) {
-    await page.locator('#side').selectOption(audience);
-    await page.getByTestId('input-occupation').fill(`Saved ${audience} value`);
-    await page.getByTestId('button-save-profile').click();
-  }
-  await page.reload();
-  await expect(page.locator('#side')).toHaveValue('education');
-  await expect(page.getByTestId('input-occupation')).toHaveValue('');
-  for (const audience of ['adult', 'graduate', 'hr', 'education'] as const) {
-    await page.locator('#side').selectOption(audience);
-    await expect(page.getByTestId('input-occupation')).toHaveValue('');
-  }
-
-  await page.locator('#side').selectOption('adult');
-  await page.getByTestId('input-occupation').fill('Temporary saved value');
-  await page.getByTestId('button-save-profile').click();
-  await page.getByTestId('button-reset-profile').click();
-  await page.getByTestId('button-confirm-reset').click();
-  await expect(page.getByTestId('input-occupation')).toHaveValue('');
-});
-
-test('applies only checked About You fields, then clears details but keeps skills on reload', async ({ page }) => {
-  await setInitialProfile(page);
-  await mockCvResponse(page, {
-    skills: ['AI literacy'],
-    warnings: [],
-    profileSuggestions: {
-      occupation: 'CV suggested role',
-      education: 'CV suggested education',
-    },
-  });
-
-  await uploadSyntheticCv(page);
-  await page.getByRole('checkbox', { name: 'Apply Education from CV' }).uncheck();
-  await page.getByTestId('button-apply-cv-profile-only').click();
-
-  await expect(page.getByTestId('dialog-cv-review')).not.toBeVisible();
-  await expect(page.getByTestId('input-occupation')).toHaveValue('CV suggested role');
-  await expect(page.getByTestId('input-education')).toHaveValue('Existing education');
-  await expect(page.locator('[data-testid^="input-skill-name-"]')).toHaveCount(4);
-  await expect.poll(() => storedAdultProfile(page)).toMatchObject({
-    occupation: 'Existing occupation',
-    education: 'Existing education',
-  });
-
-  await page.getByTestId('button-open-cv-review').click();
-  await expect(page.getByTestId('dialog-cv-review')).toBeVisible();
-  await expect(page.getByLabel('Proficiency level for AI literacy')).toBeVisible();
-  await page.getByLabel('Proficiency level for AI literacy').focus();
-  await page.getByLabel('Proficiency level for AI literacy').press('ArrowRight');
-  await page.getByLabel('Proficiency level for AI literacy').press('ArrowRight');
-  await page.getByLabel('Proficiency level for AI literacy').press('ArrowRight');
-  await expect(page.getByLabel('Proficiency level for AI literacy')).toHaveAttribute('aria-valuetext', '4: Confident');
+  const level = page.getByTestId('cv-skill-level-0-range');
+  await level.focus();
+  await level.press('Home');
   await page.getByTestId('button-apply-cv-skills').click();
-  await expect(page.getByTestId('dialog-cv-review')).not.toBeVisible();
-
   await page.getByTestId('button-save-profile').click();
-  await expect.poll(() => storedAdultProfile(page)).toMatchObject({
-    occupation: 'CV suggested role',
-    education: 'Existing education',
-    skills: expect.arrayContaining([expect.objectContaining({
-      name: 'AI literacy',
-      level: 4,
-      cvDetected: true,
-    })]),
-  });
 
+  await expect.poll(() => storedAdultProfile(page)).toMatchObject({ occupation: '', education: '' });
+  await expect.poll(async () => (await storedAdultProfile(page))?.skills?.find(skill => skill.name === skillName))
+    .toMatchObject({ name: skillName, level: 1 });
   await page.reload();
-  await expect(page.getByTestId('input-occupation')).toHaveValue('');
-  await expect(page.getByTestId('input-education')).toHaveValue('');
+  await expect(page.getByTestId('input-occupation')).toHaveCount(0);
   await expect.poll(() => page.locator('[data-testid^="input-skill-name-"]').evaluateAll(
-    inputs => inputs.map(input => (input as HTMLInputElement).value),
-  )).toContain('AI literacy');
-  await expect.poll(() => storedAdultProfile(page)).toMatchObject({
-    occupation: '',
-    education: '',
-    skills: expect.arrayContaining([expect.objectContaining({ name: 'AI literacy', level: 4 })]),
-  });
-});
-
-test('does not change profile fields when the CV has no About You suggestions', async ({ page }) => {
-  await setInitialProfile(page);
-  await mockCvResponse(page, { skills: [], warnings: [], profileSuggestions: {} });
-
-  await uploadSyntheticCv(page);
-  await expect(page.getByTestId('dialog-cv-review')).toContainText(
-    'No clearly labelled About You details were found, so no profile fields will be changed.',
-  );
-  await expect(page.getByTestId('button-apply-cv-skills')).toHaveCount(0);
-  await expect(page.getByTestId('button-apply-cv-profile-only')).toHaveCount(0);
-  await expect(page.getByTestId('input-occupation')).toHaveValue('Existing occupation');
-  await expect(page.getByTestId('input-education')).toHaveValue('Existing education');
-
-  await page.getByRole('button', { name: 'Back to profile' }).click();
-  await page.getByTestId('button-save-profile').click();
-  await expect.poll(() => storedAdultProfile(page)).toMatchObject({
-    occupation: 'Existing occupation',
-    education: 'Existing education',
-  });
-
-  await page.reload();
-  await expect(page.getByTestId('input-occupation')).toHaveValue('');
-  await expect(page.getByTestId('input-education')).toHaveValue('');
+    (inputs, name) => inputs.some(input => (input as HTMLInputElement).value === name),
+    skillName,
+  )).toBe(true);
 });

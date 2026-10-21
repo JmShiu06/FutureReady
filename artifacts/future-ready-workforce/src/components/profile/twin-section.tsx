@@ -4,7 +4,6 @@ import { useWorkspace } from '@/domain/workspace-context';
 import { completionKey } from '@/domain/services';
 import { confirmationFor, currentLevel, progressReport, proposedLevel, roadmapMilestones } from '@/domain/learning';
 import { Bar, EmptyBlock, SectionTitle, levelLabel } from '@/components/workspace/ui';
-import { Simulator } from './simulator';
 
 function Proposal({ milestoneId, skill, required, title }: { milestoneId: string; skill: string; required: number; title: string }) {
   const { state, confirmSkillUpdate } = useWorkspace();
@@ -75,6 +74,5 @@ export function TwinSection() {
         </div>
       </>}
     </section>
-    <Simulator />
   </>;
 }

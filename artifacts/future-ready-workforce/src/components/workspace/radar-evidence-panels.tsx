@@ -8,6 +8,7 @@ import {
 } from "@workspace/api-client-react";
 import { RefreshCw } from "lucide-react";
 import { Bar, EmptyBlock, ErrorBlock, LoadingBlock, SectionTitle } from "@/components/workspace/ui";
+import { formatCompactCount, formatRate } from "@/domain/formatting";
 
 const fmtDate = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
@@ -125,15 +126,15 @@ export function SkillFrequencyPanel() {
               {data.roles.map(item => <option key={item.roleFamily} value={item.roleFamily}>{item.roleFamily}</option>)}
             </select>
           </div>
-          <p className="small muted">{selected.rolePostings.toLocaleString("en-MY")} postings in this role family · top {selected.skills.length} skills shown</p>
+          <p className="small muted">{formatCompactCount(selected.rolePostings)} postings in this role family · top {selected.skills.length} skills shown</p>
           <div className="stack" style={{ gap: 10 }}>
             {selected.skills.map(item => (
               <div key={item.skill} data-testid={`row-frequency-${item.skill}`}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                   <span>{item.skill}</span>
-                  <span className="mono">{item.percentOfRolePostings}% · {item.postingsWithSkill.toLocaleString("en-MY")} postings</span>
+                  <span className="mono">{formatRate(item.percentOfRolePostings)}% · {formatCompactCount(item.postingsWithSkill)} postings</span>
                 </div>
-                <Bar value={item.percentOfRolePostings} label={`${item.skill}: ${item.percentOfRolePostings}% of ${selected.roleFamily} postings`} />
+                <Bar value={item.percentOfRolePostings} label={`${item.skill}: ${formatRate(item.percentOfRolePostings)}% of ${selected.roleFamily} postings`} />
               </div>
             ))}
           </div>

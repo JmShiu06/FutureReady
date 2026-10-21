@@ -1,22 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useSearch } from 'wouter';
 import { RoadmapSection } from '@/components/profile/roadmap-section';
 import { TwinSection } from '@/components/profile/twin-section';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
-import type { CvProfileSuggestions } from '@workspace/api-client-react';
+import { Check, Plus, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { useWorkspace } from '@/domain/workspace-context';
 import { profileSchema } from '@/domain/storage';
-import { audienceLabels, demoRoles, skillCatalogue } from '@/domain/demo-data';
+import { audienceLabels, skillCatalogue } from '@/domain/demo-data';
 import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
 
@@ -28,68 +23,17 @@ const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) })
 });
 type FormValues = z.infer<typeof formSchema>;
 const toForm = (p: DemoProfile): FormValues => ({ ...p, interestsText: p.interests.join(', ') });
-const numberChange = (fn: (v: number | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => fn(e.target.value === '' ? null : Number(e.target.value));
 const normaliseSkillName = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
 
-function suggestedSkillsForOccupation(occupation: string, existingSkills: ReadonlyArray<{ name: string }>) {
-  const tokens = occupation.toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter(token => token.length > 1);
-  if (!tokens.length) return [];
-
-  const rankedRoles = demoRoles.map(role => {
-    const text = `${role.title} ${role.category} ${role.industry} ${role.description}`.toLocaleLowerCase();
-    return { role, score: tokens.reduce((score, token) => score + Number(text.includes(token)), 0) };
-  }).sort((a, b) => b.score - a.score);
-  const roleSkills = rankedRoles[0]?.score
-    ? rankedRoles[0].role.requiredSkills.map(skill => skill.name)
-    : [];
-  const existing = new Set(existingSkills.map(skill => normaliseSkillName(skill.name)));
-  const seen = new Set<string>();
-  const suggestions: string[] = [];
-
-  for (const name of [...roleSkills, ...skillCatalogue]) {
-    const key = normaliseSkillName(name);
-    if (!key || seen.has(key) || existing.has(key)) continue;
-    seen.add(key);
-    suggestions.push(name);
-    if (suggestions.length === 5) break;
-  }
-
-  return suggestions;
-}
-
 export default function ProfilePage() {
-  const { state, profile, saveProfile, resetProfile, loadSample } = useWorkspace();
+  const { state, profile, saveProfile } = useWorkspace();
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
   const skills = useFieldArray({ control: form.control, name: 'skills' });
   const profileSkills = form.watch('skills') ?? [];
-  const watchedProfile = form.watch();
-  const occupation = watchedProfile.occupation?.trim() ?? '';
-  const skillSuggestions = useMemo(
-    () => suggestedSkillsForOccupation(occupation, profileSkills),
-    [occupation, profileSkills],
-  );
   const [saved, setSaved] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [newCategory, setNewCategory] = useState('Custom');
   const [skillError, setSkillError] = useState('');
-  const [variant, setVariant] = useState<'default' | 'data'>('default');
-  const graduate = state.audience === 'graduate' || state.audience === 'education';
-  const completionItems = [
-    Boolean(watchedProfile.occupation?.trim()),
-    watchedProfile.experienceYears !== null && watchedProfile.experienceYears !== undefined,
-    Boolean(watchedProfile.education?.trim()),
-    ...(graduate ? [Boolean(watchedProfile.qualification?.trim()), Boolean(watchedProfile.studyField?.trim())] : []),
-    Boolean(watchedProfile.interestsText?.split(',').some(value => value.trim())),
-    Boolean(watchedProfile.location?.trim()),
-    Boolean(watchedProfile.workPreference),
-    watchedProfile.learningHours !== null && watchedProfile.learningHours !== undefined,
-    watchedProfile.budgetMYR !== null && watchedProfile.budgetMYR !== undefined,
-    Boolean(watchedProfile.goals?.trim()),
-    profileSkills.some(skill => Boolean(skill.name.trim()) && skill.level >= 1 && skill.level <= 5),
-  ];
-  const completedItems = completionItems.filter(Boolean).length;
-  const completeness = Math.round((completedItems / completionItems.length) * 100);
-
   useEffect(() => { form.reset(toForm(profile)); }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = (v: FormValues) => {
@@ -97,25 +41,10 @@ export default function ProfilePage() {
     saveProfile({ ...rest, interests: interestsText.split(',').map(s => s.trim()).filter(Boolean) } as DemoProfile);
     setSaved('Profile updated for this session. Browser storage warnings, if any, are shown above.');
   };
-  const applyCvImport = (imported: ProfileSkill[], details: CvProfileSuggestions) => {
-    if (imported.length) skills.append(imported);
-    const options = { shouldDirty: true, shouldValidate: true };
-    let filled = 0;
-    if (details.occupation !== undefined) { form.setValue('occupation', details.occupation, options); filled++; }
-    if (details.experienceYears !== undefined) { form.setValue('experienceYears', details.experienceYears, options); filled++; }
-    if (details.education !== undefined) { form.setValue('education', details.education, options); filled++; }
-    if (details.qualification !== undefined) { form.setValue('qualification', details.qualification, options); filled++; }
-    if (details.studyField !== undefined) { form.setValue('studyField', details.studyField, options); filled++; }
-    if (details.interests !== undefined) { form.setValue('interestsText', details.interests.join(', '), options); filled++; }
-    if (details.location !== undefined) { form.setValue('location', details.location, options); filled++; }
-    if (details.workPreference !== undefined) { form.setValue('workPreference', details.workPreference, options); filled++; }
-    if (details.learningHours !== undefined) { form.setValue('learningHours', details.learningHours, options); filled++; }
-    if (details.budgetMYR !== undefined) { form.setValue('budgetMYR', details.budgetMYR, options); filled++; }
-    if (details.goals !== undefined) { form.setValue('goals', details.goals, options); filled++; }
-    const updates = [];
-    if (filled) updates.push(`${filled} About You field${filled === 1 ? '' : 's'} filled`);
-    if (imported.length) updates.push(`${imported.length} confirmed skill${imported.length === 1 ? '' : 's'} added`);
-    setSaved(`${updates.join(' and ')} in the profile draft. Review the fields and save your profile to keep them.`);
+  const applyCvImport = (imported: ProfileSkill[]) => {
+    if (!imported.length) return;
+    skills.append(imported);
+    setSaved(`${imported.length} confirmed CV skill${imported.length === 1 ? '' : 's'} added. Review and save your skills.`);
   };
   const addSkill = () => {
     const name = newSkill.trim().replace(/\s+/g, ' ');
@@ -127,18 +56,6 @@ export default function ProfilePage() {
     skills.append({ name, level: 2, category: newCategory.trim().slice(0, 120) || 'Custom' });
     setNewSkill(''); setSkillError(''); setSaved('');
   };
-  const addSuggestedSkill = (name: string) => {
-    const current = form.getValues('skills');
-    if (current.length >= 50) {
-      setSkillError('A profile can hold up to 50 skills.');
-      return;
-    }
-    if (current.some(skill => normaliseSkillName(skill.name) === normaliseSkillName(name))) return;
-    skills.append({ name, level: 1, category: 'Suggested' });
-    setSkillError('');
-    setSaved('');
-  };
-
   const [, navigate] = useLocation();
   const sectionParam = new URLSearchParams(useSearch()).get('section');
   const section: ProfileSection = sectionParam === 'roadmap' || sectionParam === 'twin' ? sectionParam : 'skills';
@@ -164,98 +81,10 @@ export default function ProfilePage() {
     <div id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden={section !== 'roadmap'} data-testid="panel-profile-roadmap">{section === 'roadmap' && <RoadmapSection onReview={() => openSection('twin')} />}</div>
     <div id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" hidden={section !== 'twin'} data-testid="panel-profile-twin">{section === 'twin' && <TwinSection />}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
-    <section className="profile-completeness panel" aria-label="Profile completeness">
-      <div className="profile-completeness-heading">
-        <div>
-          <strong data-testid="text-profile-completeness">Profile is {completeness}% complete</strong>
-          <span>{completedItems} of {completionItems.length} profile items filled</span>
-        </div>
-        <b>{completeness}%</b>
-      </div>
-      <div
-        className="profile-completeness-track"
-        role="progressbar"
-        aria-label="Profile completeness"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={completeness}
-        data-testid="progress-profile-completeness"
-      >
-        <span style={{ width: `${completeness}%` }} />
-    </div>
-      <p className="profile-refresh-note">About You resets on refresh; skills and roadmap progress stay saved.</p>
-    </section>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    <div className="grid-2">
-      <div className="panel panel-pad">
-        <SectionTitle title="Fictional sample profiles" note="REPLACES THIS AUDIENCE ONLY" />
-        <div className="row">
-          <select className="select-field" value={variant} onChange={e => setVariant(e.target.value as 'default' | 'data')} aria-label="Choose sample profile" data-testid="select-sample-variant">
-            <option value="default">Default sample (operations)</option><option value="data">Data-leaning sample</option>
-          </select>
-          <button type="button" className="btn btn-secondary btn-small" onClick={() => { loadSample(variant); setSaved('Sample profile loaded for this audience.'); }} data-testid="button-load-sample">Load sample</button>
-        </div>
-      </div>
-      <div className="panel panel-pad">
-        <SectionTitle title="Reset" note="BLANKS ABOUT YOU + RESTORES DEFAULT SKILLS" />
-        <AlertDialog>
-          <AlertDialogTrigger asChild><button type="button" className="btn btn-danger btn-small" data-testid="button-reset-profile"><RotateCcw size={12} /> Reset this profile</button></AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>Reset the {audienceLabels[state.audience]} profile?</AlertDialogTitle>
-              <AlertDialogDescription>This clears About You values, restores the default demo skills and clears this audience's learning roadmap, completion history and confirmed skill updates only. Other audience profiles are kept.</AlertDialogDescription></AlertDialogHeader>
-            <AlertDialogFooter><AlertDialogCancel data-testid="button-cancel-reset">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => { resetProfile(); setSaved('Profile reset to the default sample.'); }} data-testid="button-confirm-reset">Reset</AlertDialogAction></AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </div>
 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
-          <div className="panel panel-pad profile-about-you">
-          <SectionTitle
-            title="About you"
-            note="BACKGROUND AND CONSTRAINTS"
-            info="Only enter details that apply to you. These fields add planning context and do not change your readiness score. Leave an unmatched field blank; About You details clear when the website refreshes, while skills and roadmap progress stay saved."
-          />
-          <div className="form-grid">
-            <FormField control={form.control} name="occupation" render={({ field }) => <FormItem className="field"><FormLabel>{graduate ? 'Study programme or occupation' : 'Occupation'}</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Operations coordinator" {...field} data-testid="input-occupation" /></FormControl><FormMessage /></FormItem>} />
-            {occupation && <div className="suggested-skill-panel span-2" data-testid="suggested-skills-panel">
-              <div className="suggested-skill-heading">
-                <strong>Suggested skills</strong>
-                <span>Demo hints from occupation wording · not market evidence</span>
-              </div>
-              <p>Choose any that fit. New suggestions start at level 1; adjust them in Skills.</p>
-              {skills.fields.length >= 50
-                ? <span className="muted">Your profile has reached the 50-skill limit.</span>
-                : skillSuggestions.length
-                  ? <div className="suggested-skill-chips">
-                    {skillSuggestions.map(name => <button
-                      type="button"
-                      className="chip suggested-skill-chip"
-                      key={name}
-                      onClick={() => addSuggestedSkill(name)}
-                      aria-label={`Add ${name} to your skills at level 1`}
-                      data-testid={`button-suggested-skill-${slug(name)}`}
-                    >+ {name}</button>)}
-                  </div>
-                  : <span className="muted">All available demo suggestions are already in your profile.</span>}
-            </div>}
-            <FormField control={form.control} name="experienceYears" render={({ field }) => <FormItem className="field"><FormLabel>Years of experience</FormLabel><FormControl><input type="number" min={0} max={60} step="any" className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 4" data-testid="input-experience" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="education" render={({ field }) => <FormItem className="field"><FormLabel>Education</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Diploma in Business" {...field} data-testid="input-education" /></FormControl><FormMessage /></FormItem>} />
-            {graduate && <>
-              <FormField control={form.control} name="qualification" render={({ field }) => <FormItem className="field"><FormLabel>Qualification</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Diploma" {...field} data-testid="input-qualification" /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="studyField" render={({ field }) => <FormItem className="field"><FormLabel>Field of study</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Business information systems" {...field} data-testid="input-study-field" /></FormControl><FormMessage /></FormItem>} />
-            </>}
-            <FormField control={form.control} name="interestsText" render={({ field }) => <FormItem className="field"><FormLabel>Interests (comma separated)</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Data, service design" {...field} data-testid="input-interests" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="location" render={({ field }) => <FormItem className="field"><FormLabel>Location</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Kuala Lumpur" {...field} data-testid="input-location" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="workPreference" render={({ field }) => <FormItem className="field"><FormLabel>Work preference</FormLabel><FormControl><select className={`fr-select${field.value === '' ? ' is-placeholder' : ''}`} {...field} data-testid="select-work-preference"><option value="">Choose a preference (e.g., Hybrid)</option>{['Any', 'Remote', 'Hybrid', 'On-site'].map(o => <option key={o} value={o}>{o}</option>)}</select></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="learningHours" render={({ field }) => <FormItem className="field"><FormLabel>Learning hours per week (1–40)</FormLabel><FormControl><input type="number" min={1} max={40} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 5" data-testid="input-learning-hours" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="budgetMYR" render={({ field }) => <FormItem className="field"><FormLabel>Learning budget (MYR)</FormLabel><FormControl><input type="number" min={0} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 200" data-testid="input-budget" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="goals" render={({ field }) => <FormItem className="field span-2"><FormLabel>Goals</FormLabel><FormControl><textarea className="fr-textarea" maxLength={500} placeholder="e.g., Move into a data analyst role" {...field} data-testid="input-goals" /></FormControl><FormMessage /></FormItem>} />
-          </div>
-        </div>
-
         <div className="panel panel-pad">
           <SectionTitle
             title="Skills"

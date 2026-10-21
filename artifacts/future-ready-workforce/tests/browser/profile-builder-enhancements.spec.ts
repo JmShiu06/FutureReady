@@ -2,39 +2,21 @@ import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/profile');
-  await expect(page.getByTestId('input-occupation')).toBeVisible();
+  await expect(page.getByTestId('button-save-profile')).toBeVisible();
 });
 
-test('tracks completeness and offers clickable demo skill suggestions after occupation entry', async ({ page }) => {
-  const progress = page.getByTestId('progress-profile-completeness');
-  const before = Number(await progress.getAttribute('aria-valuenow'));
-
-  await expect(page.getByTestId('input-occupation')).toHaveAttribute('placeholder', 'e.g., Operations coordinator');
-  await page.getByTestId('input-occupation').fill('Operations coordinator');
-  await expect(page.getByTestId('suggested-skills-panel')).toBeVisible();
-
-  const after = Number(await progress.getAttribute('aria-valuenow'));
-  expect(after).toBeGreaterThan(before);
-  await expect(page.getByTestId('text-profile-completeness')).toContainText(`Profile is ${after}% complete`);
-
-  const suggestions = page.locator('[data-testid^="button-suggested-skill-"]');
-  const suggestionCount = await suggestions.count();
-  expect(suggestionCount).toBeGreaterThanOrEqual(3);
-  expect(suggestionCount).toBeLessThanOrEqual(5);
-
-  const skillCount = await page.locator('[data-testid^="row-skill-"]').count();
-  const suggestedName = (await suggestions.first().innerText()).replace(/^\+\s*/, '').trim();
-  await suggestions.first().click();
-  await expect(page.getByTestId(`input-skill-name-${skillCount}`)).toHaveValue(suggestedName);
-  await expect(page.getByTestId(`select-skill-level-${skillCount}-range`)).toHaveValue('1');
-  await expect(page.getByTestId('suggested-skills-panel')).toContainText('not market evidence');
+test('keeps the skill editor and removes About You fields', async ({ page }) => {
+  await expect(page.getByTestId('input-occupation')).toHaveCount(0);
+  await expect(page.getByTestId('input-experience')).toHaveCount(0);
+  await expect(page.getByTestId('progress-profile-completeness')).toHaveCount(0);
+  await expect(page.getByTestId('select-sample-variant')).toHaveCount(0);
+  await expect(page.getByText('Fictional sample profiles', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Skills', exact: true })).toBeVisible();
+  await expect(page.getByTestId('input-new-skill')).toBeVisible();
+  await expect(page.getByTestId('input-skill-name-0')).toBeVisible();
 });
 
-test('shows About You and Skills guidance from accessible info controls', async ({ page }) => {
-  const aboutInfo = page.getByTestId('info-about-you');
-  await aboutInfo.click();
-  await expect(page.getByText(/do not change your readiness score/)).toBeVisible();
-
+test('retains accessible proficiency guidance for Skills', async ({ page }) => {
   const skillsInfo = page.getByTestId('info-skills');
   await skillsInfo.click();
   await expect(page.getByText(/1 is new to it and 5 means you can teach it/)).toBeVisible();

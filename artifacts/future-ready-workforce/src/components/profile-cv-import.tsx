@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import { AlertTriangle, Check, CloudUpload, FileText, Info, Loader2, X } from 'lucide-react';
+import { Check, CloudUpload, FileText, Info, Loader2, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
-import type { CvProfileSuggestions } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import './profile-cv-import.css';
@@ -16,30 +15,11 @@ interface ReviewSkill {
   alreadyInProfile: boolean;
 }
 
-type ProfileSuggestionKey = keyof CvProfileSuggestions;
-const profileSuggestionFields: { key: ProfileSuggestionKey; label: string }[] = [
-  { key: 'occupation', label: 'Occupation' },
-  { key: 'experienceYears', label: 'Years of experience' },
-  { key: 'education', label: 'Education' },
-  { key: 'qualification', label: 'Qualification' },
-  { key: 'studyField', label: 'Field of study' },
-  { key: 'interests', label: 'Career interests' },
-  { key: 'location', label: 'Location' },
-  { key: 'workPreference', label: 'Work preference' },
-  { key: 'learningHours', label: 'Learning hours per week' },
-  { key: 'budgetMYR', label: 'Learning budget (MYR)' },
-  { key: 'goals', label: 'Career goals' },
-];
-
-function formatSuggestion(value: CvProfileSuggestions[ProfileSuggestionKey]) {
-  return Array.isArray(value) ? value.join(', ') : String(value);
-}
-
 function getErrorMessage(error: unknown) {
   const data = (error as { data?: { error?: unknown } } | null)?.data;
   return typeof data?.error === 'string'
     ? data.error
-    : 'We could not read that CV. Please try another file or enter your details manually.';
+    : 'We could not read skills from that CV. Please try another file or add skills manually.';
 }
 
 function skillKey(name: string) {
@@ -51,12 +31,10 @@ export function ProfileCvImport({
   onApply,
 }: {
   existingSkills: Pick<ProfileSkill, 'name'>[];
-  onApply: (skills: ProfileSkill[], details: CvProfileSuggestions) => void;
+  onApply: (skills: ProfileSkill[]) => void;
 }) {
   const [phase, setPhase] = useState<'idle' | 'extracting' | 'review' | 'error'>('idle');
   const [reviewSkills, setReviewSkills] = useState<ReviewSkill[]>([]);
-  const [profileSuggestions, setProfileSuggestions] = useState<CvProfileSuggestions>({});
-  const [selectedProfileFields, setSelectedProfileFields] = useState<Set<ProfileSuggestionKey>>(new Set());
   const [warnings, setWarnings] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
@@ -91,8 +69,6 @@ export function ProfileCvImport({
     setError('');
     setWarnings([]);
     setReviewSkills([]);
-    setProfileSuggestions({});
-    setSelectedProfileFields(new Set());
     setAnnouncement('Reading your CV.');
 
     try {
@@ -108,10 +84,6 @@ export function ProfileCvImport({
         if (selected) selectedCount += 1;
         return { name, selected, level: '', alreadyInProfile };
       }));
-      setProfileSuggestions(result.profileSuggestions);
-      setSelectedProfileFields(new Set(profileSuggestionFields
-        .filter(({ key }) => result.profileSuggestions[key] !== undefined)
-        .map(({ key }) => key)));
       setWarnings(result.warnings);
       setPhase('review');
       setReviewDialogOpen(true);
@@ -171,38 +143,22 @@ export function ProfileCvImport({
 
   const selectedSkills = reviewSkills.filter(skill => skill.selected && !skill.alreadyInProfile);
   const remainingSlots = Math.max(0, 50 - existingSkills.length);
-  const selectedProfileSuggestionFields = profileSuggestionFields.filter(({ key }) =>
-    selectedProfileFields.has(key) && profileSuggestions[key] !== undefined
-  );
-  const selectedProfileDetails = Object.fromEntries(selectedProfileSuggestionFields.map(({ key }) => [key, profileSuggestions[key]])) as CvProfileSuggestions;
-  const hasProfileSuggestions = profileSuggestionFields.some(({ key }) => profileSuggestions[key] !== undefined);
-  const canApply = (selectedSkills.length > 0 || selectedProfileSuggestionFields.length > 0) &&
-    selectedSkills.every(skill => skill.level !== '');
+  const canApply = selectedSkills.length > 0 && selectedSkills.every(skill => skill.level !== '');
 
-  const applyCvData = (includeSkills = true) => {
-    if (includeSkills && !canApply) return;
-    if (!includeSkills && selectedProfileSuggestionFields.length === 0) return;
-    const importedSkills = includeSkills ? selectedSkills.map(skill => ({
+  const applyCvData = () => {
+    if (!canApply) return;
+    const importedSkills = selectedSkills.map(skill => ({
       name: skill.name,
       level: skill.level as Proficiency,
       category: 'CV detected',
       cvDetected: true,
-    })) : [];
-    onApply(importedSkills, selectedProfileDetails);
-    if (includeSkills) {
-      setReviewSkills([]);
-      setProfileSuggestions({});
-      setSelectedProfileFields(new Set());
-      setWarnings([]);
-      setPhase('idle');
-    } else {
-      setSelectedProfileFields(new Set());
-    }
+    }));
+    onApply(importedSkills);
+    setReviewSkills([]);
+    setWarnings([]);
+    setPhase('idle');
     setReviewDialogOpen(false);
-    const messages = [];
-    if (selectedProfileSuggestionFields.length) messages.push(`${selectedProfileSuggestionFields.length} About You field${selectedProfileSuggestionFields.length === 1 ? '' : 's'} filled`);
-    if (importedSkills.length) messages.push(`${importedSkills.length} confirmed skill${importedSkills.length === 1 ? '' : 's'} added`);
-    setAnnouncement(`${messages.join(' and ')} in the profile draft. Review and save your profile to keep the changes.`);
+    setAnnouncement(`${importedSkills.length} confirmed skill${importedSkills.length === 1 ? '' : 's'} added to your profile. Review and save your skills.`);
   };
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -214,8 +170,8 @@ export function ProfileCvImport({
     <div className="profile-cv-heading">
       <span className="profile-cv-icon"><CloudUpload size={18} /></span>
       <div>
-        <h2 id="profile-cv-title">Fill your profile from your CV</h2>
-        <p>Clearly labelled profile details and recognized skills can be applied after review.</p>
+        <h2 id="profile-cv-title">Find skills from your CV</h2>
+        <p>Review each recognized skill and choose its proficiency before adding it to your profile.</p>
       </div>
     </div>
 
@@ -248,8 +204,7 @@ export function ProfileCvImport({
       />
     </div>
 
-    <p className="profile-cv-privacy"><Info size={14} /> Your CV and extracted text are processed by this app and are not saved. Only details and skills you review and apply can be saved in your browser profile.</p>
-    <p className="profile-cv-limit"><AlertTriangle size={13} /> About You fields are suggested only from clearly labelled CV lines. Missing details and skill levels are not guessed.</p>
+    <p className="profile-cv-privacy"><Info size={14} /> Your CV and extracted text are processed by this app and are not saved. Only skills you review and apply can be saved in your browser profile.</p>
 
     {phase === 'error' && <p className="profile-cv-error" role="alert" data-testid="error-profile-cv">{error}</p>}
     {phase === 'extracting' && <p className="profile-cv-status" role="status">Extracting recognizable skills. This can take a short while for scanned documents.</p>}
@@ -257,11 +212,8 @@ export function ProfileCvImport({
 
     {phase === 'review' && <div className="profile-cv-result" role="status" data-testid="status-profile-cv-review">
       <div>
-        <strong>{reviewSkills.length || hasProfileSuggestions ? 'CV details ready to review' : 'CV review ready'}</strong>
-        <span>{[
-          `${reviewSkills.length} skill${reviewSkills.length === 1 ? '' : 's'}`,
-          `${profileSuggestionFields.filter(({ key }) => profileSuggestions[key] !== undefined).length} profile detail${profileSuggestionFields.filter(({ key }) => profileSuggestions[key] !== undefined).length === 1 ? '' : 's'}`,
-        ].join(' · ')}</span>
+        <strong>{reviewSkills.length ? 'Skills ready to review' : 'CV review ready'}</strong>
+        <span>{reviewSkills.length} skill{reviewSkills.length === 1 ? '' : 's'} detected</span>
       </div>
       <button type="button" className="btn btn-secondary btn-small" onClick={() => setReviewDialogOpen(true)} data-testid="button-open-cv-review">
         Review CV details
@@ -280,41 +232,12 @@ export function ProfileCvImport({
     >
       <button type="button" className="profile-cv-dialog-close" aria-label="Close CV skill review" onClick={() => setReviewDialogOpen(false)}><X size={16} /></button>
       <header className="profile-cv-dialog-header">
-        <h2 id="profile-cv-review-title">Review CV details</h2>
-        <p id="profile-cv-review-description">Choose any About You details to apply, then select skills and set your own proficiency. Unlabelled facts and proficiency are never inferred.</p>
+        <h2 id="profile-cv-review-title">Review skills from your CV</h2>
+        <p id="profile-cv-review-description">Select recognized skills and set your own proficiency. The CV does not set or change proficiency automatically.</p>
       </header>
       {warnings.length > 0 && <ul className="profile-cv-warnings" data-testid="warnings-profile-cv">{warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>}
-      {hasProfileSuggestions && <section className="profile-cv-suggestions" aria-labelledby="profile-cv-suggestions-title">
-        <div className="profile-cv-dialog-review-head">
-          <strong id="profile-cv-suggestions-title">About You details</strong>
-          <span>{profileSuggestionFields.filter(({ key }) => profileSuggestions[key] !== undefined).length} found · {selectedProfileSuggestionFields.length} selected</span>
-        </div>
-        <p className="profile-cv-suggestions-note">Selected values replace the matching fields in your profile draft. Review them after applying, then save your profile to keep them.</p>
-        <div className="profile-cv-suggestion-list">
-          {profileSuggestionFields.map(({ key, label }) => {
-            const value = profileSuggestions[key];
-            if (value === undefined) return null;
-            return <label className="profile-cv-suggestion" key={key}>
-              <input
-                type="checkbox"
-                checked={selectedProfileFields.has(key)}
-                onChange={event => setSelectedProfileFields(current => {
-                  const next = new Set(current);
-                  if (event.target.checked) next.add(key);
-                  else next.delete(key);
-                  return next;
-                })}
-                aria-label={`Apply ${label} from CV`}
-              />
-              <span><strong>{label}</strong><span>{formatSuggestion(value)}</span></span>
-              <small>Replace current</small>
-            </label>;
-          })}
-        </div>
-      </section>}
-      {!hasProfileSuggestions && <p className="profile-cv-no-suggestions">No clearly labelled About You details were found, so no profile fields will be changed. You can still review the skills or enter details manually.</p>}
       {reviewSkills.length === 0
-        ? <div className="profile-cv-empty" data-testid="empty-profile-cv">No career-catalogue skills were recognized. You can still apply the profile details above or add skills manually.</div>
+        ? <div className="profile-cv-empty" data-testid="empty-profile-cv">No career-catalogue skills were recognized. Return to Skills to add one manually.</div>
         : <>
           <div className="profile-cv-dialog-review-head">
             <strong>Skills from your CV</strong>
@@ -349,15 +272,8 @@ export function ProfileCvImport({
         </>}
       <div className="profile-cv-dialog-footer">
         <button type="button" className="btn btn-secondary btn-small" onClick={() => setReviewDialogOpen(false)}>Back to profile</button>
-        {selectedProfileSuggestionFields.length > 0 && selectedSkills.length > 0 && !canApply && <button type="button" className="btn btn-secondary btn-small" onClick={() => applyCvData(false)} data-testid="button-apply-cv-profile-only">
-          Fill About You only
-        </button>}
-        {(reviewSkills.length > 0 || hasProfileSuggestions) && <button type="button" className="btn btn-primary btn-small" onClick={() => applyCvData()} disabled={!canApply} data-testid="button-apply-cv-skills">
-          <Check size={14} /> {selectedProfileSuggestionFields.length && selectedSkills.length
-            ? 'Fill About You + add skills'
-            : selectedProfileSuggestionFields.length
-              ? 'Fill About You'
-              : 'Add selected skills'}
+        {reviewSkills.length > 0 && <button type="button" className="btn btn-primary btn-small" onClick={() => applyCvData()} disabled={!canApply} data-testid="button-apply-cv-skills">
+          <Check size={14} /> Add selected skills
         </button>}
       </div>
     </dialog>

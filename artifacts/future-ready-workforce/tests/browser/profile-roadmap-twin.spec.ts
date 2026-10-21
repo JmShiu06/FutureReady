@@ -25,9 +25,9 @@ test('explore does not retarget; build roadmap, complete, confirm, progress and 
   await page.locator('[data-testid^="button-confirm-"]').first().click();
   await expect(page.getByTestId('text-progress-change')).toContainText('+');
   await expect(page.locator('[data-testid^="button-confirm-"]')).toHaveCount(0);
-  await expect(page.getByTestId('section-simulator')).toBeVisible();
-  await page.getByTestId('button-reset-simulation').click();
-  await expect(page.getByTestId('text-progress-change')).toContainText('+');
+  await expect(page.getByTestId('section-twin-progress')).toBeVisible();
+  await expect(page.getByTestId('table-skill-progress')).toBeVisible();
+  await expect(page.getByTestId('section-simulator')).toHaveCount(0);
 
   await page.reload();
   await page.getByTestId('tab-profile-roadmap').click();

@@ -13,7 +13,7 @@ const nav = [
   { href: '/', label: 'Overview', icon: Compass, key: 'home' },
   { href: '/profile', label: 'My profile', icon: UserRound, key: 'profile' },
   { href: '/careers', label: 'Career explorer', icon: Map, key: 'careers' },
-  { href: '/cv-analysis', label: 'CV recommendations', icon: FileText, key: 'cv-analysis' },
+  { href: '/cv-analysis', label: 'Job Recommendations', icon: FileText, key: 'cv-analysis' },
   { href: '/trends', label: 'Skills radar', icon: Radar, key: 'trends' },
   { href: '/scenarios', label: 'AI scenarios', icon: BarChart3, key: 'scenarios' },
   { href: '/sdgs', label: 'SDG explorer', icon: Globe2, key: 'sdgs' },
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
       <div className="sidebar-bottom">
         <div className="demo-note"><strong><ShieldCheck size={14} /> DEMO DATA ONLY</strong>
-          <p>Planning examples are fictional. CVs are processed transiently; only profile details and skills you review and apply can be saved in your browser profile.</p></div>
+          <p>Planning examples are fictional. CVs are processed transiently; only skills you review and apply can be saved in your browser profile.</p></div>
         <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-occupation">{profile.occupation || 'Your profile'}</strong><span>{audienceLabels[state.audience]}</span></div></div>
       </div>
     </aside>

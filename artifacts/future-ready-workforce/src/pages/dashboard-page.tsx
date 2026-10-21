@@ -140,7 +140,7 @@ function PersonalOverview() {
       <div className="welcome-card">
         <div className="eyebrow">Starting from</div>
         <h1 data-testid="text-dashboard-occupation">{profile.occupation || 'Your career profile'}</h1>
-        <p>{profileContext || 'Add relevant About You details in My profile to personalize this context.'}</p>
+        <p>{profileContext || 'Add or update your skills in My profile to personalize this context.'}</p>
         <div className="welcome-actions"><Link href="/careers" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> Explore career paths <ArrowRight size={14} /></Link><Link href="/profile?section=roadmap" className="btn btn-quiet" data-testid="link-roadmap">View my roadmap</Link></div>
       </div>
       <div className="panel stat-card">

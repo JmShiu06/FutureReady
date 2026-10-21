@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Info } from 'lucide-react';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
-import { OfficialOccupationsPanel } from '@/components/workspace/occupation-evidence';
 import { planKey } from '@/domain/learning';
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoService, methodology } from '@/domain/services';
@@ -61,6 +60,5 @@ export default function CareersPage() {
         <div className="panel panel-pad"><SectionTitle title="Evidence" note="SHARED BY ALL SAMPLE ROLES" /><EvidencePanel evidence={list[0].role.evidence} /></div>
       </div>
     </>)}
-    <OfficialOccupationsPanel />
   </>;
 }
