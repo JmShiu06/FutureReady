@@ -68,6 +68,142 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type CourseAnalysisSkillScores = {[key: string]: number};
+
+export interface CourseAnalysis {
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  technical_skills?: string[];
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  soft_skills?: string[];
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  missing_skills?: string[];
+  skill_scores?: CourseAnalysisSkillScores;
+  /** @maxLength 80 */
+  candidate_level?: string;
+  /** @maxLength 160 */
+  career_path?: string;
+  [key: string]: unknown;
+ }
+
+export interface CourseRecommendationInput {
+  /**
+     * Accepted for caller compatibility; not persisted or logged.
+     * @maxLength 120
+     */
+  user_id?: string;
+  analysis: CourseAnalysis;
+  /**
+     * @minimum 1
+     * @maximum 50
+     */
+  limit?: number;
+}
+
+export interface LearningRoadmapInput {
+  /**
+     * Accepted for caller compatibility; not persisted or logged.
+     * @maxLength 120
+     */
+  user_id?: string;
+  analysis: CourseAnalysis;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  courses_per_skill?: number;
+}
+
+export type RecommendedCourseDifficulty = typeof RecommendedCourseDifficulty[keyof typeof RecommendedCourseDifficulty];
+
+
+export const RecommendedCourseDifficulty = {
+  Beginner: 'Beginner',
+  Intermediate: 'Intermediate',
+  Advanced: 'Advanced',
+  Unknown: 'Unknown',
+} as const;
+
+export type RecommendedCourseRecommendationType = typeof RecommendedCourseRecommendationType[keyof typeof RecommendedCourseRecommendationType];
+
+
+export const RecommendedCourseRecommendationType = {
+  technical: 'technical',
+  soft_skill: 'soft_skill',
+  career_development: 'career_development',
+} as const;
+
+export interface RecommendedCourse {
+  course_name?: string;
+  platform?: string;
+  course_type?: string;
+  difficulty?: RecommendedCourseDifficulty;
+  skills_covered?: string[];
+  recommendation_type?: RecommendedCourseRecommendationType;
+  matched_skills?: string[];
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  match_score?: number;
+  /**
+     * @minimum 0
+     * @maximum 5
+     * @nullable
+     */
+  rating?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  duration_value?: number | null;
+  duration_note?: string;
+  course_url?: string;
+}
+
+export interface CourseDatasetMetadata {
+  name: string;
+  /** @minimum 0 */
+  record_count: number;
+  providers: string[];
+  provenance: string;
+  verification: string;
+}
+
+export interface CourseRecommendationsResponse {
+  recommended_courses: RecommendedCourse[];
+  methodology: string;
+  limitations: string[];
+  dataset: CourseDatasetMetadata;
+}
+
+export interface RoadmapPhase {
+  /** @minimum 1 */
+  month: number;
+  focus: string;
+  skills: string[];
+  courses: RecommendedCourse[];
+  duration_estimate: string;
+}
+
+export interface LearningRoadmapResponse {
+  roadmap: RoadmapPhase[];
+  methodology: string;
+  limitations: string[];
+  dataset: CourseDatasetMetadata;
+}
+
 export interface CvUploadInput {
   file: Blob;
 }

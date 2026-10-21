@@ -234,6 +234,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /recommend-courses:
+    post:
+      operationId: recommendCourses
+      tags: [learning]
+      summary: Recommend dataset courses from existing skill-analysis output
+      description: >
+        Consumes skill-analysis results; it does not re-analyze CVs. Matches
+        requested skills against the supplied Coursera/edX dataset's skill tags,
+        titles and descriptions, then ranks by skill relevance, score-derived
+        difficulty, available rating and an estimated learning sequence. This
+        is deterministic lexical matching, not sentence-transformer embeddings.
+        Dataset links, ratings and availability have not been independently verified.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseRecommendationInput"
+      responses:
+        "200":
+          description: Ranked courses by technical, soft-skill and career-development relevance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseRecommendationsResponse"
+        "400":
+          description: Invalid skill-analysis input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /learning-roadmap:
+    post:
+      operationId: generateLearningRoadmap
+      tags: [learning]
+      summary: Generate a monthly skill-learning roadmap
+      description: >
+        Consumes skill-analysis output and groups dataset course matches into
+        estimated monthly phases, prioritizing missing and lower-scored skills.
+        The dataset has no validated prerequisite chains or normalized course
+        durations, so phases are planning estimates rather than verified prerequisites.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LearningRoadmapInput"
+      responses:
+        "200":
+          description: Skill gaps grouped into monthly learning phases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningRoadmapResponse"
+        "400":
+          description: Invalid skill-analysis input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /jobs:
     get:
       operationId: listJobs
@@ -654,6 +714,136 @@ components:
           type: string
       required:
         - error
+    CourseAnalysis:
+      type: object
+      properties:
+        technical_skills:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 100 }
+        soft_skills:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 100 }
+        missing_skills:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 100 }
+        skill_scores:
+          type: object
+          maxProperties: 200
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 100
+        candidate_level:
+          type: string
+          maxLength: 80
+        career_path:
+          type: string
+          maxLength: 160
+      additionalProperties: true
+    CourseRecommendationInput:
+      type: object
+      required: [analysis]
+      properties:
+        user_id:
+          type: string
+          maxLength: 120
+          description: Accepted for caller compatibility; not persisted or logged.
+        analysis:
+          $ref: "#/components/schemas/CourseAnalysis"
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+    LearningRoadmapInput:
+      type: object
+      required: [analysis]
+      properties:
+        user_id:
+          type: string
+          maxLength: 120
+          description: Accepted for caller compatibility; not persisted or logged.
+        analysis:
+          $ref: "#/components/schemas/CourseAnalysis"
+        courses_per_skill:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 3
+    RecommendedCourse:
+      type: object
+      properties:
+        course_name: { type: string }
+        platform: { type: string }
+        course_type: { type: string }
+        difficulty: { type: string, enum: [Beginner, Intermediate, Advanced, Unknown] }
+        skills_covered:
+          type: array
+          items: { type: string }
+        recommendation_type:
+          type: string
+          enum: [technical, soft_skill, career_development]
+        matched_skills:
+          type: array
+          items: { type: string }
+        match_score: { type: number, minimum: 0, maximum: 100 }
+        rating: { type: [number, "null"], minimum: 0, maximum: 5 }
+        duration_value: { type: [number, "null"], minimum: 0 }
+        duration_note: { type: string }
+        course_url: { type: string, format: uri }
+    CourseRecommendationsResponse:
+      type: object
+      properties:
+        recommended_courses:
+          type: array
+          items: { $ref: "#/components/schemas/RecommendedCourse" }
+        methodology: { type: string }
+        limitations:
+          type: array
+          items: { type: string }
+        dataset:
+          $ref: "#/components/schemas/CourseDatasetMetadata"
+      required: [recommended_courses, methodology, limitations, dataset]
+    RoadmapPhase:
+      type: object
+      properties:
+        month: { type: integer, minimum: 1 }
+        focus: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        courses:
+          type: array
+          items: { $ref: "#/components/schemas/RecommendedCourse" }
+        duration_estimate: { type: string }
+      required: [month, focus, skills, courses, duration_estimate]
+    LearningRoadmapResponse:
+      type: object
+      properties:
+        roadmap:
+          type: array
+          items: { $ref: "#/components/schemas/RoadmapPhase" }
+        methodology: { type: string }
+        limitations:
+          type: array
+          items: { type: string }
+        dataset:
+          $ref: "#/components/schemas/CourseDatasetMetadata"
+      required: [roadmap, methodology, limitations, dataset]
+    CourseDatasetMetadata:
+      type: object
+      properties:
+        name: { type: string }
+        record_count: { type: integer, minimum: 0 }
+        providers:
+          type: array
+          items: { type: string }
+        provenance: { type: string }
+        verification: { type: string }
+      required: [name, record_count, providers, provenance, verification]
     CvUploadInput:
       type: object
       required: [file]

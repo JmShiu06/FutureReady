@@ -396,6 +396,177 @@ export const AnalyzeProfileSimilarityResponse = zod.object({
 
 
 /**
+ * Consumes skill-analysis results; it does not re-analyze CVs. Matches requested skills against the supplied Coursera/edX dataset's skill tags, titles and descriptions, then ranks by skill relevance, score-derived difficulty, available rating and an estimated learning sequence. This is deterministic lexical matching, not sentence-transformer embeddings. Dataset links, ratings and availability have not been independently verified.
+ * @summary Recommend dataset courses from existing skill-analysis output
+ */
+export const recommendCoursesBodyUserIdMax = 120;
+
+export const recommendCoursesBodyAnalysisTechnicalSkillsItemMax = 100;
+
+export const recommendCoursesBodyAnalysisTechnicalSkillsMax = 100;
+
+export const recommendCoursesBodyAnalysisSoftSkillsItemMax = 100;
+
+export const recommendCoursesBodyAnalysisSoftSkillsMax = 100;
+
+export const recommendCoursesBodyAnalysisMissingSkillsItemMax = 100;
+
+export const recommendCoursesBodyAnalysisMissingSkillsMax = 100;
+
+export const recommendCoursesBodyAnalysisSkillScoresMinOne = 0;
+export const recommendCoursesBodyAnalysisSkillScoresMaxOne = 100;
+
+export const recommendCoursesBodyAnalysisCandidateLevelMax = 80;
+
+export const recommendCoursesBodyAnalysisCareerPathMax = 160;
+
+export const recommendCoursesBodyLimitDefault = 20;
+export const recommendCoursesBodyLimitMax = 50;
+
+
+
+export const RecommendCoursesBody = zod.object({
+  "user_id": zod.string().max(recommendCoursesBodyUserIdMax).optional().describe('Accepted for caller compatibility; not persisted or logged.'),
+  "analysis": zod.object({
+  "technical_skills": zod.array(zod.string().min(1).max(recommendCoursesBodyAnalysisTechnicalSkillsItemMax)).max(recommendCoursesBodyAnalysisTechnicalSkillsMax).optional(),
+  "soft_skills": zod.array(zod.string().min(1).max(recommendCoursesBodyAnalysisSoftSkillsItemMax)).max(recommendCoursesBodyAnalysisSoftSkillsMax).optional(),
+  "missing_skills": zod.array(zod.string().min(1).max(recommendCoursesBodyAnalysisMissingSkillsItemMax)).max(recommendCoursesBodyAnalysisMissingSkillsMax).optional(),
+  "skill_scores": zod.record(zod.string(), zod.number().min(recommendCoursesBodyAnalysisSkillScoresMinOne).max(recommendCoursesBodyAnalysisSkillScoresMaxOne)).optional(),
+  "candidate_level": zod.string().max(recommendCoursesBodyAnalysisCandidateLevelMax).optional(),
+  "career_path": zod.string().max(recommendCoursesBodyAnalysisCareerPathMax).optional()
+}),
+  "limit": zod.number().int().min(1).max(recommendCoursesBodyLimitMax).default(recommendCoursesBodyLimitDefault)
+})
+
+export const recommendCoursesResponseRecommendedCoursesItemMatchScoreMin = 0;
+export const recommendCoursesResponseRecommendedCoursesItemMatchScoreMax = 100;
+
+export const recommendCoursesResponseRecommendedCoursesItemRatingMin = 0;
+export const recommendCoursesResponseRecommendedCoursesItemRatingMax = 5;
+
+export const recommendCoursesResponseRecommendedCoursesItemDurationValueMin = 0;
+
+export const recommendCoursesResponseDatasetRecordCountMin = 0;
+
+
+
+export const RecommendCoursesResponse = zod.object({
+  "recommended_courses": zod.array(zod.object({
+  "course_name": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "course_type": zod.string().optional(),
+  "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced', 'Unknown']).optional(),
+  "skills_covered": zod.array(zod.string()).optional(),
+  "recommendation_type": zod.enum(['technical', 'soft_skill', 'career_development']).optional(),
+  "matched_skills": zod.array(zod.string()).optional(),
+  "match_score": zod.number().min(recommendCoursesResponseRecommendedCoursesItemMatchScoreMin).max(recommendCoursesResponseRecommendedCoursesItemMatchScoreMax).optional(),
+  "rating": zod.number().min(recommendCoursesResponseRecommendedCoursesItemRatingMin).max(recommendCoursesResponseRecommendedCoursesItemRatingMax).nullish(),
+  "duration_value": zod.number().min(recommendCoursesResponseRecommendedCoursesItemDurationValueMin).nullish(),
+  "duration_note": zod.string().optional(),
+  "course_url": zod.string().url().optional()
+})),
+  "methodology": zod.string(),
+  "limitations": zod.array(zod.string()),
+  "dataset": zod.object({
+  "name": zod.string(),
+  "record_count": zod.number().int().min(recommendCoursesResponseDatasetRecordCountMin),
+  "providers": zod.array(zod.string()),
+  "provenance": zod.string(),
+  "verification": zod.string()
+})
+})
+
+
+/**
+ * Consumes skill-analysis output and groups dataset course matches into estimated monthly phases, prioritizing missing and lower-scored skills. The dataset has no validated prerequisite chains or normalized course durations, so phases are planning estimates rather than verified prerequisites.
+ * @summary Generate a monthly skill-learning roadmap
+ */
+export const generateLearningRoadmapBodyUserIdMax = 120;
+
+export const generateLearningRoadmapBodyAnalysisTechnicalSkillsItemMax = 100;
+
+export const generateLearningRoadmapBodyAnalysisTechnicalSkillsMax = 100;
+
+export const generateLearningRoadmapBodyAnalysisSoftSkillsItemMax = 100;
+
+export const generateLearningRoadmapBodyAnalysisSoftSkillsMax = 100;
+
+export const generateLearningRoadmapBodyAnalysisMissingSkillsItemMax = 100;
+
+export const generateLearningRoadmapBodyAnalysisMissingSkillsMax = 100;
+
+export const generateLearningRoadmapBodyAnalysisSkillScoresMinOne = 0;
+export const generateLearningRoadmapBodyAnalysisSkillScoresMaxOne = 100;
+
+export const generateLearningRoadmapBodyAnalysisCandidateLevelMax = 80;
+
+export const generateLearningRoadmapBodyAnalysisCareerPathMax = 160;
+
+export const generateLearningRoadmapBodyCoursesPerSkillDefault = 3;
+export const generateLearningRoadmapBodyCoursesPerSkillMax = 5;
+
+
+
+export const GenerateLearningRoadmapBody = zod.object({
+  "user_id": zod.string().max(generateLearningRoadmapBodyUserIdMax).optional().describe('Accepted for caller compatibility; not persisted or logged.'),
+  "analysis": zod.object({
+  "technical_skills": zod.array(zod.string().min(1).max(generateLearningRoadmapBodyAnalysisTechnicalSkillsItemMax)).max(generateLearningRoadmapBodyAnalysisTechnicalSkillsMax).optional(),
+  "soft_skills": zod.array(zod.string().min(1).max(generateLearningRoadmapBodyAnalysisSoftSkillsItemMax)).max(generateLearningRoadmapBodyAnalysisSoftSkillsMax).optional(),
+  "missing_skills": zod.array(zod.string().min(1).max(generateLearningRoadmapBodyAnalysisMissingSkillsItemMax)).max(generateLearningRoadmapBodyAnalysisMissingSkillsMax).optional(),
+  "skill_scores": zod.record(zod.string(), zod.number().min(generateLearningRoadmapBodyAnalysisSkillScoresMinOne).max(generateLearningRoadmapBodyAnalysisSkillScoresMaxOne)).optional(),
+  "candidate_level": zod.string().max(generateLearningRoadmapBodyAnalysisCandidateLevelMax).optional(),
+  "career_path": zod.string().max(generateLearningRoadmapBodyAnalysisCareerPathMax).optional()
+}),
+  "courses_per_skill": zod.number().int().min(1).max(generateLearningRoadmapBodyCoursesPerSkillMax).default(generateLearningRoadmapBodyCoursesPerSkillDefault)
+})
+
+
+export const generateLearningRoadmapResponseRoadmapItemCoursesItemMatchScoreMin = 0;
+export const generateLearningRoadmapResponseRoadmapItemCoursesItemMatchScoreMax = 100;
+
+export const generateLearningRoadmapResponseRoadmapItemCoursesItemRatingMin = 0;
+export const generateLearningRoadmapResponseRoadmapItemCoursesItemRatingMax = 5;
+
+export const generateLearningRoadmapResponseRoadmapItemCoursesItemDurationValueMin = 0;
+
+export const generateLearningRoadmapResponseDatasetRecordCountMin = 0;
+
+
+
+export const GenerateLearningRoadmapResponse = zod.object({
+  "roadmap": zod.array(zod.object({
+  "month": zod.number().int().min(1),
+  "focus": zod.string(),
+  "skills": zod.array(zod.string()),
+  "courses": zod.array(zod.object({
+  "course_name": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "course_type": zod.string().optional(),
+  "difficulty": zod.enum(['Beginner', 'Intermediate', 'Advanced', 'Unknown']).optional(),
+  "skills_covered": zod.array(zod.string()).optional(),
+  "recommendation_type": zod.enum(['technical', 'soft_skill', 'career_development']).optional(),
+  "matched_skills": zod.array(zod.string()).optional(),
+  "match_score": zod.number().min(generateLearningRoadmapResponseRoadmapItemCoursesItemMatchScoreMin).max(generateLearningRoadmapResponseRoadmapItemCoursesItemMatchScoreMax).optional(),
+  "rating": zod.number().min(generateLearningRoadmapResponseRoadmapItemCoursesItemRatingMin).max(generateLearningRoadmapResponseRoadmapItemCoursesItemRatingMax).nullish(),
+  "duration_value": zod.number().min(generateLearningRoadmapResponseRoadmapItemCoursesItemDurationValueMin).nullish(),
+  "duration_note": zod.string().optional(),
+  "course_url": zod.string().url().optional()
+})),
+  "duration_estimate": zod.string()
+})),
+  "methodology": zod.string(),
+  "limitations": zod.array(zod.string()),
+  "dataset": zod.object({
+  "name": zod.string(),
+  "record_count": zod.number().int().min(generateLearningRoadmapResponseDatasetRecordCountMin),
+  "providers": zod.array(zod.string()),
+  "provenance": zod.string(),
+  "verification": zod.string()
+})
+})
+
+
+/**
  * @summary List job listings
  */
 export const listJobsQueryPageDefault = 1;
