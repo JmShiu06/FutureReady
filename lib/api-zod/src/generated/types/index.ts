@@ -8,6 +8,7 @@
 
 export * from './careerMatch';
 export * from './careerMatchResult';
+export * from './careerPathAnalysisReport';
 export * from './careerScoring';
 export * from './careerSkillList';
 export * from './careerSkillsInput';
@@ -47,4 +48,9 @@ export * from './jobSearchKeywordParameter';
 export * from './jobSortParameter';
 export * from './jobStateParameter';
 export * from './listJobsParams';
+export * from './profileSimilarityReport';
+export * from './resumeAnalysisReport';
+export * from './resumeTextInput';
 export * from './searchJobsParams';
+export * from './skillGapAnalysisInput';
+export * from './skillGapAnalysisReport';

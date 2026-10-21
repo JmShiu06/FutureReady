@@ -112,6 +112,124 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /analyze-resume:
+    post:
+      operationId: analyzeResume
+      tags: [career]
+      summary: Analyze resume text using local deterministic skill detection
+      description: >
+        Uses the existing exact-name skill detector and bundled role-skill dataset.
+        Resume text is processed in memory and is not retained or sent to external
+        services. This endpoint does not run an ML model or generate a validated
+        readiness score.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeTextInput"
+      responses:
+        "200":
+          description: Detected skills and available profile suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeAnalysisReport"
+        "400":
+          description: Invalid resume text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /skill-gap-analysis:
+    post:
+      operationId: analyzeSkillGap
+      tags: [career]
+      summary: Compare resume skills with one bundled role family
+      description: >
+        Returns exact skill overlap and missing role skills. Course links and
+        learning durations are not supplied because no verified course catalogue
+        is connected.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillGapAnalysisInput"
+      responses:
+        "200":
+          description: Dataset-based role skill gap
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillGapAnalysisReport"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Target role is not present in the bundled dataset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /career-path:
+    post:
+      operationId: analyzeCareerPath
+      tags: [career]
+      summary: Rank role families and list illustrative next skills
+      description: >
+        Reuses deterministic skill-overlap matching. The score is not a
+        confidence score, suitability prediction, or employment probability.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeTextInput"
+      responses:
+        "200":
+          description: Ranked dataset role families
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerPathAnalysisReport"
+        "400":
+          description: Invalid resume text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /profile-similarity:
+    post:
+      operationId: analyzeProfileSimilarity
+      tags: [career]
+      summary: Return available profile-similarity information
+      description: >
+        The bundled dataset contains role skill lists but no candidate profiles.
+        The endpoint therefore returns no similar profiles and explains the
+        limitation rather than fabricating peer records.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeTextInput"
+      responses:
+        "200":
+          description: Similarity result with data-availability limitations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileSimilarityReport"
+        "400":
+          description: Invalid resume text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /jobs:
     get:
       operationId: listJobs
@@ -471,6 +589,26 @@ components:
             maxLength: 60
       required:
         - skills
+    ResumeTextInput:
+      type: object
+      properties:
+        resume_text:
+          type: string
+          minLength: 1
+          maxLength: 200000
+      required: [resume_text]
+    SkillGapAnalysisInput:
+      type: object
+      properties:
+        resume_text:
+          type: string
+          minLength: 1
+          maxLength: 200000
+        target_role:
+          type: string
+          minLength: 1
+          maxLength: 120
+      required: [resume_text, target_role]
     CareerMatch:
       type: object
       properties:
@@ -565,6 +703,143 @@ components:
         - normalizedSkills
         - unrecognizedSkills
         - scoring
+        - source
+    ResumeAnalysisReport:
+      type: object
+      properties:
+        recognized_skills:
+          type: array
+          items: { type: string }
+        technical_skills:
+          type: array
+          items: { type: string }
+        soft_skills:
+          type: array
+          items: { type: string }
+        missing_skills:
+          type: array
+          items: { type: string }
+        emerging_skills:
+          type: array
+          items: { type: string }
+        recommended_learning_path:
+          type: array
+          items: { type: string }
+        skill_score:
+          type: [number, "null"]
+        career_readiness:
+          type: string
+        candidate_level:
+          type: [string, "null"]
+        similar_profiles:
+          type: array
+          items: { type: string }
+        profile_suggestions:
+          $ref: "#/components/schemas/CvProfileSuggestions"
+        methodology:
+          type: string
+        limitations:
+          type: array
+          items: { type: string }
+        source:
+          $ref: "#/components/schemas/CareerSource"
+      required:
+        - recognized_skills
+        - technical_skills
+        - soft_skills
+        - missing_skills
+        - emerging_skills
+        - recommended_learning_path
+        - skill_score
+        - career_readiness
+        - candidate_level
+        - similar_profiles
+        - profile_suggestions
+        - methodology
+        - limitations
+        - source
+    SkillGapAnalysisReport:
+      type: object
+      properties:
+        target_role:
+          type: string
+        current_skills:
+          type: array
+          items: { type: string }
+        missing_skills:
+          type: array
+          items: { type: string }
+        recommended_courses:
+          type: array
+          items: { type: string }
+        recommended_learning_path:
+          type: array
+          items: { type: string }
+        estimated_learning_time:
+          type: [string, "null"]
+        overlap_score:
+          type: number
+        methodology:
+          type: string
+        limitations:
+          type: array
+          items: { type: string }
+        source:
+          $ref: "#/components/schemas/CareerSource"
+      required:
+        - target_role
+        - current_skills
+        - missing_skills
+        - recommended_courses
+        - recommended_learning_path
+        - estimated_learning_time
+        - overlap_score
+        - methodology
+        - limitations
+        - source
+    CareerPathAnalysisReport:
+      type: object
+      properties:
+        suitable_roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerMatch"
+        growth_path:
+          type: array
+          items: { type: string }
+        methodology:
+          type: string
+        limitations:
+          type: array
+          items: { type: string }
+        source:
+          $ref: "#/components/schemas/CareerSource"
+      required: [suitable_roles, growth_path, methodology, limitations, source]
+    ProfileSimilarityReport:
+      type: object
+      properties:
+        similar_profiles:
+          type: array
+          items: { type: string }
+        common_skills:
+          type: array
+          items: { type: string }
+        recommended_next_skills:
+          type: array
+          items: { type: string }
+        methodology:
+          type: string
+        limitations:
+          type: array
+          items: { type: string }
+        source:
+          $ref: "#/components/schemas/CareerSource"
+      required:
+        - similar_profiles
+        - common_skills
+        - recommended_next_skills
+        - methodology
+        - limitations
         - source
     Job:
       type: object

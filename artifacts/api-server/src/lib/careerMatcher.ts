@@ -131,6 +131,7 @@ export const SCORING = {
 export function matchSkills(
   dataset: CareerDataset,
   rawSkills: string[],
+  includeUnmatchedRoles = false,
 ): {
   normalizedSkills: string[];
   unrecognizedSkills: string[];
@@ -156,7 +157,7 @@ export function matchSkills(
         missingSkills,
       };
     })
-    .filter((m) => m.matchedSkills.length > 0)
+    .filter((m) => includeUnmatchedRoles || m.matchedSkills.length > 0)
     // Higher score first; ties broken alphabetically by role family so the
     // order is deterministic.
     .sort(

@@ -78,6 +78,27 @@ export interface CareerSkillsInput {
   skills: string[];
 }
 
+export interface ResumeTextInput {
+  /**
+     * @minLength 1
+     * @maxLength 200000
+     */
+  resume_text: string;
+}
+
+export interface SkillGapAnalysisInput {
+  /**
+     * @minLength 1
+     * @maxLength 200000
+     */
+  resume_text: string;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  target_role: string;
+}
+
 export interface CareerMatch {
   roleFamily: string;
   /** Matched skills / skills considered x 100, rounded to one decimal place. */
@@ -110,6 +131,56 @@ export interface CareerMatchResult {
   normalizedSkills: string[];
   unrecognizedSkills: string[];
   scoring: CareerScoring;
+  source: CareerSource;
+}
+
+export interface ResumeAnalysisReport {
+  recognized_skills: string[];
+  technical_skills: string[];
+  soft_skills: string[];
+  missing_skills: string[];
+  emerging_skills: string[];
+  recommended_learning_path: string[];
+  /** @nullable */
+  skill_score: number | null;
+  career_readiness: string;
+  /** @nullable */
+  candidate_level: string | null;
+  similar_profiles: string[];
+  profile_suggestions: CvProfileSuggestions;
+  methodology: string;
+  limitations: string[];
+  source: CareerSource;
+}
+
+export interface SkillGapAnalysisReport {
+  target_role: string;
+  current_skills: string[];
+  missing_skills: string[];
+  recommended_courses: string[];
+  recommended_learning_path: string[];
+  /** @nullable */
+  estimated_learning_time: string | null;
+  overlap_score: number;
+  methodology: string;
+  limitations: string[];
+  source: CareerSource;
+}
+
+export interface CareerPathAnalysisReport {
+  suitable_roles: CareerMatch[];
+  growth_path: string[];
+  methodology: string;
+  limitations: string[];
+  source: CareerSource;
+}
+
+export interface ProfileSimilarityReport {
+  similar_profiles: string[];
+  common_skills: string[];
+  recommended_next_skills: string[];
+  methodology: string;
+  limitations: string[];
   source: CareerSource;
 }
 

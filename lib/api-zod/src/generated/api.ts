@@ -123,6 +123,192 @@ export const MatchCareersResponse = zod.object({
 
 
 /**
+ * Uses the existing exact-name skill detector and bundled role-skill dataset. Resume text is processed in memory and is not retained or sent to external services. This endpoint does not run an ML model or generate a validated readiness score.
+ * @summary Analyze resume text using local deterministic skill detection
+ */
+export const analyzeResumeBodyResumeTextMax = 200000;
+
+
+
+export const AnalyzeResumeBody = zod.object({
+  "resume_text": zod.string().min(1).max(analyzeResumeBodyResumeTextMax)
+})
+
+export const analyzeResumeResponseProfileSuggestionsOccupationMax = 120;
+
+export const analyzeResumeResponseProfileSuggestionsExperienceYearsMin = 0;
+export const analyzeResumeResponseProfileSuggestionsExperienceYearsMax = 60;
+
+export const analyzeResumeResponseProfileSuggestionsEducationMax = 120;
+
+export const analyzeResumeResponseProfileSuggestionsQualificationMax = 120;
+
+export const analyzeResumeResponseProfileSuggestionsStudyFieldMax = 120;
+
+export const analyzeResumeResponseProfileSuggestionsInterestsItemMax = 120;
+
+export const analyzeResumeResponseProfileSuggestionsInterestsMax = 10;
+
+export const analyzeResumeResponseProfileSuggestionsLocationMax = 120;
+
+export const analyzeResumeResponseProfileSuggestionsLearningHoursMax = 40;
+
+export const analyzeResumeResponseProfileSuggestionsBudgetMYRMin = 0;
+export const analyzeResumeResponseProfileSuggestionsBudgetMYRMax = 100000;
+
+export const analyzeResumeResponseProfileSuggestionsGoalsMax = 500;
+
+
+
+export const AnalyzeResumeResponse = zod.object({
+  "recognized_skills": zod.array(zod.string()),
+  "technical_skills": zod.array(zod.string()),
+  "soft_skills": zod.array(zod.string()),
+  "missing_skills": zod.array(zod.string()),
+  "emerging_skills": zod.array(zod.string()),
+  "recommended_learning_path": zod.array(zod.string()),
+  "skill_score": zod.number().nullable(),
+  "career_readiness": zod.string(),
+  "candidate_level": zod.string().nullable(),
+  "similar_profiles": zod.array(zod.string()),
+  "profile_suggestions": zod.object({
+  "occupation": zod.string().max(analyzeResumeResponseProfileSuggestionsOccupationMax).optional(),
+  "experienceYears": zod.number().min(analyzeResumeResponseProfileSuggestionsExperienceYearsMin).max(analyzeResumeResponseProfileSuggestionsExperienceYearsMax).optional(),
+  "education": zod.string().max(analyzeResumeResponseProfileSuggestionsEducationMax).optional(),
+  "qualification": zod.string().max(analyzeResumeResponseProfileSuggestionsQualificationMax).optional(),
+  "studyField": zod.string().max(analyzeResumeResponseProfileSuggestionsStudyFieldMax).optional(),
+  "interests": zod.array(zod.string().max(analyzeResumeResponseProfileSuggestionsInterestsItemMax)).max(analyzeResumeResponseProfileSuggestionsInterestsMax).optional(),
+  "location": zod.string().max(analyzeResumeResponseProfileSuggestionsLocationMax).optional(),
+  "workPreference": zod.enum(['Any', 'Remote', 'Hybrid', 'On-site']).optional(),
+  "learningHours": zod.number().int().min(1).max(analyzeResumeResponseProfileSuggestionsLearningHoursMax).optional(),
+  "budgetMYR": zod.number().min(analyzeResumeResponseProfileSuggestionsBudgetMYRMin).max(analyzeResumeResponseProfileSuggestionsBudgetMYRMax).optional(),
+  "goals": zod.string().max(analyzeResumeResponseProfileSuggestionsGoalsMax).optional()
+}),
+  "methodology": zod.string(),
+  "limitations": zod.array(zod.string()),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "publisher": zod.string(),
+  "period": zod.string(),
+  "license": zod.string(),
+  "citation": zod.string(),
+  "urls": zod.array(zod.string()),
+  "intendedUse": zod.string(),
+  "geographyNote": zod.string(),
+  "measurementNote": zod.string()
+})
+})
+
+
+/**
+ * Returns exact skill overlap and missing role skills. Course links and learning durations are not supplied because no verified course catalogue is connected.
+ * @summary Compare resume skills with one bundled role family
+ */
+export const analyzeSkillGapBodyResumeTextMax = 200000;
+
+export const analyzeSkillGapBodyTargetRoleMax = 120;
+
+
+
+export const AnalyzeSkillGapBody = zod.object({
+  "resume_text": zod.string().min(1).max(analyzeSkillGapBodyResumeTextMax),
+  "target_role": zod.string().min(1).max(analyzeSkillGapBodyTargetRoleMax)
+})
+
+export const AnalyzeSkillGapResponse = zod.object({
+  "target_role": zod.string(),
+  "current_skills": zod.array(zod.string()),
+  "missing_skills": zod.array(zod.string()),
+  "recommended_courses": zod.array(zod.string()),
+  "recommended_learning_path": zod.array(zod.string()),
+  "estimated_learning_time": zod.string().nullable(),
+  "overlap_score": zod.number(),
+  "methodology": zod.string(),
+  "limitations": zod.array(zod.string()),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "publisher": zod.string(),
+  "period": zod.string(),
+  "license": zod.string(),
+  "citation": zod.string(),
+  "urls": zod.array(zod.string()),
+  "intendedUse": zod.string(),
+  "geographyNote": zod.string(),
+  "measurementNote": zod.string()
+})
+})
+
+
+/**
+ * Reuses deterministic skill-overlap matching. The score is not a confidence score, suitability prediction, or employment probability.
+ * @summary Rank role families and list illustrative next skills
+ */
+export const analyzeCareerPathBodyResumeTextMax = 200000;
+
+
+
+export const AnalyzeCareerPathBody = zod.object({
+  "resume_text": zod.string().min(1).max(analyzeCareerPathBodyResumeTextMax)
+})
+
+export const AnalyzeCareerPathResponse = zod.object({
+  "suitable_roles": zod.array(zod.object({
+  "roleFamily": zod.string(),
+  "score": zod.number().describe('Matched skills / skills considered x 100, rounded to one decimal place.'),
+  "skillsConsidered": zod.number().int(),
+  "matchedSkills": zod.array(zod.string()),
+  "missingSkills": zod.array(zod.string())
+})),
+  "growth_path": zod.array(zod.string()),
+  "methodology": zod.string(),
+  "limitations": zod.array(zod.string()),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "publisher": zod.string(),
+  "period": zod.string(),
+  "license": zod.string(),
+  "citation": zod.string(),
+  "urls": zod.array(zod.string()),
+  "intendedUse": zod.string(),
+  "geographyNote": zod.string(),
+  "measurementNote": zod.string()
+})
+})
+
+
+/**
+ * The bundled dataset contains role skill lists but no candidate profiles. The endpoint therefore returns no similar profiles and explains the limitation rather than fabricating peer records.
+ * @summary Return available profile-similarity information
+ */
+export const analyzeProfileSimilarityBodyResumeTextMax = 200000;
+
+
+
+export const AnalyzeProfileSimilarityBody = zod.object({
+  "resume_text": zod.string().min(1).max(analyzeProfileSimilarityBodyResumeTextMax)
+})
+
+export const AnalyzeProfileSimilarityResponse = zod.object({
+  "similar_profiles": zod.array(zod.string()),
+  "common_skills": zod.array(zod.string()),
+  "recommended_next_skills": zod.array(zod.string()),
+  "methodology": zod.string(),
+  "limitations": zod.array(zod.string()),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "publisher": zod.string(),
+  "period": zod.string(),
+  "license": zod.string(),
+  "citation": zod.string(),
+  "urls": zod.array(zod.string()),
+  "intendedUse": zod.string(),
+  "geographyNote": zod.string(),
+  "measurementNote": zod.string()
+})
+})
+
+
+/**
  * @summary List job listings
  */
 export const listJobsQueryPageDefault = 1;
