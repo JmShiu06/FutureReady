@@ -1,0 +1,33 @@
+# Fix Replit Deployment: sentence-transformers Dependency Resolution
+
+My latest Replit deployment fails during Python dependency installation.
+
+Error:
+`No solution found when resolving dependencies for split (markers: python_full_version == '3.11.*' and sys_platform == 'linux')`
+
+`sentence-transformers` versions available to this resolution are reported as `<5` and `>=6`, but the project requires `sentence-transformers>=5,<6`.
+
+Deployment fails at `uv sync`.
+
+## Instructions
+
+1. Inspect `pyproject.toml`, `uv.lock`, any requirements files, Python source files, and the configured package indexes or environment markers.
+
+2. Find why the application requires `sentence-transformers>=5,<6`. Search the codebase for its imports and actual usage.
+
+3. Determine whether `sentence-transformers` is genuinely needed at runtime.
+   - If it is unused or unnecessary, remove the dependency only after confirming that no required functionality relies on it.
+   - If it is needed and the existing code is compatible with the available version 4.x API, consider a compatible `<5` constraint as the minimal-change option.
+   - Otherwise, evaluate upgrading to `sentence-transformers>=6,<7`. Check its Transformers, PyTorch, Python and other dependency requirements first, and adapt the code if necessary.
+
+4. Do not simply change the version range without checking for dependency conflicts. Do not indiscriminately upgrade or remove unrelated packages.
+
+5. Update `pyproject.toml` and regenerate `uv.lock` using `uv lock`. Do not manually edit the lockfile to hide the conflict.
+
+6. Verify the fix using the same Linux/Python 3.11 dependency-resolution environment as the failed deployment. Run `uv sync` and the relevant tests, type checks and builds.
+
+7. Check whether `sentence-transformers` was recently added for a feature that can work without it. Do not remove a required feature merely to make deployment pass.
+
+8. Report the root cause, exact files changed, chosen version constraint, dependency compatibility findings and verification results.
+
+Make the smallest safe fix. Do not claim the deployment is repaired until dependency installation succeeds.
