@@ -1057,3 +1057,127 @@ export const GetSkillFrequenciesResponse = zod.object({
 })
 
 
+/**
+ * Returns reviewed MyCOL 2024/2025 occupations, their MASCO-to-O*NET mappings and O*NET 31.0 skills documented for each mapped occupation, with exact normalized overlap against the supplied skills. MyCOL status is a TalentCorp classification and O*NET is United States reference data; neither is a hiring probability or a measure of Malaysian demand. Unverified mappings and occupations without O*NET skill ratings are excluded from recommendations.
+ * @summary Compare profile skills with O*NET skills for mapped MyCOL critical occupations
+ */
+export const matchOccupationEvidenceBodySkillsItemMax = 60;
+
+export const matchOccupationEvidenceBodySkillsMax = 50;
+
+
+
+export const MatchOccupationEvidenceBody = zod.object({
+  "skills": zod.array(zod.string().min(1).max(matchOccupationEvidenceBodySkillsItemMax)).max(matchOccupationEvidenceBodySkillsMax)
+})
+
+export const MatchOccupationEvidenceResponse = zod.object({
+  "normalizedSkills": zod.array(zod.string()),
+  "selectionRule": zod.string(),
+  "scoring": zod.string(),
+  "sources": zod.object({
+  "mycol": zod.object({
+  "edition": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "landingUrl": zod.string(),
+  "reportUrl": zod.string(),
+  "reportSha256": zod.string(),
+  "referencePeriod": zod.string(),
+  "publicationDate": zod.string().nullable().describe('Not stated in the report; null is intentional.'),
+  "classification": zod.string(),
+  "listReference": zod.string(),
+  "totalOccupationsListed": zod.number().int(),
+  "reviewedAt": zod.string(),
+  "scopeNote": zod.string(),
+  "masco6Note": zod.string()
+}),
+  "onet": zod.object({
+  "name": zod.string(),
+  "release": zod.string(),
+  "releaseDate": zod.string(),
+  "taxonomy": zod.string(),
+  "databaseUrl": zod.string(),
+  "releasesUrl": zod.string(),
+  "license": zod.string(),
+  "licenseUrl": zod.string(),
+  "licensePageUrl": zod.string(),
+  "attribution": zod.string(),
+  "modifications": zod.string(),
+  "files": zod.array(zod.object({
+  "name": zod.string(),
+  "url": zod.string(),
+  "sha256": zod.string()
+})),
+  "scales": zod.object({
+  "importance": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "minimum": zod.number(),
+  "maximum": zod.number()
+}),
+  "level": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "minimum": zod.number(),
+  "maximum": zod.number()
+})
+}),
+  "localDemandNote": zod.string()
+}),
+  "mapping": zod.object({
+  "reviewedAt": zod.string(),
+  "method": zod.string()
+})
+}),
+  "occupations": zod.array(zod.object({
+  "id": zod.string(),
+  "mycol": zod.object({
+  "masco4": zod.string(),
+  "title": zod.string(),
+  "table7Number": zod.number().int(),
+  "masco6": zod.array(zod.string()),
+  "includedJobTitles": zod.array(zod.string()),
+  "profilePage": zod.number().int().describe('Printed report page of the occupation profile.'),
+  "edition": zod.string()
+}),
+  "onet": zod.object({
+  "code": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "url": zod.string(),
+  "skillRatingsAvailable": zod.boolean(),
+  "ratedSkillsCount": zod.number().int()
+}),
+  "mapping": zod.object({
+  "relation": zod.enum(['exact', 'approximate', 'broader', 'narrower']).describe('The O*NET occupation relative to the MyCOL scope.'),
+  "status": zod.enum(['verified', 'unverified']),
+  "rationale": zod.string(),
+  "limitations": zod.string()
+}),
+  "recommendationStatus": zod.enum(['eligible', 'excluded']),
+  "recommended": zod.boolean(),
+  "exclusionReason": zod.string().nullable(),
+  "documentedSkills": zod.array(zod.object({
+  "elementId": zod.string(),
+  "name": zod.string(),
+  "domain": zod.enum(['Essential', 'Transferable']),
+  "description": zod.string().nullable(),
+  "importance": zod.number().describe('O*NET Importance rating on its original 1-5 scale.'),
+  "level": zod.number().describe('O*NET Level rating on its original 0-7 scale. Not a 1-5 profile proficiency target.'),
+  "levelLowPrecision": zod.boolean().describe('O*NET\'s Recommend Suppress (low precision) flag for the Level rating.'),
+  "sampleSize": zod.number().int().nullable(),
+  "ratingDate": zod.string(),
+  "inProfile": zod.boolean()
+})),
+  "overlap": zod.union([zod.object({
+  "matchedSkills": zod.array(zod.string()),
+  "missingSkills": zod.array(zod.string()),
+  "skillsConsidered": zod.number().int(),
+  "score": zod.number().describe('Matched documented skills / documented skills x 100. Skill overlap only, not a hiring probability.')
+}),zod.null()]),
+  "explanation": zod.string()
+}))
+})
+
+

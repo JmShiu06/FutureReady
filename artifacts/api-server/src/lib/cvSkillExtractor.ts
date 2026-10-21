@@ -41,26 +41,67 @@ function skillPattern(skill: string): RegExp {
   return new RegExp(`(?<![\\p{L}\\p{N}_+#/-])(?<![\\p{L}\\p{N}_]\\.)${escaped}(?![\\p{L}\\p{N}_+#/-]|\\.[\\p{L}\\p{N}_])`, "giu");
 }
 
-function detectExactSkills(text: string, catalogue = careerDataset.allSkills): string[] {
+const GENERIC_SKILLS = new Set(["data", "software"]);
+
+interface CompiledSkill {
+  skill: string;
+  pattern: RegExp;
+  /** ASCII alphanumeric runs that must all be whole tokens of the text; null when no safe pre-check exists. */
+  tokens: string[] | null;
+}
+
+// Patterns are compiled once per catalogue instead of on every upload.
+const compiledCatalogues = new WeakMap<readonly string[], CompiledSkill[]>();
+
+function compileCatalogue(catalogue: readonly string[]): CompiledSkill[] {
+  let compiled = compiledCatalogues.get(catalogue);
+  if (!compiled) {
+    compiled = catalogue.map((name) => {
+      const skill = normalizeSkill(name);
+      // A match of an ASCII-only skill is bounded by non-alphanumerics, so each
+      // of its alphanumeric runs is a whole token of the lower-cased NFKC text.
+      // Checking a token set skips the regex scan for skills absent from a CV.
+      return { skill, pattern: skillPattern(skill), tokens: /^[\x00-\x7f]*$/.test(skill) ? asciiTokens(skill) : null };
+    });
+    compiledCatalogues.set(catalogue, compiled);
+  }
+  return compiled;
+}
+
+function asciiTokens(text: string): string[] {
+  return text.split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+function detectExactSkills(text: string, catalogue: readonly string[] = careerDataset.allSkills): string[] {
   const normalized = text.normalize("NFKC");
-  const explicitSkillLines = normalized.split(/\r?\n/).flatMap((line) => {
-    const match = line.match(/^\s*(?:technical\s+)?(?:skills?|competencies)\s*[:–-]\s*(.*)$/i);
-    return match ? [match[1]] : [];
-  }).join("\n");
+  const textTokens = new Set(asciiTokens(normalized.toLowerCase()));
+  let explicitSkillLines: string | undefined;
   const candidates: { skill: string; start: number; end: number }[] = [];
-  for (const name of catalogue) {
-    const skill = normalizeSkill(name);
+  for (const { skill, pattern, tokens } of compileCatalogue(catalogue)) {
+    if (tokens && !tokens.every((token) => textTokens.has(token))) continue;
     // Generic terms are evidence only when explicitly listed as skills.
-    if (["data", "software"].includes(skill) && !skillPattern(skill).test(explicitSkillLines)) continue;
-    for (const match of normalized.matchAll(skillPattern(skill))) {
+    if (GENERIC_SKILLS.has(skill)) {
+      explicitSkillLines ??= normalized.split(/\r?\n/).flatMap((line) => {
+        const match = line.match(/^\s*(?:technical\s+)?(?:skills?|competencies)\s*[:–-]\s*(.*)$/i);
+        return match ? [match[1]] : [];
+      }).join("\n");
+      pattern.lastIndex = 0;
+      if (!pattern.test(explicitSkillLines)) continue;
+    }
+    pattern.lastIndex = 0;
+    for (const match of normalized.matchAll(pattern)) {
       candidates.push({ skill, start: match.index!, end: match.index! + match[0].length });
     }
   }
   candidates.sort((a, b) => a.start - b.start || b.end - a.end || a.skill.localeCompare(b.skill));
+  // Candidates are ordered by start, so a candidate overlaps an earlier
+  // selection exactly when it starts before the furthest selected end.
   const selected: typeof candidates = [];
+  let selectedEnd = -1;
   for (const candidate of candidates) {
-    if (!selected.some((item) => candidate.start < item.end && candidate.end > item.start)) {
+    if (candidate.start >= selectedEnd) {
       selected.push(candidate);
+      selectedEnd = candidate.end;
     }
   }
   return [...new Set(selected.map((item) => item.skill))];

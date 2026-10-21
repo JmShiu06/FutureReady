@@ -1,0 +1,127 @@
+# SkillShift AI — Update and Merge Latest Features into Existing Replit Project
+
+You are a senior full-stack developer working on our SDC Hackathon 2026 SkillShift AI project.
+
+## Project Information
+
+**Destination:** This current Replit project, which contains our team's existing work.
+
+**Source:** Our latest GitHub repository:
+https://github.com/Imposter1083/skillshift-ai
+
+**Source branch:** `claude/laughing-rubin-23p2zm`
+
+**Previously verified merged commit:** `2978eb15858d7f82bcce424031575bdf6af986df`
+
+IMPORTANT: There may be newer commits after this one. Inspect the source branch's latest commit and compare it with the current Replit project.
+
+## Objective
+
+Merge only the NEW or UPDATED features from the GitHub source into this existing Replit project.
+
+Our team has continued developing features independently, so both projects may contain changes that must be preserved.
+
+**DO NOT overwrite, reset, or replace the entire Replit project.**
+
+## Step 1 — Inspect and Compare
+
+1. Inspect all existing features and files in this Replit project.
+2. Retrieve the latest source branch from GitHub.
+3. Compare both projects at the file and feature level.
+4. Identify features added or modified on either side.
+5. Determine which changes can be integrated automatically and which require manual conflict resolution.
+6. Show a short comparison summary before making changes.
+
+Do not assume GitHub is always better. Preserve whichever implementation is more complete and functional.
+
+If you cannot access the GitHub source, ask me for the latest ZIP file.
+
+## Step 2 — Back Up Existing Work
+
+Before modifying anything:
+
+- Create a Replit checkpoint or Git backup branch.
+- Preserve all uncommitted changes.
+- Preserve the existing `.replit` configuration.
+- Preserve environment variables, secrets and deployment settings.
+- Do not use `git reset --hard`, `git clean -fd`, force-push or destructive file replacement.
+
+## Step 3 — Integrate New Features
+
+Preserve and properly integrate existing and newly updated functionality, including:
+
+1. Skills Profile and custom skill entry.
+2. CV Analysis and its four backend endpoints.
+3. Career Explorer and career matching.
+4. TalentCorp MyCOL and O*NET occupation evidence.
+5. DOSM labour market statistics and refresh functionality.
+6. Skills Radar, AI announcements and skill-frequency panels.
+7. Job Search and labour-market information.
+8. Career Digital Twin and AI adoption scenarios.
+9. Learning Roadmap and learning resources.
+10. SDG mappings and evidence attribution.
+11. Any newly implemented improvements discovered in the latest commits.
+
+If the latest source contains the searchable skills catalogue and profile persistence upgrade, integrate them without removing the team's existing profile functionality.
+
+Keep the existing career-matching calculations and reviewed related-skill synonym rules consistent. Do not introduce duplicated scoring engines.
+
+## Step 4 — Resolve Conflicts
+
+Pay special attention to:
+
+- `App.tsx` and navigation routes.
+- `careerMatcher.ts`.
+- `cvSkillExtractor.ts`.
+- `openapi.yaml`.
+- Generated API clients and schemas.
+- Profile components and storage.
+- Skills Radar and DOSM panels.
+- Frontend/backend dependencies.
+
+When API contracts change, regenerate the API clients rather than manually modifying generated code.
+
+Preserve all necessary Replit workflows and port configuration.
+
+## Step 5 — Test Everything
+
+After integration:
+
+- Run `pnpm install` if dependencies changed.
+- Run the relevant frontend typecheck and production build.
+- Run backend tests and production build.
+- Verify all four CV Analysis endpoints.
+- Verify POST `/api/occupations/match` returns a successful response.
+- Verify Career Explorer displays official occupation evidence.
+- Verify profile skills are retained correctly.
+- Verify Skills Radar and DOSM data loading.
+- Verify Job Search, Digital Twin, Roadmap and SDG features.
+- Restart the backend and frontend services correctly.
+- Check that Replit Preview loads without errors.
+
+Do not claim an API is working unless it has been tested.
+
+## Step 6 — Report Results
+
+Provide a final report containing:
+
+1. Source and destination commit information.
+2. New features successfully integrated.
+3. Existing Replit features preserved.
+4. Files changed.
+5. Conflicts resolved.
+6. Tests passed and failed.
+7. Remaining bugs or limitations.
+8. Whether the Replit Preview is working.
+
+## Important Instructions
+
+This is an INCREMENTAL MERGE, not a new project.
+
+Do not redesign our website or remove completed team features.
+
+Do not publish or deploy without my approval.
+
+**First inspect and compare both projects, then proceed with the safe merge if there are no destructive conflicts. If any change could overwrite or remove team work, stop and ask for approval for that conflict.**
+
+Our hackathon preliminary deadline is October 25, 2026. Prioritise a fully functional integrated application over unnecessary new features.

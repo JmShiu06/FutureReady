@@ -8,6 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "test": "NODE_ENV=production LOG_LEVEL=silent tsx --test src/lib/*.test.ts src/routes/*.test.ts",
+    "import:onet": "tsx src/data/occupation-evidence/import-onet.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

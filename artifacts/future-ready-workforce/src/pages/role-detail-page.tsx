@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link, useParams } from 'wouter';
 import { ArrowLeft, BriefcaseBusiness, Leaf, Target } from 'lucide-react';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
+import { OccupationEvidenceDetail } from '@/components/workspace/occupation-evidence';
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoRoles, sdgGoals, sdgMappings } from '@/domain/demo-data';
 import { assessRole, methodology } from '@/domain/services';
@@ -9,7 +10,13 @@ import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, EvidencePanel, GapStatus, PriorityTag, SectionTitle } from '@/components/workspace/ui';
 
 export default function RoleDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id = '' } = useParams<{ id: string }>();
+  return id.startsWith('mycol-')
+    ? <OccupationEvidenceDetail id={id} />
+    : <SampleRoleDetail id={id} />;
+}
+
+function SampleRoleDetail({ id }: { id: string }) {
   const { profile } = useWorkspace();
   const role = demoRoles.find(r => r.id === id);
   const a = useMemo(() => role ? assessRole(profile, role) : null, [profile, role]);

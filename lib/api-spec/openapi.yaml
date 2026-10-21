@@ -16,6 +16,8 @@ tags:
     description: Official DOSM labour-force and Job Market Insights data
   - name: learning
     description: Sentence-transformer course recommendations and estimated learning roadmaps
+  - name: occupations
+    description: Reviewed MyCOL occupations and O*NET skill evidence
 paths:
   /healthz:
     get:
@@ -559,6 +561,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SkillFrequenciesResponse"
+  /occupations/match:
+    post:
+      operationId: matchOccupationEvidence
+      tags: [occupations]
+      summary: Compare profile skills with O*NET skills for mapped MyCOL critical occupations
+      description: >
+        Returns reviewed MyCOL 2024/2025 occupations, their MASCO-to-O*NET mappings and
+        O*NET 31.0 skills documented for each mapped occupation, with exact normalized overlap
+        against the supplied skills. MyCOL status is a TalentCorp classification and O*NET is
+        United States reference data; neither is a hiring probability or a measure of Malaysian
+        demand. Unverified mappings and occupations without O*NET skill ratings are excluded
+        from recommendations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OccupationSkillsInput"
+      responses:
+        "200":
+          description: Occupation evidence with source metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OccupationEvidenceResult"
+        "400":
+          description: Invalid skills input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   parameters:
     JobPage:
@@ -1665,4 +1698,274 @@ components:
           type: string
           format: date
       required: [status, retrievedAt, observationsLoaded, latestObservationDate]
+    OccupationSkillsInput:
+      type: object
+      properties:
+        skills:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+            maxLength: 60
+      required: [skills]
+    OccupationScale:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        minimum:
+          type: number
+        maximum:
+          type: number
+      required: [id, name, minimum, maximum]
+    OccupationSourceFile:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        sha256:
+          type: string
+      required: [name, url, sha256]
+    MycolSource:
+      type: object
+      properties:
+        edition:
+          type: string
+        title:
+          type: string
+        publisher:
+          type: string
+        landingUrl:
+          type: string
+        reportUrl:
+          type: string
+        reportSha256:
+          type: string
+        referencePeriod:
+          type: string
+        publicationDate:
+          type: ["string", "null"]
+          description: Not stated in the report; null is intentional.
+        classification:
+          type: string
+        listReference:
+          type: string
+        totalOccupationsListed:
+          type: integer
+        reviewedAt:
+          type: string
+        scopeNote:
+          type: string
+        masco6Note:
+          type: string
+      required: [edition, title, publisher, landingUrl, reportUrl, reportSha256, referencePeriod, publicationDate, classification, listReference, totalOccupationsListed, reviewedAt, scopeNote, masco6Note]
+    OnetSource:
+      type: object
+      properties:
+        name:
+          type: string
+        release:
+          type: string
+        releaseDate:
+          type: string
+        taxonomy:
+          type: string
+        databaseUrl:
+          type: string
+        releasesUrl:
+          type: string
+        license:
+          type: string
+        licenseUrl:
+          type: string
+        licensePageUrl:
+          type: string
+        attribution:
+          type: string
+        modifications:
+          type: string
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/OccupationSourceFile"
+        scales:
+          type: object
+          properties:
+            importance:
+              $ref: "#/components/schemas/OccupationScale"
+            level:
+              $ref: "#/components/schemas/OccupationScale"
+          required: [importance, level]
+        localDemandNote:
+          type: string
+      required: [name, release, releaseDate, taxonomy, databaseUrl, releasesUrl, license, licenseUrl, licensePageUrl, attribution, modifications, files, scales, localDemandNote]
+    OccupationMappingReview:
+      type: object
+      properties:
+        reviewedAt:
+          type: string
+        method:
+          type: string
+      required: [reviewedAt, method]
+    OccupationEvidenceSources:
+      type: object
+      properties:
+        mycol:
+          $ref: "#/components/schemas/MycolSource"
+        onet:
+          $ref: "#/components/schemas/OnetSource"
+        mapping:
+          $ref: "#/components/schemas/OccupationMappingReview"
+      required: [mycol, onet, mapping]
+    MycolOccupation:
+      type: object
+      properties:
+        masco4:
+          type: string
+        title:
+          type: string
+        table7Number:
+          type: integer
+        masco6:
+          type: array
+          items:
+            type: string
+        includedJobTitles:
+          type: array
+          items:
+            type: string
+        profilePage:
+          type: integer
+          description: Printed report page of the occupation profile.
+        edition:
+          type: string
+      required: [masco4, title, table7Number, masco6, includedJobTitles, profilePage, edition]
+    OnetOccupation:
+      type: object
+      properties:
+        code:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        skillRatingsAvailable:
+          type: boolean
+        ratedSkillsCount:
+          type: integer
+      required: [code, title, description, url, skillRatingsAvailable, ratedSkillsCount]
+    OccupationMapping:
+      type: object
+      properties:
+        relation:
+          type: string
+          enum: [exact, approximate, broader, narrower]
+          description: The O*NET occupation relative to the MyCOL scope.
+        status:
+          type: string
+          enum: [verified, unverified]
+        rationale:
+          type: string
+        limitations:
+          type: string
+      required: [relation, status, rationale, limitations]
+    DocumentedSkill:
+      type: object
+      properties:
+        elementId:
+          type: string
+        name:
+          type: string
+        domain:
+          type: string
+          enum: [Essential, Transferable]
+        description:
+          type: ["string", "null"]
+        importance:
+          type: number
+          description: O*NET Importance rating on its original 1-5 scale.
+        level:
+          type: number
+          description: O*NET Level rating on its original 0-7 scale. Not a 1-5 profile proficiency target.
+        levelLowPrecision:
+          type: boolean
+          description: O*NET's Recommend Suppress (low precision) flag for the Level rating.
+        sampleSize:
+          type: ["integer", "null"]
+        ratingDate:
+          type: string
+        inProfile:
+          type: boolean
+      required: [elementId, name, domain, description, importance, level, levelLowPrecision, sampleSize, ratingDate, inProfile]
+    OccupationOverlap:
+      type: object
+      properties:
+        matchedSkills:
+          type: array
+          items:
+            type: string
+        missingSkills:
+          type: array
+          items:
+            type: string
+        skillsConsidered:
+          type: integer
+        score:
+          type: number
+          description: Matched documented skills / documented skills x 100. Skill overlap only, not a hiring probability.
+      required: [matchedSkills, missingSkills, skillsConsidered, score]
+    OccupationEvidence:
+      type: object
+      properties:
+        id:
+          type: string
+        mycol:
+          $ref: "#/components/schemas/MycolOccupation"
+        onet:
+          $ref: "#/components/schemas/OnetOccupation"
+        mapping:
+          $ref: "#/components/schemas/OccupationMapping"
+        recommendationStatus:
+          type: string
+          enum: [eligible, excluded]
+        recommended:
+          type: boolean
+        exclusionReason:
+          type: ["string", "null"]
+        documentedSkills:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentedSkill"
+        overlap:
+          oneOf:
+            - $ref: "#/components/schemas/OccupationOverlap"
+            - type: "null"
+        explanation:
+          type: string
+      required: [id, mycol, onet, mapping, recommendationStatus, recommended, exclusionReason, documentedSkills, overlap, explanation]
+    OccupationEvidenceResult:
+      type: object
+      properties:
+        normalizedSkills:
+          type: array
+          items:
+            type: string
+        selectionRule:
+          type: string
+        scoring:
+          type: string
+        sources:
+          $ref: "#/components/schemas/OccupationEvidenceSources"
+        occupations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OccupationEvidence"
+      required: [normalizedSkills, selectionRule, scoring, sources, occupations]
 

@@ -738,6 +738,195 @@ export interface DosmRefreshResponse {
   latestObservationDate: string;
 }
 
+export interface OccupationSkillsInput {
+  /**
+     * @maxItems 50
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  skills: string[];
+}
+
+export interface OccupationScale {
+  id: string;
+  name: string;
+  minimum: number;
+  maximum: number;
+}
+
+export interface OccupationSourceFile {
+  name: string;
+  url: string;
+  sha256: string;
+}
+
+export interface MycolSource {
+  edition: string;
+  title: string;
+  publisher: string;
+  landingUrl: string;
+  reportUrl: string;
+  reportSha256: string;
+  referencePeriod: string;
+  /**
+     * Not stated in the report; null is intentional.
+     * @nullable
+     */
+  publicationDate: string | null;
+  classification: string;
+  listReference: string;
+  totalOccupationsListed: number;
+  reviewedAt: string;
+  scopeNote: string;
+  masco6Note: string;
+}
+
+export type OnetSourceScales = {
+  importance: OccupationScale;
+  level: OccupationScale;
+};
+
+export interface OnetSource {
+  name: string;
+  release: string;
+  releaseDate: string;
+  taxonomy: string;
+  databaseUrl: string;
+  releasesUrl: string;
+  license: string;
+  licenseUrl: string;
+  licensePageUrl: string;
+  attribution: string;
+  modifications: string;
+  files: OccupationSourceFile[];
+  scales: OnetSourceScales;
+  localDemandNote: string;
+}
+
+export interface OccupationMappingReview {
+  reviewedAt: string;
+  method: string;
+}
+
+export interface OccupationEvidenceSources {
+  mycol: MycolSource;
+  onet: OnetSource;
+  mapping: OccupationMappingReview;
+}
+
+export interface MycolOccupation {
+  masco4: string;
+  title: string;
+  table7Number: number;
+  masco6: string[];
+  includedJobTitles: string[];
+  /** Printed report page of the occupation profile. */
+  profilePage: number;
+  edition: string;
+}
+
+export interface OnetOccupation {
+  code: string;
+  title: string;
+  description: string;
+  url: string;
+  skillRatingsAvailable: boolean;
+  ratedSkillsCount: number;
+}
+
+/**
+ * The O*NET occupation relative to the MyCOL scope.
+ */
+export type OccupationMappingRelation = typeof OccupationMappingRelation[keyof typeof OccupationMappingRelation];
+
+
+export const OccupationMappingRelation = {
+  exact: 'exact',
+  approximate: 'approximate',
+  broader: 'broader',
+  narrower: 'narrower',
+} as const;
+
+export type OccupationMappingStatus = typeof OccupationMappingStatus[keyof typeof OccupationMappingStatus];
+
+
+export const OccupationMappingStatus = {
+  verified: 'verified',
+  unverified: 'unverified',
+} as const;
+
+export interface OccupationMapping {
+  /** The O*NET occupation relative to the MyCOL scope. */
+  relation: OccupationMappingRelation;
+  status: OccupationMappingStatus;
+  rationale: string;
+  limitations: string;
+}
+
+export type DocumentedSkillDomain = typeof DocumentedSkillDomain[keyof typeof DocumentedSkillDomain];
+
+
+export const DocumentedSkillDomain = {
+  Essential: 'Essential',
+  Transferable: 'Transferable',
+} as const;
+
+export interface DocumentedSkill {
+  elementId: string;
+  name: string;
+  domain: DocumentedSkillDomain;
+  /** @nullable */
+  description: string | null;
+  /** O*NET Importance rating on its original 1-5 scale. */
+  importance: number;
+  /** O*NET Level rating on its original 0-7 scale. Not a 1-5 profile proficiency target. */
+  level: number;
+  /** O*NET's Recommend Suppress (low precision) flag for the Level rating. */
+  levelLowPrecision: boolean;
+  /** @nullable */
+  sampleSize: number | null;
+  ratingDate: string;
+  inProfile: boolean;
+}
+
+export interface OccupationOverlap {
+  matchedSkills: string[];
+  missingSkills: string[];
+  skillsConsidered: number;
+  /** Matched documented skills / documented skills x 100. Skill overlap only, not a hiring probability. */
+  score: number;
+}
+
+export type OccupationEvidenceRecommendationStatus = typeof OccupationEvidenceRecommendationStatus[keyof typeof OccupationEvidenceRecommendationStatus];
+
+
+export const OccupationEvidenceRecommendationStatus = {
+  eligible: 'eligible',
+  excluded: 'excluded',
+} as const;
+
+export interface OccupationEvidence {
+  id: string;
+  mycol: MycolOccupation;
+  onet: OnetOccupation;
+  mapping: OccupationMapping;
+  recommendationStatus: OccupationEvidenceRecommendationStatus;
+  recommended: boolean;
+  /** @nullable */
+  exclusionReason: string | null;
+  documentedSkills: DocumentedSkill[];
+  overlap: OccupationOverlap | null;
+  explanation: string;
+}
+
+export interface OccupationEvidenceResult {
+  normalizedSkills: string[];
+  selectionRule: string;
+  scoring: string;
+  sources: OccupationEvidenceSources;
+  occupations: OccupationEvidence[];
+}
+
 export type JobPageParameter = number;
 
 export type JobLimitParameter = number;
