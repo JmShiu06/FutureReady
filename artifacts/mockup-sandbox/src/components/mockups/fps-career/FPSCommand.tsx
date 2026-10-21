@@ -92,7 +92,20 @@ export function FPSCommand() {
     <div className="fps-grain" aria-hidden="true" />
     <aside className="fps-rail">
       <div className="fps-brand" aria-label="FutureReady Workforce">
-        <span className="fps-brand-mark"><Crosshair size={20} strokeWidth={2.2} /></span>
+        <span className="fps-brand-mark">
+          <svg className="fps-brand-mascot" viewBox="0 0 36 36" fill="none" role="img" aria-label="Raccoon and chili pepper emblem">
+            <path d="M6.1 13.5 7.2 5.2c.2-1.3 1.8-1.8 2.7-.9l5.2 5.2h5.8l5.2-5.2c.9-.9 2.5-.4 2.7.9l1.1 8.3c1.2 2.1 1.9 4.4 1.9 6.8 0 7.1-5.9 12.6-13.8 12.6S4.2 27.4 4.2 20.3c0-2.4.7-4.7 1.9-6.8Z" fill="#F2ECE2"/>
+            <path d="m7.7 18.2 7.8-3.1-1.1 5.5-5.2 3.7-3.8-2.2.4-2.3c.2-.7.8-1.3 1.9-1.6Zm20.6 0-7.8-3.1 1.1 5.5 5.2 3.7 3.8-2.2-.4-2.3c-.2-.7-.8-1.3-1.9-1.6Z" fill="#293731"/>
+            <ellipse cx="12.1" cy="19.1" rx="1.25" ry="1.45" fill="#F2ECE2"/>
+            <ellipse cx="23.9" cy="19.1" rx="1.25" ry="1.45" fill="#F2ECE2"/>
+            <path d="M16.3 22.8c.5-.6 1.1-.9 1.7-.9s1.2.3 1.7.9c-.2 1.1-.8 1.7-1.7 1.7s-1.5-.6-1.7-1.7Z" fill="#293731"/>
+            <path d="M18 24.3c-1.2 1.8-2.9 2.7-5.2 2.7" stroke="#293731" strokeWidth="1.1" strokeLinecap="round"/>
+            <path d="M18 24.3c1.2 1.8 2.9 2.7 5.2 2.7" stroke="#293731" strokeWidth="1.1" strokeLinecap="round"/>
+            <path d="M25 9.5c2.4 1.1 4.1 2.9 4.6 5.2" stroke="#E2A17D" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M24.6 10.6c-1.1 2.4-1.2 5.8.2 8.1 1.4 2.4 3.4 3.2 4.7 2.2 1-.8.8-2.5-.3-4.1-1.3-1.9-1.8-3.7-1.6-5.1.1-1-1.1-1.6-3-1.1Z" fill="#BD5B2C" stroke="#8E432A" strokeWidth=".65"/>
+            <path d="M25.1 10.6c-.4-1.3.1-2.4 1.5-3.1.1 1.2.8 1.8 2 1.9" stroke="#8FA08D" strokeWidth="1.25" strokeLinecap="round"/>
+          </svg>
+        </span>
         <span className="fps-brand-copy">FUTUREREADY<small>WORKFORCE INTELLIGENCE</small></span>
       </div>
       <div className="fps-rail-label">COMMAND DECK <span>•</span></div>
