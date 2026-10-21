@@ -1,0 +1,128 @@
+# Task — CV Upload and Automatic Skill Extraction
+
+## Objective
+
+Implement a working CV upload feature in my existing FutureReady Workforce project.
+
+The intended user journey is:
+
+**Upload CV → Extract text → Detect skills → Review skills → Find matching careers → Compare relevant job listings.**
+
+The existing career-matching feature (Task #4) is already implemented and tested. My teammate has also implemented Job Search. Extend the current application rather than creating another app or replacing these features.
+
+## Phase 1 — Inspect the existing project
+
+Before editing code:
+
+1. Inspect the existing React + TypeScript + Vite frontend and Express + TypeScript backend.
+2. Inspect the career-matching API, its JSON dataset, the generated API client, the user's current skill-profile storage, and the Job Search feature.
+3. Identify where CV upload and skill review should fit naturally into the existing interface.
+4. Briefly report the files you intend to change and which document-processing libraries you plan to use.
+
+Preserve the existing orange-and-cream visual style and follow the project's existing architecture.
+
+## Phase 2 — Implement CV file upload
+
+Allow users to upload:
+- PDF
+- DOCX
+- TXT
+
+Use compatible open-source Node.js libraries to extract text. For example, consider `pdf-parse` for PDFs and `mammoth` for DOCX after inspecting the project's Node.js version and dependency setup.
+
+Requirements:
+- Process uploaded files in memory where practical.
+- Set a reasonable file-size limit, such as 5 MB.
+- Validate file types, size, and parsing results on the server.
+- Reject empty, malformed, unsupported, or oversized files with understandable error messages.
+- Do not log CV contents or retain uploaded files unnecessarily.
+- Do not store uploaded CVs or full extracted text in the database or permanent files.
+- Do not send CV contents to external services.
+
+For scanned or image-based PDFs, if ordinary text extraction returns no useful text, display a clear message explaining that the document may require OCR. Do not pretend to extract text that the parser could not read.
+
+## Phase 3 — Detect skills without an LLM
+
+Use the existing `career_roles_test.json` dataset as the source of the recognised career skills.
+
+The dataset contains 15 role families and 227 distinct skill names. Load it using the existing backend data-loading conventions rather than duplicating the dataset in frontend code.
+
+Implement deterministic skill extraction:
+- Normalize letter casing and whitespace.
+- Match actual skill names as complete terms or phrases, not arbitrary substrings.
+- Preserve meaningful punctuation in names such as `node.js`, `ci/cd`, `react.js`, `c++`, and `c#`.
+- Avoid incorrectly identifying `ai` inside `ai/ml`, or matching generic words inside unrelated words.
+- Be careful with ambiguous, generic terms such as `data` and `software`. Do not automatically treat every occurrence of a common word as proof of a specific technical skill.
+- Deduplicate identified skills.
+- Keep the skill-matching rules transparent and testable.
+- Do not invent skills or silently infer skills that are absent from the CV.
+
+Do not add an LLM, model hosting, paid API, or RunPod integration. Do not install OCR dependencies unless a clear need is established and the additional cost and complexity are justified.
+
+## Phase 4 — Let users review their extracted skills
+
+Make CV upload the primary workflow for users who want automatic matching, while retaining manual skill entry as an alternative.
+
+After extraction:
+1. Display the recognised skills as editable chips or tags.
+2. Show the uploaded filename and the processing status without retaining the file.
+3. Let users remove incorrectly detected skills and manually add missing ones.
+4. Provide a clear button to calculate career matches.
+5. Explain that extraction may miss skills or identify irrelevant terms, so users should review the result.
+
+Do not automatically add extracted skills to a saved profile until the user confirms them.
+
+## Phase 5 — Connect the existing matching features
+
+When the user confirms their skills:
+
+1. Reuse the existing career-matching API and scoring implementation from Task #4.
+2. Do not duplicate or reimplement the matching formula in the frontend.
+3. Show the ranked career families, existing overlap scores, matched skills, and missing skills.
+4. Where appropriate, make the confirmed skill profile available to the existing Job Search feature so job-listing overlap scores use the same skills.
+5. Preserve the dataset's source attribution and limitations. Explain that overlap scores are not employment probabilities and that the dataset is not Malaysia-specific.
+
+Retain appropriate loading, empty, success, and error states.
+
+## Phase 6 — Security and reliability
+
+- Handle uploaded files on the server, not solely in the browser.
+- Validate the actual file format as well as its extension and declared MIME type where feasible.
+- Prevent uploaded filenames from being used as filesystem paths.
+- Apply appropriate request limits and safe error handling.
+- Do not expose extracted CV text, sensitive personal information, stack traces, or internal paths in user-facing errors.
+- Clean up any temporary resources reliably.
+- Do not introduce a new database or persist CV contents.
+
+## Phase 7 — Test the complete workflow
+
+Add or update tests for:
+
+- TXT, DOCX and PDF extraction.
+- Unsupported formats, oversized files, malformed documents and empty files.
+- Case and whitespace normalization.
+- Punctuation-sensitive skills such as `node.js`, `ci/cd`, `c++`, and `c#`.
+- False substring matches and ambiguous common words.
+- Duplicate skills.
+- User-added and user-removed skills.
+- Passing the reviewed skills to the existing career-matching API.
+- Correct API error responses and cleanup of uploaded files.
+
+Use synthetic CV fixtures for tests rather than real people's CVs.
+
+Run the relevant API tests, typechecks, and frontend/backend production builds. Where possible, test the full flow in a browser.
+
+After implementation, report:
+1. Files changed.
+2. Dependencies added and why.
+3. Tests and builds that passed or failed.
+4. What is actually verified in the browser.
+5. Any remaining limitations.
+
+Do not claim the feature is finished until the tests have actually run.
+
+## Scope restrictions
+
+Do not create a new project, redesign unrelated dashboard sections, rewrite the Job Search feature, replace the existing career-matching engine, or add an LLM.
+
+Implement this as a small, testable extension of the current application. If you discover an architectural conflict, explain it before making a broad change.
