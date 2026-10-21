@@ -116,10 +116,10 @@ export function FPSCommand() {
       <div className="fps-content">
         <div className="fps-page-heading">
           <div><div className="fps-eyebrow"><span className="fps-eyebrow-line" /> FIELD BRIEFING <span className="fps-eyebrow-muted">/ 18 JUN · PERSONAL WORKSPACE</span></div>
-            <h1>{view === 'briefing' ? <>YOUR NEXT MOVE,<br /><em>IN CLEAR SIGHT.</em></> : <>{pageTitle.toUpperCase()}<br /><em>YOUR NEXT ADVANTAGE.</em></>}</h1>
+            <h1>{view === 'briefing' ? <>Your next move,<br /><em>in clear sight.</em></> : <>{pageTitle}<br /><em>your next advantage.</em></>}</h1>
             <p className="fps-deck">{view === 'briefing' ? 'Your experience already travels. Map the skills you carry to roles you could grow into.' : view === 'loadout' ? 'Tune your current skill profile. Your changes update the role overlap preview immediately.' : view === 'intel' ? 'A small set of illustrative signals to help you think about skills in motion.' : 'Build a practical next-step plan around the capabilities you want to grow.'}</p>
           </div>
-          <button className="fps-cv-button" onClick={() => document.getElementById('fps-cv-input')?.click()}><FileText size={15} /> <span>ADD CV<small>LOCAL PICKER ONLY</small></span><ArrowDownRight size={14} /></button>
+          <button className="fps-cv-button" onClick={() => document.getElementById('fps-cv-input')?.click()}><FileText size={15} /> <span>Add a CV<small>Local picker only</small></span><ArrowDownRight size={14} /></button>
         </div>
 
         {view === 'briefing' && <>
