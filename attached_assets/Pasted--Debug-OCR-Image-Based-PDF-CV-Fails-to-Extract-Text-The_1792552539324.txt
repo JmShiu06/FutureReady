@@ -1,0 +1,21 @@
+# Debug OCR — Image-Based PDF CV Fails to Extract Text
+
+The existing CV upload feature cannot read my test résumé, `Screenshot 2026-10-21 100855.pdf`.
+
+I inspected the document. It has one page, and the page contains a résumé image with visible text but no selectable text layer. The existing extractor returns the error: "No selectable text was found in this PDF."
+
+Please debug and fix the existing OCR implementation, not just the error message.
+
+1. Trace the existing CV upload request and identify exactly what happens when ordinary PDF text extraction returns empty text.
+2. Confirm whether the scanned-PDF OCR fallback is implemented, invoked, and working. If it is missing or broken, fix it.
+3. Ensure the backend renders image-only PDF pages to images before passing them to the OCR engine. Use a PDF rendering approach compatible with the existing Replit Node.js production environment.
+4. Verify that the OCR worker, language data, PDF renderer and other required assets are available in both development and production. Do not rely on inaccessible local paths or undocumented external downloads at runtime.
+5. Test the supplied one-page PDF through the actual backend upload endpoint. Verify that OCR retrieves meaningful résumé text and that the existing deterministic skill extractor detects the skills present in the document.
+6. Specifically check for these expected skills where supported by the extracted text: machine learning, Python programming, data analysis, statistical modelling, neural networks, SQL databases, and problem solving.
+7. Ignore irrelevant repeated watermark text where practical. Do not include phone numbers, email addresses, or other unnecessary personal information in logs or debugging output.
+8. Pass the detected skills into the existing editable skill-review interface and career-matching workflow. Do not create a second skill extractor or matching engine.
+9. If OCR still fails, report the actual failure point and diagnostic evidence rather than marking the feature complete.
+
+Run the relevant tests, typechecks and production builds. Verify the upload flow in a browser. Do not modify unrelated dashboard features or commit my personal résumé as a permanent test fixture.
+
+Keep the existing orange-and-cream design and preserve the no-LLM, no-paid-API approach.
