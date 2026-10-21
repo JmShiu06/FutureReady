@@ -1,0 +1,45 @@
+.profile-cv-card { margin-bottom:18px; }
+.profile-cv-heading { display:flex; align-items:flex-start; gap:11px; margin-bottom:14px; }
+.profile-cv-heading h2 { margin:1px 0 3px; color:#3c2d25; font:700 15px var(--display-font); }
+.profile-cv-heading p { margin:0; color:#8a6f5d; font-size:10.5px; line-height:1.5; }
+.profile-cv-icon { width:34px;height:34px; display:grid;place-items:center;flex:none; color:#a94710; background:#fae7d6; border-radius:10px; }
+.profile-cv-drop { position:relative; display:flex; min-height:142px; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:18px; border:1px dashed #d9b79d; border-radius:12px; background:#fffaf4; color:#c2571a; text-align:center; transition:background .2s,border-color .2s; }
+.profile-cv-drop.is-dragging { border-color:#c2571a; background:#fdf0e5; }
+.profile-cv-drop.is-busy { opacity:.8; }
+.profile-cv-drop strong { color:#3c2d25; font:700 13px var(--display-font); }
+.profile-cv-drop > span { color:#8a6f5d; font-size:10px; }
+.profile-cv-drop .btn { margin-top:3px; }
+.profile-cv-drop:focus-within { outline:2px solid #c95b1c;outline-offset:2px; }
+.profile-cv-input { position:absolute; width:1px;height:1px; padding:0;margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;border:0; }
+.profile-cv-spinner { animation:profile-cv-spin 1s linear infinite; }
+@keyframes profile-cv-spin { to { transform:rotate(360deg); } }
+.profile-cv-privacy,.profile-cv-limit { display:flex; align-items:flex-start; gap:6px; margin:11px 0 0; color:#796452; font-size:10px; line-height:1.55; }
+.profile-cv-privacy svg,.profile-cv-limit svg { flex:none; margin-top:1px; color:#b45219; }
+.profile-cv-limit { margin-top:6px; }
+.profile-cv-error { margin:12px 0 0; color:#a33220; font-size:11px; }
+.profile-cv-status { margin:12px 0 0; color:#8a4c25; font-size:10.5px; }
+.profile-cv-warnings { display:grid; gap:5px; margin:13px 0; padding:10px 12px 10px 27px; border-left:3px solid #c95b1c; border-radius:0 8px 8px 0; background:#f7eee4; color:#785740; font-size:10px; line-height:1.5; }
+.profile-cv-review-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:15px 0 8px; }
+.profile-cv-review-head strong { color:#3c2d25; font-size:11px; }
+.profile-cv-review-head span { color:#8a6f5d; font-size:9.5px; }
+.profile-cv-skill-list { display:grid; max-height:310px; overflow:auto; margin-bottom:12px; border:1px solid #efe1d3; border-radius:10px; background:#fffdf9; }
+.profile-cv-skill { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:49px; padding:7px 10px; border-bottom:1px solid #f0e7de; }
+.profile-cv-skill:last-child { border-bottom:0; }
+.profile-cv-skill-name { display:flex; align-items:center; gap:8px; min-width:0; color:#4a382e; font-size:10.5px; }
+.profile-cv-skill-name input { width:15px;height:15px; accent-color:#b84d11; flex:none; }
+.profile-cv-skill-name span { overflow-wrap:anywhere; }
+.profile-cv-level .fr-select { min-width:185px; min-height:34px; padding-top:6px;padding-bottom:6px; font-size:10px; }
+.profile-cv-existing { display:inline-flex; align-items:center; gap:4px; color:#52765d; white-space:nowrap; font-size:9.5px; }
+.profile-cv-level-note { margin:0 0 10px; color:#8a4c25; font-size:10px; }
+.profile-cv-empty { margin:13px 0; padding:12px; border:1px dashed #e3bfa2; border-radius:10px; background:#fff7ef; color:#785740; font-size:10.5px; line-height:1.5; }
+.profile-cv-card .btn:disabled { opacity:.55; cursor:not-allowed; }
+.profile-cv-card .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+@media (max-width:560px) {
+  .profile-cv-skill { align-items:flex-start; flex-direction:column; gap:7px; }
+  .profile-cv-level { padding-left:23px; width:100%; }
+  .profile-cv-level .fr-select { width:100%; min-width:0; }
+  .profile-cv-review-head { align-items:flex-start; flex-direction:column; gap:3px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .profile-cv-spinner { animation:none; }
+}

@@ -3,6 +3,7 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { ProfileCvImport } from '@/components/profile-cv-import';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -11,7 +12,7 @@ import {
 import { useWorkspace } from '@/domain/workspace-context';
 import { profileSchema } from '@/domain/storage';
 import { audienceLabels, skillCatalogue } from '@/domain/demo-data';
-import type { DemoProfile, Proficiency } from '@/domain/types';
+import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { PageHead, SectionTitle, levelLabel, slug } from '@/components/workspace/ui';
 
 const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) }).superRefine((v, ctx) => {
@@ -41,6 +42,10 @@ export default function ProfilePage() {
     saveProfile({ ...rest, interests: interestsText.split(',').map(s => s.trim()).filter(Boolean) } as DemoProfile);
     setSaved('Profile updated for this session. Browser storage warnings, if any, are shown above.');
   };
+  const addCvSkills = (imported: ProfileSkill[]) => {
+    skills.append(imported);
+    setSaved(`${imported.length} confirmed CV skills added to the draft. Save your profile to keep them.`);
+  };
   const addSkill = () => {
     const name = newSkill.trim().replace(/\s+/g, ' ');
     const current = form.getValues('skills');
@@ -54,12 +59,13 @@ export default function ProfilePage() {
   };
 
   return <>
-    <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Manual entry only. Self-reported levels are not validated. Each audience keeps its own profile." />
+    <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review CV-detected skills or enter your details manually. Each audience keeps its own profile." />
     <div className="source-note" style={{ marginBottom: 18 }}>
       Use fictional details for this demo. Occupation, education, interests and location provide planning context; they do not secretly change your score.
       Skill levels range from 1 (new to it) to 5 (can coach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
       Save your edits before switching audiences or pages.
     </div>
+    <ProfileCvImport existingSkills={form.watch('skills')} onApplySkills={addCvSkills} />
     <div className="grid-2">
       <div className="panel panel-pad">
         <SectionTitle title="Fictional sample profiles" note="REPLACES THIS AUDIENCE ONLY" />
