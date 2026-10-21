@@ -27,7 +27,7 @@ export const ListCareerSkillsResponse = zod.object({
 
 
 /**
- * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. Profile details are returned only when explicitly labelled in the CV. No file or raw text is retained or sent to external services.
+ * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. Exact skill names and reviewed related phrases are suggested for review; profile details are returned only when explicitly labelled in the CV. No file or raw text is retained or sent to external services.
  * @summary Extract dataset skills and labelled profile details from an in-memory CV
  */
 export const ExtractCvSkillsBody = zod.object({
@@ -80,7 +80,7 @@ export const ExtractCvSkillsResponse = zod.object({
 
 
 /**
- * Compares the supplied skills (normalized, exact-name matching) with each role family's 30 listed skills. Score = matched skills / 30 x 100. This is dataset skill overlap, not a probability of employment.
+ * Compares the supplied profile skills with each role family's 30 listed skills using exact names and a small reviewed set of related phrase aliases. The response identifies exact versus related mappings. Score = matched dataset skills / 30 x 100. This is dataset skill overlap, not a probability of employment.
  * @summary Rank role families by dataset skill overlap
  */
 export const matchCareersBodySkillsItemMax = 60;
@@ -103,6 +103,11 @@ export const MatchCareersResponse = zod.object({
 })),
   "normalizedSkills": zod.array(zod.string()),
   "unrecognizedSkills": zod.array(zod.string()),
+  "skillMappings": zod.array(zod.object({
+  "profileSkill": zod.string(),
+  "datasetSkill": zod.string(),
+  "matchType": zod.enum(['exact', 'related'])
+})),
   "scoring": zod.object({
   "label": zod.string(),
   "formula": zod.string(),
@@ -123,7 +128,7 @@ export const MatchCareersResponse = zod.object({
 
 
 /**
- * Uses the existing exact-name skill detector and bundled role-skill dataset. Resume text is processed in memory and is not retained or sent to external services. This endpoint does not run an ML model or generate a validated readiness score.
+ * Uses exact skill names and a small reviewed set of related phrase mappings with the bundled role-skill dataset. Resume text is processed in memory and is not retained or sent to external services. This endpoint does not run an ML model or generate a validated readiness score.
  * @summary Analyze resume text using local deterministic skill detection
  */
 export const analyzeResumeBodyResumeTextMax = 200000;
@@ -201,7 +206,7 @@ export const AnalyzeResumeResponse = zod.object({
 
 
 /**
- * Returns exact skill overlap and missing role skills, with resources from a small reviewed catalog of official provider courses. Skills with no verified resource are explicitly identified by the empty catalog status.
+ * Returns exact and reviewed related-skill overlap and missing role skills, with resources from a small reviewed catalog of official provider courses. Skills with no verified resource are explicitly identified by the empty catalog status.
  * @summary Compare resume skills with one bundled role family
  */
 export const analyzeSkillGapBodyResumeTextMax = 200000;
@@ -322,7 +327,7 @@ export const AnalyzeSkillGapResponse = zod.object({
 
 
 /**
- * Reuses deterministic skill-overlap matching. The score is not a confidence score, suitability prediction, or employment probability.
+ * Uses deterministic skill matching with exact names and reviewed related phrase mappings. The score is not a confidence score, suitability prediction, or employment probability.
  * @summary Rank role families and list illustrative next skills
  */
 export const analyzeCareerPathBodyResumeTextMax = 200000;

@@ -74,6 +74,21 @@ describe("deterministic CV skill detection", () => {
     assert.deepEqual(detectSkills("I maintain data and software.", ["data", "software"]), []);
     assert.deepEqual(detectSkills("Skills: data, software", ["data", "software"]), ["data", "software"]);
   });
+  it("recognizes related skill wording without requiring the exact dataset keyword", () => {
+    assert.deepEqual(
+      detectSkills("Coordinated cross-functional projects, interviewed users, and presented data insights."),
+      ["project management", "user research", "data visualization"],
+    );
+    assert.deepEqual(detectSkills("Worked on a project and handled customer requests."), []);
+  });
+  it("offers related phrase matches as reviewable CV skill suggestions", async () => {
+    const result = await extractCvSkills(
+      Buffer.from("Coordinated cross-functional projects, interviewed users, and presented data insights."),
+      "related-skills.txt",
+    );
+    assert.deepEqual(result.skills, ["project management", "user research", "data visualization"]);
+    assert.ok(result.warnings.some((warning) => /related-phrase matches, not exact wording/i.test(warning)));
+  });
   it("suggests only explicitly labelled About You facts and does not infer from prose", () => {
     const result = detectProfileSuggestions([
       "Current Role: Operations coordinator",

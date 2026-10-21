@@ -48,6 +48,108 @@ export function normalizeSkill(input: string): string {
   return input.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+export type SkillMatchType = "exact" | "related";
+
+export interface SkillMapping {
+  profileSkill: string;
+  datasetSkill: string;
+  matchType: SkillMatchType;
+}
+
+interface RelatedSkillRule {
+  datasetSkill: string;
+  aliases: readonly string[];
+  pattern: RegExp;
+}
+
+/**
+ * Small, explicit local synonym set. Related matches are surfaced to the user
+ * and never added to the saved profile without the existing review step.
+ */
+const RELATED_SKILL_RULES: readonly RelatedSkillRule[] = [
+  {
+    datasetSkill: "project management",
+    aliases: ["project coordination", "project coordinator", "project scheduling", "coordinating projects"],
+    pattern: /\b(?:coordinat\w*|schedul\w*|plan\w*|manag\w*|track\w*|deliver\w*)\b.{0,40}\bprojects?\b|\bprojects?\b.{0,40}\b(?:coordinat\w*|schedul\w*|plan\w*|manag\w*|track\w*|deliver\w*)\b/,
+  },
+  {
+    datasetSkill: "user research",
+    aliases: ["customer research", "customer interviews", "user interviews", "user needs research", "interviewing users", "interviewed users"],
+    pattern: /\b(?:customer|user)s?\b.{0,32}\b(?:research\w*|interview\w*|survey\w*|usability tests?)\b|\b(?:research\w*|interview\w*|survey\w*|usability tests?)\b.{0,32}\b(?:customer|user)s?\b/,
+  },
+  {
+    datasetSkill: "data visualization",
+    aliases: ["data storytelling", "storytelling with data", "presenting data insights", "visual data communication"],
+    pattern: /\b(?:data|insights?|metrics?)\b.{0,36}\b(?:story\w*|visual\w*|present\w*|communicat\w*|dashboard\w*|charts?)\b|\b(?:story\w*|visual\w*|present\w*|communicat\w*|dashboard\w*|charts?)\b.{0,36}\b(?:data|insights?|metrics?)\b/,
+  },
+  {
+    datasetSkill: "business analysis",
+    aliases: ["process improvement", "workflow improvement", "process optimization", "workflow optimization"],
+    pattern: /\b(?:process|workflow)s?\b.{0,36}\b(?:improv\w*|optim\w*|streamlin\w*|analy[sz]\w*)\b|\b(?:improv\w*|optim\w*|streamlin\w*|analy[sz]\w*)\b.{0,36}\b(?:process|workflow)s?\b/,
+  },
+  {
+    datasetSkill: "communication",
+    aliases: ["facilitation", "workshop facilitation", "meeting facilitation"],
+    pattern: /\b(?:facilitat\w*|moderate\w*|chair\w*)\b.{0,32}\b(?:meetings?|workshops?|sessions?)\b|\b(?:meetings?|workshops?|sessions?)\b.{0,32}\b(?:facilitat\w*|moderate\w*|chair\w*)\b/,
+  },
+  {
+    datasetSkill: "analytical",
+    aliases: ["critical thinking", "analytical thinking", "logical reasoning"],
+    pattern: /\b(?:critical|analytical|logical)\b.{0,20}\b(?:thinking|reasoning|analysis)\b/,
+  },
+];
+
+function relatedSkillTarget(
+  dataset: CareerDataset,
+  rawSkill: string,
+): string | undefined {
+  const normalized = normalizeSkill(rawSkill);
+  const known = new Set(dataset.allSkills);
+  return RELATED_SKILL_RULES.find((rule) =>
+    known.has(rule.datasetSkill) &&
+    (rule.aliases.includes(normalized) || rule.pattern.test(normalized)),
+  )?.datasetSkill;
+}
+
+/** Detects reviewed related wording without returning any surrounding CV text. */
+export function detectRelatedSkillMappingsInText(
+  text: string,
+  catalogue: readonly string[] = careerDataset.allSkills,
+): SkillMapping[] {
+  const normalizedText = normalizeSkill(text);
+  const known = new Set(catalogue.map(normalizeSkill));
+  return RELATED_SKILL_RULES
+    .flatMap((rule) => {
+      if (!known.has(rule.datasetSkill)) return [];
+      const matchedAlias = rule.aliases.find((alias) => phraseOccurs(normalizedText, alias));
+      if (!matchedAlias && !rule.pattern.test(normalizedText)) return [];
+      return [{
+        profileSkill: matchedAlias ?? rule.aliases[0],
+        datasetSkill: rule.datasetSkill,
+        matchType: "related" as const,
+      }];
+    });
+}
+
+/** Detects related dataset skill names from text without exposing the source text. */
+export function detectRelatedSkillsInText(
+  text: string,
+  catalogue: readonly string[] = careerDataset.allSkills,
+): string[] {
+  return detectRelatedSkillMappingsInText(text, catalogue)
+    .map((mapping) => mapping.datasetSkill);
+}
+
+function phraseOccurs(text: string, phrase: string): boolean {
+  const escaped = phrase
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "\\s+");
+  return new RegExp(
+    `(?<![\\p{L}\\p{N}_+#/-])${escaped}(?![\\p{L}\\p{N}_+#/-])`,
+    "iu",
+  ).test(text);
+}
+
 export interface RoleSkills {
   roleFamily: string;
   skills: string[];
@@ -124,8 +226,8 @@ export const SCORING = {
   label: "Dataset skill overlap",
   formula: `matched skills / ${SKILLS_PER_ROLE} x 100`,
   note:
-    "Each role family lists 30 skills from job-posting data. The score is the share of those 30 skills you listed. " +
-    "It measures skill overlap with this dataset only. It is not a probability of getting a job, and it is not Malaysia-specific.",
+    "Each role family lists 30 skills from job-posting data. Exact names and a small reviewed set of related skill phrases are compared with your profile; related matches are labeled. " +
+    "The score measures overlap with this dataset only. It is not a probability of getting a job, and it is not Malaysia-specific.",
 } as const;
 
 export function matchSkills(
@@ -167,6 +269,55 @@ export function matchSkills(
     );
 
   return { normalizedSkills, unrecognizedSkills, matches };
+}
+
+/**
+ * Matches saved profile skill labels to dataset vocabulary using exact names
+ * first, then a small explicit alias set. Each dataset skill contributes at
+ * most once to a role score.
+ */
+export function matchProfileSkills(
+  dataset: CareerDataset,
+  rawSkills: string[],
+): {
+  normalizedSkills: string[];
+  unrecognizedSkills: string[];
+  skillMappings: SkillMapping[];
+  matches: CareerMatch[];
+} {
+  const inputs = new Map<string, string>();
+  for (const rawSkill of rawSkills) {
+    const display = rawSkill.normalize("NFKC").trim().replace(/\s+/g, " ");
+    const normalized = normalizeSkill(display);
+    if (normalized && !inputs.has(normalized)) inputs.set(normalized, display);
+  }
+
+  const known = new Set(dataset.allSkills);
+  const candidates: SkillMapping[] = [];
+  for (const [normalized, profileSkill] of inputs.entries()) {
+    if (known.has(normalized)) {
+      candidates.push({ profileSkill, datasetSkill: normalized, matchType: "exact" });
+      continue;
+    }
+    const datasetSkill = relatedSkillTarget(dataset, profileSkill);
+    if (datasetSkill) candidates.push({ profileSkill, datasetSkill, matchType: "related" });
+  }
+
+  const mappingsByDatasetSkill = new Map<string, SkillMapping>();
+  for (const candidate of candidates) {
+    const current = mappingsByDatasetSkill.get(candidate.datasetSkill);
+    if (!current || candidate.matchType === "exact") {
+      mappingsByDatasetSkill.set(candidate.datasetSkill, candidate);
+    }
+  }
+  const skillMappings = [...mappingsByDatasetSkill.values()];
+  const recognizedInputs = new Set(candidates.map((candidate) => normalizeSkill(candidate.profileSkill)));
+  const normalizedSkills = [...inputs.keys()];
+  const unrecognizedSkills = normalizedSkills.filter((skill) => !recognizedInputs.has(skill));
+  const datasetSkills = skillMappings.map((mapping) => mapping.datasetSkill);
+  const matches = matchSkills(dataset, datasetSkills).matches;
+
+  return { normalizedSkills, unrecognizedSkills, skillMappings, matches };
 }
 
 /** Loaded and validated once at startup; the server fails loudly if invalid. */

@@ -4,6 +4,7 @@ import rawDataset from "../data/career_roles.json";
 import {
   buildDataset,
   careerDataset,
+  matchProfileSkills,
   matchSkills,
   normalizeSkill,
   SKILLS_PER_ROLE,
@@ -166,5 +167,42 @@ describe("matchSkills", () => {
     const { matches, unrecognizedSkills } = matchSkills(careerDataset, ["knitting"]);
     assert.equal(matches.length, 0);
     assert.deepEqual(unrecognizedSkills, ["knitting"]);
+  });
+});
+
+describe("matchProfileSkills", () => {
+  it("maps related profile wording to dataset skills and exposes the mapping", () => {
+    const result = matchProfileSkills(careerDataset, [
+      "Project coordination",
+      "Customer research",
+      "Data storytelling",
+      "Process improvement",
+      "Knitting",
+    ]);
+    assert.deepEqual(
+      result.skillMappings.map(({ profileSkill, datasetSkill, matchType }) => [profileSkill, datasetSkill, matchType]),
+      [
+        ["Project coordination", "project management", "related"],
+        ["Customer research", "user research", "related"],
+        ["Data storytelling", "data visualization", "related"],
+        ["Process improvement", "business analysis", "related"],
+      ],
+    );
+    assert.deepEqual(result.unrecognizedSkills, ["knitting"]);
+    assert.ok(result.matches.some((match) => match.roleFamily === "Project / Program Mgr" && match.matchedSkills.includes("project management")));
+    assert.ok(result.matches.some((match) => match.roleFamily === "Designer (UX/UI)" && match.matchedSkills.includes("user research")));
+  });
+
+  it("counts a dataset skill once and prefers an exact profile label over a related alias", () => {
+    const result = matchProfileSkills(careerDataset, ["Project coordination", "Project management"]);
+    assert.equal(result.skillMappings.length, 1);
+    assert.deepEqual(result.skillMappings[0], {
+      profileSkill: "Project management",
+      datasetSkill: "project management",
+      matchType: "exact",
+    });
+    const projectRole = result.matches.find((match) => match.roleFamily === "Project / Program Mgr")!;
+    assert.deepEqual(projectRole.matchedSkills, ["project management"]);
+    assert.equal(projectRole.score, 3.3);
   });
 });

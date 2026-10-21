@@ -68,6 +68,22 @@ describe("POST /api/career/match", () => {
     assert.equal(json.matches[0].score, 13.3);
   });
 
+  it("returns related skill mappings for profile wording that differs from dataset keywords", async () => {
+    const { status, json } = await post({
+      skills: ["Project coordination", "Customer research", "Data storytelling"],
+    });
+    assert.equal(status, 200);
+    assert.deepEqual(
+      json.skillMappings.map((mapping: any) => [mapping.profileSkill, mapping.datasetSkill, mapping.matchType]),
+      [
+        ["Project coordination", "project management", "related"],
+        ["Customer research", "user research", "related"],
+        ["Data storytelling", "data visualization", "related"],
+      ],
+    );
+    assert.ok(json.matches.length > 0);
+  });
+
   it("includes source, citation and the overlap-not-probability explanation", async () => {
     const { json } = await post({ skills: ["python"] });
     assert.equal(json.source.publisher, "Qarera");

@@ -7,12 +7,14 @@
  */
 import type { CareerMatch } from './careerMatch';
 import type { CareerScoring } from './careerScoring';
+import type { CareerSkillMapping } from './careerSkillMapping';
 import type { CareerSource } from './careerSource';
 
 export interface CareerMatchResult {
   matches: CareerMatch[];
   normalizedSkills: string[];
   unrecognizedSkills: string[];
+  skillMappings: CareerSkillMapping[];
   scoring: CareerScoring;
   source: CareerSource;
 }

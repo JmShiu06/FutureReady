@@ -14,7 +14,7 @@ import { detectProfileSuggestions, detectSkills } from "./cvSkillExtractor";
 import { getSyntheticAiSkillReference } from "./syntheticAiSkillReference";
 
 const METHOD_NOTE =
-  "Deterministic exact-skill comparison against the bundled role-skill dataset. This is not an AI prediction, employment probability, or validated readiness assessment.";
+  "Deterministic matching against the bundled role-skill dataset using exact names and a small reviewed set of related skill phrases. Related matches are surfaced for review. This is not an AI prediction, employment probability, or validated readiness assessment.";
 
 export interface ResumeAnalysisReport {
   recognized_skills: string[];

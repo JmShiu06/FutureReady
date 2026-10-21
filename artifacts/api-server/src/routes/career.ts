@@ -6,7 +6,7 @@ import {
   MatchCareersBody,
   MatchCareersResponse,
 } from "@workspace/api-zod";
-import { careerDataset, matchSkills, SCORING } from "../lib/careerMatcher";
+import { careerDataset, matchProfileSkills, SCORING } from "../lib/careerMatcher";
 import { CvError, CV_PROCESSING_TIMEOUT_MS, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
 
 const router: IRouter = Router();
@@ -76,7 +76,7 @@ router.post("/career/match", (req, res): void => {
     return;
   }
 
-  const { normalizedSkills, unrecognizedSkills, matches } = matchSkills(
+  const { normalizedSkills, unrecognizedSkills, skillMappings, matches } = matchProfileSkills(
     careerDataset,
     parsed.data.skills,
   );
@@ -91,6 +91,7 @@ router.post("/career/match", (req, res): void => {
       matches,
       normalizedSkills,
       unrecognizedSkills,
+      skillMappings,
       scoring: SCORING,
       source: careerDataset.source,
     }),

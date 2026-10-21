@@ -15,6 +15,12 @@ CV files and full extracted document text must remain transient and must not be 
 
 **How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it.
 
+The job-recommendation page uses the user's saved profile skills as input; it does not upload or re-read a CV. Show role matches and the specific saved skills that contribute to each recommendation, without presenting overlap as a hiring probability.
+
+**Why:** The user clarified that CV information should flow from the profile and that this page should focus on recommended roles and how profile skills relate to them.
+
+**How to apply:** Keep CV extraction and profile editing on the profile workflow. The recommendations view should stay focused on roles and skill evidence; use only skills already saved in the active profile.
+
 New and reset profiles start with blank About You fields. On every app reload, clear saved About You fields across audiences while keeping skills and roadmap progress. Put examples in light-gray placeholders, never in saved profile data.
 
 **Why:** The user later explicitly changed the saved-profile behavior and requested that About You details reset whenever the website is refreshed.
@@ -32,3 +38,15 @@ Show proficiency as five chili icons, from 1 “New to it” through 5 “Can te
 **Why:** The user requested chili-based 1–5 skill ratings and a small CV tick while keeping proficiency self-assessed.
 
 **How to apply:** Reuse this visual scale anywhere users set profile or CV-review proficiency, and label CV evidence as detection rather than validated expertise.
+
+Non-keyword skill matching should stay local and transparent: use curated related-phrase mappings, label related matches separately from exact matches, and leave CV-derived suggestions subject to profile review. Do not infer proficiency or send CV/profile text to an external AI service.
+
+**Why:** The user requested recognition of skills expressed with different wording while retaining the project's no-external-service CV privacy boundary.
+
+**How to apply:** Expand related-skill mappings cautiously, expose the dataset term behind each related recommendation, and preserve user confirmation before CV-derived skills are saved.
+
+Do not persist CV upload history just to drive recommendations. Use reviewed `cvDetected` profile skills to identify CV-derived skills, and describe their absence as “no CV-based skills saved,” not as proof that no file was uploaded.
+
+**Why:** CV files are intentionally transient; the profile only retains skill evidence the user reviewed and applied.
+
+**How to apply:** If a page needs to invite CV setup, show the profile link when no CV-derived skills are saved and keep the message accurate even if a past upload produced no saved skills.

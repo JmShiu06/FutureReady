@@ -167,6 +167,20 @@ export interface CareerMatch {
   missingSkills: string[];
 }
 
+export type CareerSkillMappingMatchType = typeof CareerSkillMappingMatchType[keyof typeof CareerSkillMappingMatchType];
+
+
+export const CareerSkillMappingMatchType = {
+  exact: 'exact',
+  related: 'related',
+} as const;
+
+export interface CareerSkillMapping {
+  profileSkill: string;
+  datasetSkill: string;
+  matchType: CareerSkillMappingMatchType;
+}
+
 export interface CareerScoring {
   label: string;
   formula: string;
@@ -189,6 +203,7 @@ export interface CareerMatchResult {
   matches: CareerMatch[];
   normalizedSkills: string[];
   unrecognizedSkills: string[];
+  skillMappings: CareerSkillMapping[];
   scoring: CareerScoring;
   source: CareerSource;
 }

@@ -14,6 +14,8 @@ export * from './careerMatchResult';
 export * from './careerPathAnalysisReport';
 export * from './careerScoring';
 export * from './careerSkillList';
+export * from './careerSkillMapping';
+export * from './careerSkillMappingMatchType';
 export * from './careerSkillsInput';
 export * from './careerSource';
 export * from './cvProfileSuggestions';

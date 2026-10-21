@@ -8,7 +8,12 @@ import Tesseract from "tesseract.js";
 import mammoth from "mammoth";
 import yauzl from "yauzl";
 import type { CvProfileSuggestions } from "@workspace/api-zod";
-import { careerDataset, normalizeSkill } from "./careerMatcher";
+import {
+  careerDataset,
+  detectRelatedSkillMappingsInText,
+  detectRelatedSkillsInText,
+  normalizeSkill,
+} from "./careerMatcher";
 
 export const MAX_CV_BYTES = 5 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;
@@ -36,7 +41,7 @@ function skillPattern(skill: string): RegExp {
   return new RegExp(`(?<![\\p{L}\\p{N}_+#/-])(?<![\\p{L}\\p{N}_]\\.)${escaped}(?![\\p{L}\\p{N}_+#/-]|\\.[\\p{L}\\p{N}_])`, "giu");
 }
 
-export function detectSkills(text: string, catalogue = careerDataset.allSkills): string[] {
+function detectExactSkills(text: string, catalogue = careerDataset.allSkills): string[] {
   const normalized = text.normalize("NFKC");
   const explicitSkillLines = normalized.split(/\r?\n/).flatMap((line) => {
     const match = line.match(/^\s*(?:technical\s+)?(?:skills?|competencies)\s*[:–-]\s*(.*)$/i);
@@ -59,6 +64,13 @@ export function detectSkills(text: string, catalogue = careerDataset.allSkills):
     }
   }
   return [...new Set(selected.map((item) => item.skill))];
+}
+
+export function detectSkills(text: string, catalogue = careerDataset.allSkills): string[] {
+  return [...new Set([
+    ...detectExactSkills(text, catalogue),
+    ...detectRelatedSkillsInText(text, catalogue),
+  ])];
 }
 
 const PROFILE_LABELS: Record<string, keyof CvProfileSuggestions> = {
@@ -448,13 +460,22 @@ export async function extractCvSkills(
     throw new CvError(422, "No readable text could be recognized in this file. Try a clearer image or PDF, enter skills manually, or choose another file.");
   }
   if (text.length > MAX_TEXT_LENGTH) throw new CvError(422, "This document contains too much text. Upload a shorter CV.");
-  const skills = detectSkills(text);
+  const exactSkills = detectExactSkills(text);
+  const relatedMappings = detectRelatedSkillMappingsInText(text)
+    .filter((mapping) => !exactSkills.includes(mapping.datasetSkill));
+  const skills = [...new Set([
+    ...exactSkills,
+    ...relatedMappings.map((mapping) => mapping.datasetSkill),
+  ])];
   const profileSuggestions = detectProfileSuggestions(text);
   return {
     skills,
     profileSuggestions,
     warnings: [
-      "Only exact skill names in the career dataset are detected. Review and correct the list before matching.",
+      "The engine checks exact skill names and a small reviewed set of related phrases. Review the suggestions before saving them.",
+      ...(relatedMappings.length
+        ? [`Related CV wording suggested these dataset skills: ${relatedMappings.map((mapping) => mapping.datasetSkill).join(", ")}. They are related-phrase matches, not exact wording; review each before adding it to your profile.`]
+        : []),
       ...warnings,
       ...(skills.length ? [] : ["No recognised dataset skills were found. You can add skills manually or upload another file."]),
     ],
