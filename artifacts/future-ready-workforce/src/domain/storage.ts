@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { sampleProfile, demoRoles } from './demo-data';
+import { blankProfile, demoRoles } from './demo-data';
 import type { Audience, DemoProfile, WorkspaceState } from './types';
 
 export const STORAGE_KEY = 'frw-demo-workspace-v1';
@@ -10,16 +10,16 @@ export const skillSchema = z.object({
   cvDetected: z.boolean().optional(),
 });
 export const profileSchema = z.object({
-  id: z.string().min(1).max(80), audience: z.enum(audiences), occupation: z.string().trim().min(1, 'Enter an occupation or study programme.').max(120),
-  experienceYears: z.number().min(0).max(60), education: boundedText, qualification: boundedText,
+  id: z.string().min(1).max(80), audience: z.enum(audiences), occupation: boundedText,
+  experienceYears: z.number().min(0).max(60).nullable(), education: boundedText, qualification: boundedText,
   studyField: boundedText, interests: z.array(boundedText.min(1)).max(10),
   skills: z.array(skillSchema).max(50).refine(skills => new Set(skills.map(s => s.name.normalize('NFKC').replace(/\s+/g, ' ').toLowerCase())).size === skills.length, 'Skill names must be unique.'),
-  location: boundedText, workPreference: z.enum(['Any', 'Remote', 'Hybrid', 'On-site']),
-  learningHours: z.number().int().min(1).max(40), budgetMYR: z.number().min(0).max(100000),
+  location: boundedText, workPreference: z.enum(['', 'Any', 'Remote', 'Hybrid', 'On-site']),
+  learningHours: z.number().int().min(1).max(40).nullable(), budgetMYR: z.number().min(0).max(100000).nullable(),
   goals: z.string().trim().max(500),
 });
 export function defaultWorkspace(): WorkspaceState {
-  const profiles = Object.fromEntries(audiences.map(a => [a, sampleProfile(a)])) as Record<Audience, DemoProfile>;
+  const profiles = Object.fromEntries(audiences.map(a => [a, blankProfile(a)])) as Record<Audience, DemoProfile>;
   return { version: 1, audience: 'adult', profiles, targets: { adult: 'service-designer', graduate: 'workforce-analyst', hr: 'ai-operations', education: 'learning-partner' }, completion: {} };
 }
 const validRole = (value: unknown) => typeof value === 'string' && demoRoles.some(r => r.id === value);

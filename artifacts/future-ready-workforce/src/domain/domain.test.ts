@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { aggregateRecords, demoRoles, sampleProfile, sdgGoals, sdgMappings } from './demo-data.ts';
+import { aggregateRecords, blankProfile, demoRoles, sampleProfile, sdgGoals, sdgMappings } from './demo-data.ts';
 import { assessRole, buildRoadmap, completionKey, createApiWorkforceService, demoService, evidenceWarnings, filterMarket, meanSkillGap, rankCareers, simulateProfile } from './services.ts';
 import { defaultWorkspace, loadWorkspace, parseWorkspace, persistWorkspace, profileSchema } from './storage.ts';
 
@@ -70,7 +70,7 @@ test('defensive parsing handles malformed storage, partial profiles and schema v
   const recovered = parseWorkspace(JSON.stringify(damaged));
   assert.ok(recovered.warning);
   assert.equal(recovered.state.profiles.graduate.goals, state.profiles.graduate.goals);
-  assert.deepEqual(recovered.state.profiles.adult, sampleProfile('adult'));
+  assert.deepEqual(recovered.state.profiles.adult, blankProfile('adult'));
 });
 test('storage round trip preserves all audience profiles, targets and per-audience completion', () => {
   const state = defaultWorkspace();
@@ -79,14 +79,36 @@ test('storage round trip preserves all audience profiles, targets and per-audien
   state.completion['adult:service-designer:facilitation'] = true;
   assert.deepEqual(parseWorkspace(JSON.stringify(state)).state, state);
 });
+test('fresh/reset profiles leave About You blank while existing saved profiles remain intact', () => {
+  const workspace = defaultWorkspace();
+  for (const audience of ['adult', 'graduate', 'hr', 'education'] as const) {
+    const profile = workspace.profiles[audience];
+    assert.equal(profile.occupation, '');
+    assert.equal(profile.experienceYears, null);
+    assert.equal(profile.education, '');
+    assert.equal(profile.qualification, '');
+    assert.equal(profile.studyField, '');
+    assert.deepEqual(profile.interests, []);
+    assert.equal(profile.location, '');
+    assert.equal(profile.workPreference, '');
+    assert.equal(profile.learningHours, null);
+    assert.equal(profile.budgetMYR, null);
+    assert.equal(profile.goals, '');
+  }
+
+  const savedProfile = sampleProfile('adult');
+  workspace.profiles.adult = savedProfile;
+  assert.deepEqual(parseWorkspace(JSON.stringify(workspace)).state.profiles.adult, savedProfile);
+});
 test('storage failures are visible, not thrown or silently reported as saved', () => {
   const broken = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('full'); } };
   assert.ok(loadWorkspace(broken).warning.includes('unavailable'));
   assert.ok(persistWorkspace(broken, defaultWorkspace()).includes('Could not save'));
 });
-test('validation bounds prevent invalid budgets, levels, hours and empty programme', () => {
+test('blank About You values are valid while numeric and skill bounds remain enforced', () => {
   const profile = sampleProfile('graduate');
-  for (const change of [{ budgetMYR: -1 }, { learningHours: 0 }, { learningHours: 41 }, { occupation: '' }, { experienceYears: 61 }, { skills: [{ name: 'Bad', level: 6, category: 'Demo' }] }]) {
+  assert.equal(profileSchema.safeParse(blankProfile('graduate')).success, true);
+  for (const change of [{ budgetMYR: -1 }, { learningHours: 0 }, { learningHours: 41 }, { experienceYears: 61 }, { skills: [{ name: 'Bad', level: 6, category: 'Demo' }] }]) {
     assert.equal(profileSchema.safeParse({ ...profile, ...change }).success, false);
   }
 });

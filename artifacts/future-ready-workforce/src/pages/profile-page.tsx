@@ -24,7 +24,7 @@ const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) })
 });
 type FormValues = z.infer<typeof formSchema>;
 const toForm = (p: DemoProfile): FormValues => ({ ...p, interestsText: p.interests.join(', ') });
-const numberChange = (fn: (v: number) => void) => (e: React.ChangeEvent<HTMLInputElement>) => fn(e.target.value === '' ? Number.NaN : Number(e.target.value));
+const numberChange = (fn: (v: number | null) => void) => (e: React.ChangeEvent<HTMLInputElement>) => fn(e.target.value === '' ? null : Number(e.target.value));
 
 export default function ProfilePage() {
   const { state, profile, saveProfile, resetProfile, loadSample } = useWorkspace();
@@ -79,10 +79,10 @@ export default function ProfilePage() {
 
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · profile builder`} title="Your starting point." subtitle="Review suggested CV details or enter them manually. Each audience keeps its own profile." />
-    <div className="source-note" style={{ marginBottom: 18 }}>
-      Use fictional details for this demo. Occupation, education, interests and location provide planning context; they do not secretly change your score.
-      Skill levels range from 1 (new to it) to 5 (can teach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
-      Save your edits before switching audiences or pages.
+      <div className="source-note" style={{ marginBottom: 18 }}>
+        Add only details that apply to you. Leave any field blank if it does not; About You details provide planning context and do not secretly change your score.
+        Skill levels range from 1 (new to it) to 5 (can teach). Learning hours are a whole number from 1–40 per week; the budget is your total approximate learning budget in MYR.
+        Save your edits before switching audiences or pages.
     </div>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
     <div className="grid-2">
@@ -96,12 +96,12 @@ export default function ProfilePage() {
         </div>
       </div>
       <div className="panel panel-pad">
-        <SectionTitle title="Reset" note="RESTORES DEFAULT SAMPLE + CLEARS ROADMAP PROGRESS" />
+        <SectionTitle title="Reset" note="BLANKS ABOUT YOU + RESTORES DEFAULT SKILLS" />
         <AlertDialog>
           <AlertDialogTrigger asChild><button type="button" className="btn btn-danger btn-small" data-testid="button-reset-profile"><RotateCcw size={12} /> Reset this profile</button></AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>Reset the {audienceLabels[state.audience]} profile?</AlertDialogTitle>
-              <AlertDialogDescription>This restores the default fictional sample and clears roadmap completion for this audience only. Other audience profiles are kept.</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogDescription>This clears About You values, restores the default demo skills and clears roadmap completion for this audience only. Other audience profiles are kept.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter><AlertDialogCancel data-testid="button-cancel-reset">Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={() => { resetProfile(); setSaved('Profile reset to the default sample.'); }} data-testid="button-confirm-reset">Reset</AlertDialogAction></AlertDialogFooter>
           </AlertDialogContent>
@@ -111,22 +111,22 @@ export default function ProfilePage() {
 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
-        <div className="panel panel-pad">
+          <div className="panel panel-pad profile-about-you">
           <SectionTitle title="About you" note="BACKGROUND AND CONSTRAINTS" />
           <div className="form-grid">
-            <FormField control={form.control} name="occupation" render={({ field }) => <FormItem className="field"><FormLabel>{graduate ? 'Study programme or occupation' : 'Occupation'}</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-occupation" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="experienceYears" render={({ field }) => <FormItem className="field"><FormLabel>Years of experience</FormLabel><FormControl><input type="number" min={0} max={60} step="any" className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={Number.isNaN(field.value) ? '' : field.value} onChange={numberChange(field.onChange)} data-testid="input-experience" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="education" render={({ field }) => <FormItem className="field"><FormLabel>Education</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-education" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="occupation" render={({ field }) => <FormItem className="field"><FormLabel>{graduate ? 'Study programme or occupation' : 'Occupation'}</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Operations coordinator" {...field} data-testid="input-occupation" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="experienceYears" render={({ field }) => <FormItem className="field"><FormLabel>Years of experience</FormLabel><FormControl><input type="number" min={0} max={60} step="any" className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 4" data-testid="input-experience" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="education" render={({ field }) => <FormItem className="field"><FormLabel>Education</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Diploma in Business" {...field} data-testid="input-education" /></FormControl><FormMessage /></FormItem>} />
             {graduate && <>
-              <FormField control={form.control} name="qualification" render={({ field }) => <FormItem className="field"><FormLabel>Qualification</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-qualification" /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="studyField" render={({ field }) => <FormItem className="field"><FormLabel>Field of study</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-study-field" /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="qualification" render={({ field }) => <FormItem className="field"><FormLabel>Qualification</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Diploma" {...field} data-testid="input-qualification" /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="studyField" render={({ field }) => <FormItem className="field"><FormLabel>Field of study</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Business information systems" {...field} data-testid="input-study-field" /></FormControl><FormMessage /></FormItem>} />
             </>}
-            <FormField control={form.control} name="interestsText" render={({ field }) => <FormItem className="field"><FormLabel>Interests (comma separated)</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-interests" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="location" render={({ field }) => <FormItem className="field"><FormLabel>Location</FormLabel><FormControl><input className="fr-input" {...field} data-testid="input-location" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="workPreference" render={({ field }) => <FormItem className="field"><FormLabel>Work preference</FormLabel><FormControl><select className="fr-select" {...field} data-testid="select-work-preference">{['Any', 'Remote', 'Hybrid', 'On-site'].map(o => <option key={o}>{o}</option>)}</select></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="learningHours" render={({ field }) => <FormItem className="field"><FormLabel>Learning hours per week (1–40)</FormLabel><FormControl><input type="number" min={1} max={40} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={Number.isNaN(field.value) ? '' : field.value} onChange={numberChange(field.onChange)} data-testid="input-learning-hours" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="budgetMYR" render={({ field }) => <FormItem className="field"><FormLabel>Learning budget (MYR)</FormLabel><FormControl><input type="number" min={0} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={Number.isNaN(field.value) ? '' : field.value} onChange={numberChange(field.onChange)} data-testid="input-budget" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="goals" render={({ field }) => <FormItem className="field span-2"><FormLabel>Goals</FormLabel><FormControl><textarea className="fr-textarea" maxLength={500} {...field} data-testid="input-goals" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="interestsText" render={({ field }) => <FormItem className="field"><FormLabel>Interests (comma separated)</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Data, service design" {...field} data-testid="input-interests" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="location" render={({ field }) => <FormItem className="field"><FormLabel>Location</FormLabel><FormControl><input className="fr-input" placeholder="e.g., Kuala Lumpur" {...field} data-testid="input-location" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="workPreference" render={({ field }) => <FormItem className="field"><FormLabel>Work preference</FormLabel><FormControl><select className={`fr-select${field.value === '' ? ' is-placeholder' : ''}`} {...field} data-testid="select-work-preference"><option value="">Choose a preference (e.g., Hybrid)</option>{['Any', 'Remote', 'Hybrid', 'On-site'].map(o => <option key={o} value={o}>{o}</option>)}</select></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="learningHours" render={({ field }) => <FormItem className="field"><FormLabel>Learning hours per week (1–40)</FormLabel><FormControl><input type="number" min={1} max={40} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 5" data-testid="input-learning-hours" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="budgetMYR" render={({ field }) => <FormItem className="field"><FormLabel>Learning budget (MYR)</FormLabel><FormControl><input type="number" min={0} className="fr-input" name={field.name} ref={field.ref} onBlur={field.onBlur} value={field.value ?? ''} onChange={numberChange(field.onChange)} placeholder="e.g., 200" data-testid="input-budget" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="goals" render={({ field }) => <FormItem className="field span-2"><FormLabel>Goals</FormLabel><FormControl><textarea className="fr-textarea" maxLength={500} placeholder="e.g., Move into a data analyst role" {...field} data-testid="input-goals" /></FormControl><FormMessage /></FormItem>} />
           </div>
         </div>
 

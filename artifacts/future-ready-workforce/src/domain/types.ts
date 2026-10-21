@@ -2,10 +2,10 @@ export type Audience = 'adult' | 'graduate' | 'hr' | 'education';
 export type Proficiency = 1 | 2 | 3 | 4 | 5;
 export interface ProfileSkill { name: string; level: Proficiency; category: string; cvDetected?: boolean }
 export interface DemoProfile {
-  id: string; audience: Audience; occupation: string; experienceYears: number;
+  id: string; audience: Audience; occupation: string; experienceYears: number | null;
   education: string; qualification: string; studyField: string; interests: string[];
-  skills: ProfileSkill[]; location: string; workPreference: 'Any' | 'Remote' | 'Hybrid' | 'On-site';
-  learningHours: number; budgetMYR: number; goals: string;
+  skills: ProfileSkill[]; location: string; workPreference: '' | 'Any' | 'Remote' | 'Hybrid' | 'On-site';
+  learningHours: number | null; budgetMYR: number | null; goals: string;
 }
 export interface Evidence {
   kind: 'synthetic' | 'observed'; sourceName: string; sourceUrl: string | null;

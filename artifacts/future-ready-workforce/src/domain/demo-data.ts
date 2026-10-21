@@ -46,6 +46,22 @@ export function sampleProfile(audience: Audience, variant: 'default' | 'data' = 
       : [{ name: 'Project coordination', level: 4, category: 'Transferable' }, { name: 'Customer research', level: 3, category: 'People' }, { name: 'Data storytelling', level: 2, category: 'Digital' }, { name: 'Process improvement', level: 4, category: 'Transferable' }],
   };
 }
+export function blankProfile(audience: Audience): DemoProfile {
+  return {
+    ...sampleProfile(audience),
+    occupation: '',
+    experienceYears: null,
+    education: '',
+    qualification: '',
+    studyField: '',
+    interests: [],
+    location: '',
+    workPreference: '',
+    learningHours: null,
+    budgetMYR: null,
+    goals: '',
+  };
+}
 const marketSkills = [
   ['research', 'Customer research', 'People', 'Services', [31, 35, 34, 38]],
   ['data', 'Data storytelling', 'Digital', 'Business operations', [25, 30, 36, 40]],

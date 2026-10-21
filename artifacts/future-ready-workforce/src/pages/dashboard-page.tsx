@@ -51,14 +51,24 @@ function PersonalOverview() {
   const targetAssessment = useMemo(() => assessRole(profile, target), [profile, target]);
   const transferable = profile.skills.filter(s => demoRoles.filter(r => r.requiredSkills.some(q => q.name.toLowerCase() === s.name.toLowerCase())).length >= 2);
   const graduate = state.audience === 'graduate';
+  const audienceDetails = graduate
+    ? [profile.qualification, profile.studyField].filter(Boolean).join(' · ')
+    : profile.experienceYears === null ? '' : `${profile.experienceYears} years of experience`;
+  const profileContext = [
+    audienceDetails,
+    profile.location,
+    profile.workPreference,
+    profile.learningHours === null ? '' : `${profile.learningHours} learning hrs/week`,
+    profile.budgetMYR === null ? '' : `budget MYR ${profile.budgetMYR}`,
+  ].filter(Boolean).join(' · ');
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · your workspace`} title={graduate ? 'Turn your studies into a first career move.' : 'Make your next move with a little more clarity.'}
       subtitle="Explore where your skills could travel and what might help you get there." action={<Link href="/profile" className="btn btn-secondary" data-testid="link-edit-profile"><UserRound size={14} /> Edit profile</Link>} />
     <section className="hero-grid">
       <div className="welcome-card">
         <div className="eyebrow">Starting from</div>
-        <h1 data-testid="text-dashboard-occupation">{profile.occupation}</h1>
-        <p>{graduate ? `${profile.qualification} in ${profile.studyField}` : `${profile.experienceYears} years of experience`} · {profile.location} · {profile.workPreference} · {profile.learningHours} learning hrs/week · budget MYR {profile.budgetMYR}</p>
+        <h1 data-testid="text-dashboard-occupation">{profile.occupation || 'Your career profile'}</h1>
+        <p>{profileContext || 'Add relevant About You details in My profile to personalize this context.'}</p>
         <div className="welcome-actions"><Link href="/careers" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> Explore career paths <ArrowRight size={14} /></Link><Link href="/roadmap" className="btn btn-quiet" data-testid="link-roadmap">View my roadmap</Link></div>
       </div>
       <div className="panel stat-card">

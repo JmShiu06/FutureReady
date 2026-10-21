@@ -57,8 +57,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </nav>
       <div className="sidebar-bottom">
         <div className="demo-note"><strong><ShieldCheck size={14} /> DEMO DATA ONLY</strong>
-          <p>Planning examples are fictional. CVs are processed transiently; only skills you review and add can be saved in your browser profile.</p></div>
-        <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-occupation">{profile.occupation}</strong><span>{audienceLabels[state.audience]}</span></div></div>
+          <p>Planning examples are fictional. CVs are processed transiently; only profile details and skills you review and apply can be saved in your browser profile.</p></div>
+        <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-occupation">{profile.occupation || 'Your profile'}</strong><span>{audienceLabels[state.audience]}</span></div></div>
       </div>
     </aside>
     <div className="main-wrap">

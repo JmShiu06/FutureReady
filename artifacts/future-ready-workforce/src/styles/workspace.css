@@ -18,6 +18,8 @@
 .small { font-size:10px; }
 .mono { font-family:var(--mono-font); }
 .fr-input, .fr-select, .fr-textarea { width:100%; border:1px solid #e6d7c9; background:#fffaf4; border-radius:9px; padding:9px 11px; color:#3c2d25; font-size:12px; }
+.profile-about-you .fr-input::placeholder, .profile-about-you .fr-textarea::placeholder { color:#7c7169; opacity:1; }
+.profile-about-you .fr-select.is-placeholder { color:#7c7169; }
 .fr-input:focus, .fr-select:focus, .fr-textarea:focus, .btn:focus-visible, .nav-link:focus-visible { outline:2px solid #c95b1c; outline-offset:2px; }
 .fr-textarea { min-height:80px; resize:vertical; }
 .field { display:grid; gap:5px; }

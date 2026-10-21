@@ -15,6 +15,12 @@ CV files and full extracted document text must remain transient and must not be 
 
 **How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it.
 
+New and reset profiles start with blank About You fields; preserve existing saved profile values. Put examples in light-gray placeholders, never in saved profile data.
+
+**Why:** The user explicitly chose blank defaults while preserving already-saved profiles, and asked that example text disappear as users type.
+
+**How to apply:** Keep sample values opt-in through the sample-profile control. Do not clear or migrate existing browser storage to enforce blank defaults.
+
 The CV import review is one popup: open it automatically after extraction and keep detected skills, skill selection, warnings and self-assessed proficiency choices together. Do not show the review list inline on the profile page; leave a button to reopen it if dismissed.
 
 **Why:** The user clarified that both detected-skill review and proficiency selection should happen in the popup immediately after upload.

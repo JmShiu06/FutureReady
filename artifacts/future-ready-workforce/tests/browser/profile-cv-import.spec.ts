@@ -48,6 +48,56 @@ async function uploadSyntheticCv(page: Page) {
   await expect(page.getByTestId('dialog-cv-review')).toBeVisible();
 }
 
+test('new and reset profiles show blank About You fields with gray examples', async ({ page }) => {
+  await page.goto('/profile');
+
+  const adultFields = [
+    ['input-occupation', 'e.g., Operations coordinator'],
+    ['input-experience', 'e.g., 4'],
+    ['input-education', 'e.g., Diploma in Business'],
+    ['input-interests', 'e.g., Data, service design'],
+    ['input-location', 'e.g., Kuala Lumpur'],
+    ['input-learning-hours', 'e.g., 5'],
+    ['input-budget', 'e.g., 200'],
+    ['input-goals', 'e.g., Move into a data analyst role'],
+  ] as const;
+  for (const [testId, placeholder] of adultFields) {
+    const field = page.getByTestId(testId);
+    await expect(field).toHaveValue('');
+    await expect(field).toHaveAttribute('placeholder', placeholder);
+  }
+
+  const occupation = page.getByTestId('input-occupation');
+  expect(await occupation.evaluate(element => getComputedStyle(element, '::placeholder').color)).toBe('rgb(124, 113, 105)');
+  await occupation.fill('Operations coordinator');
+  expect(await occupation.evaluate(element => element.matches(':placeholder-shown'))).toBe(false);
+
+  const preference = page.getByTestId('select-work-preference');
+  await expect(preference).toHaveValue('');
+  await expect(preference).toHaveClass(/is-placeholder/);
+  expect(await preference.evaluate(element => getComputedStyle(element).color)).toBe('rgb(124, 113, 105)');
+  await preference.selectOption('Hybrid');
+  await expect(preference).not.toHaveClass(/is-placeholder/);
+
+  await page.getByTestId('button-save-profile').click();
+  await page.getByTestId('button-reset-profile').click();
+  await page.getByTestId('button-confirm-reset').click();
+  await expect(page.getByTestId('input-occupation')).toHaveValue('');
+  await expect(page.getByTestId('input-experience')).toHaveValue('');
+  await expect(page.getByTestId('select-work-preference')).toHaveValue('');
+  await page.getByTestId('button-save-profile').click();
+  await page.reload();
+  await expect(page.getByTestId('input-occupation')).toHaveValue('');
+  await expect(page.getByTestId('input-experience')).toHaveValue('');
+  await expect(page.getByTestId('select-work-preference')).toHaveValue('');
+
+  await page.locator('#side').selectOption('graduate');
+  await expect(page.getByTestId('input-qualification')).toHaveValue('');
+  await expect(page.getByTestId('input-qualification')).toHaveAttribute('placeholder', 'e.g., Diploma');
+  await expect(page.getByTestId('input-study-field')).toHaveValue('');
+  await expect(page.getByTestId('input-study-field')).toHaveAttribute('placeholder', 'e.g., Business information systems');
+});
+
 test('applies only checked About You fields, retains pending skills, then saves and reloads', async ({ page }) => {
   await setInitialProfile(page);
   await mockCvResponse(page, {

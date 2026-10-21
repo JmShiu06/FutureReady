@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { demoRoles, sampleProfile } from './demo-data';
+import { blankProfile, demoRoles, sampleProfile } from './demo-data';
 import { defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
 import type { Audience, DemoProfile, WorkspaceState } from './types';
 
@@ -36,7 +36,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setAudience: audience => update(s => ({ ...s, audience })),
     saveProfile,
     resetProfile: () => update(s => ({
-      ...s, profiles: { ...s.profiles, [s.audience]: sampleProfile(s.audience) },
+      ...s, profiles: { ...s.profiles, [s.audience]: blankProfile(s.audience) },
       completion: Object.fromEntries(Object.entries(s.completion).filter(([key]) => !key.startsWith(`${s.audience}:`))),
     })),
     loadSample: variant => saveProfile(sampleProfile(state.audience, variant)),

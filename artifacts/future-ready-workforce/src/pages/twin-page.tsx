@@ -29,7 +29,7 @@ export default function TwinPage() {
       action={<button className="btn btn-secondary" onClick={() => setHypo(base.skills)} data-testid="button-reset-simulation"><RotateCcw size={14} /> Reset simulation</button>} />
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
       <div className="form-grid">
-        <div className="field"><label htmlFor="twin-source">Profile to simulate</label><select id="twin-source" className="fr-select" value={source} onChange={e => setSource(e.target.value as Audience)} data-testid="select-twin-profile">{audiences.map(a => <option key={a} value={a}>{audienceLabels[a]} — {state.profiles[a].occupation}</option>)}</select></div>
+        <div className="field"><label htmlFor="twin-source">Profile to simulate</label><select id="twin-source" className="fr-select" value={source} onChange={e => setSource(e.target.value as Audience)} data-testid="select-twin-profile">{audiences.map(a => <option key={a} value={a}>{audienceLabels[a]}{state.profiles[a].occupation ? ` — ${state.profiles[a].occupation}` : ''}</option>)}</select></div>
         <div className="field"><label htmlFor="twin-role">Target role</label><select id="twin-role" className="fr-select" value={role.id} onChange={e => setRoleId(e.target.value)} data-testid="select-twin-role">{demoRoles.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}</select></div>
       </div>
     </div>

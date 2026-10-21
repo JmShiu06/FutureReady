@@ -10,18 +10,30 @@ import { EmptyBlock, PageHead, PriorityTag, SectionTitle } from '@/components/wo
 export default function RoadmapPage() {
   const { state, profile, targetRoleId, setTargetRole, saveProfile, toggleCompletion } = useWorkspace();
   const [costFilter, setCostFilter] = useState<'all' | 'free' | 'low'>('all');
-  const [hours, setHours] = useState(String(profile.learningHours));
-  const [budget, setBudget] = useState(String(profile.budgetMYR));
+  const [hours, setHours] = useState(profile.learningHours === null ? '' : String(profile.learningHours));
+  const [budget, setBudget] = useState(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
   const [target, setTarget] = useState(targetRoleId);
   const [msg, setMsg] = useState('');
-  useEffect(() => { setHours(String(profile.learningHours)); setBudget(String(profile.budgetMYR)); setTarget(targetRoleId); }, [profile, targetRoleId]);
+  useEffect(() => {
+    setHours(profile.learningHours === null ? '' : String(profile.learningHours));
+    setBudget(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
+    setTarget(targetRoleId);
+  }, [profile, targetRoleId]);
   const role = demoRoles.find(r => r.id === targetRoleId) ?? demoRoles[0];
   const milestones = useMemo(() => buildRoadmap(profile, role.id), [profile, role.id]);
   const shown = milestones.filter(m => costFilter === 'all' || (costFilter === 'free' ? m.costMYR === 0 : m.costMYR <= 100));
   const done = milestones.filter(m => state.completion[completionKey(state.audience, m.id)]).length;
   const totalCost = milestones.reduce((t, m) => t + m.costMYR, 0);
   let week = 1;
-  const schedule = milestones.map(m => { const weeks = Math.max(1, Math.ceil(m.durationHours / profile.learningHours)); const s = { m, start: week, end: week + weeks - 1 }; week += weeks; return s; });
+  const schedule = profile.learningHours === null ? [] : milestones.map(m => {
+    const weeks = Math.max(1, Math.ceil(m.durationHours / profile.learningHours!));
+    const s = { m, start: week, end: week + weeks - 1 };
+    week += weeks;
+    return s;
+  });
+  const budgetSummary = profile.budgetMYR === null
+    ? 'budget not set — add one in Replan to compare.'
+    : `budget MYR ${profile.budgetMYR}${totalCost > profile.budgetMYR ? ' — over budget; try the free filter.' : ' — within budget.'}`;
 
   const apply = () => {
     const h = Number(hours), b = Number(budget);
@@ -38,7 +50,7 @@ export default function RoadmapPage() {
       <div className="panel panel-pad">
         <SectionTitle title="Progress" note={`${done} OF ${milestones.length} MILESTONES`} />
         <ChiliProgressBar value={milestones.length ? 100 * done / milestones.length : 0} label="Roadmap completion" valueText={`${done} of ${milestones.length} milestones complete`} testId="progress-roadmap" />
-        <p className="muted" style={{ marginTop: 10 }} data-testid="text-plan-cost">Total sample cost MYR {totalCost} · budget MYR {profile.budgetMYR}{totalCost > profile.budgetMYR ? ' — over budget; try the free filter.' : ' — within budget.'}</p>
+        <p className="muted" style={{ marginTop: 10 }} data-testid="text-plan-cost">Total sample cost MYR {totalCost} · {budgetSummary}</p>
         <p className="muted small">Priority skills: {milestones.map(m => m.skill).join(', ') || 'none'}</p>
       </div>
       <div className="panel panel-pad">
@@ -66,8 +78,10 @@ export default function RoadmapPage() {
             <span className="small">{m.verifiedUrl ? <a href={m.verifiedUrl} target="_blank" rel="noreferrer" className="text-link">{m.verifiedUrl}</a> : 'No verified URL — fictional example'}</span>
             <span className="small muted">Prerequisites: {m.prerequisites.join('; ')}</span>
           </div></div>; })}</div>
-        <div className="panel panel-pad"><SectionTitle title="Weekly schedule" note={`AT ${profile.learningHours} HRS / WEEK`} />
-          {schedule.map(s => <div key={s.m.id} className="week-row"><span className="mono">Wk {s.start}{s.end > s.start ? `–${s.end}` : ''}</span><span>{s.m.skill}</span></div>)}
+        <div className="panel panel-pad"><SectionTitle title="Weekly schedule" note={profile.learningHours === null ? 'SET HOURS IN REPLAN' : `AT ${profile.learningHours} HRS / WEEK`} />
+          {profile.learningHours === null
+            ? <p className="muted">Set weekly learning hours in Replan to calculate a schedule.</p>
+            : schedule.map(s => <div key={s.m.id} className="week-row"><span className="mono">Wk {s.start}{s.end > s.start ? `–${s.end}` : ''}</span><span>{s.m.skill}</span></div>)}
           <div className="disclaimer"><Info size={14} /><span>Weeks = duration hours ÷ weekly learning hours, rounded up, in milestone order.</span></div></div>
       </div>}
   </>;
