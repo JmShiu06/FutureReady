@@ -78,6 +78,13 @@ An opt-in fictional explanation beside a deterministic feature does not make its
 - Milestone completion never changes skill levels; levels change only via a separate user-confirmed update (one per milestone).
 **Why:** user spec required progress to be tracked without silently inflating readiness.
 
+## Raccoon team artwork
+Use the first hand-drawn raccoon face from the supplied sticker sheet as the official brand icon. Other stickers are subtle decorations, not navigation icons or reasons to add sections.
+
+**Why:** The user explicitly chose the supplied artwork for the team's identity and asked to preserve the existing website, features, navigation labels and hand-drawn appearance.
+
+**How to apply:** Keep functional icons simple outlines. Use individual transparent assets rather than the full sheet, with small responsive placements that never overlap text or controls. Preserve the warm cream-and-brown palette.
+
 ## Consolidated workspace boundaries
 Do not reintroduce separate duplicate CV-analysis, job-recommendation, SDG-explorer or AI-panel workspaces when extending the app. Keep CV upload and analysis on My profile, career workflows together, SDG relevance on career cards, and explanations in one shared drawer. The Dashboard is a summary with onward links, not a second copy of detailed tools.
 

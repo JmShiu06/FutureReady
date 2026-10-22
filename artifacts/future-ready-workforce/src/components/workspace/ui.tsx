@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import type { Evidence, RequiredSkill, SkillGap } from '@/domain/types';
 import { evidenceWarnings } from '@/domain/services';
+import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 
 export function SectionTitle({ title, note, action, info }: { title: string; note?: string; action?: ReactNode; info?: string }) {
@@ -67,7 +68,7 @@ export function ErrorBlock({ message, onRetry }: { message: string; onRetry: () 
 }
 
 export function EmptyBlock({ title, children }: { title: string; children?: ReactNode }) {
-  return <div className="state-box" data-testid="state-empty"><strong>{title}</strong>{children}</div>;
+  return <div className="state-box" data-testid="state-empty"><RaccoonArt name="sleeping" size={92} className="state-raccoon" /><strong>{title}</strong>{children}</div>;
 }
 
 type AsyncState<T> = { status: 'loading' | 'error' | 'success'; data?: T; error?: string };

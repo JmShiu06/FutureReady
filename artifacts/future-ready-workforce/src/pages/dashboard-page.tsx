@@ -5,6 +5,7 @@ import { useWorkspace } from '@/domain/workspace-context';
 import { aggregateRecords, audienceLabels, demoRoles } from '@/domain/demo-data';
 import { assessRole, completionKey, rankCareers } from '@/domain/services';
 import { activeBaseline, roadmapMilestones } from '@/domain/learning';
+import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { PageHead } from '@/components/workspace/ui';
 import { MatchScore } from '@/components/shared/match-score';
 import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
@@ -41,6 +42,7 @@ function AggregateOverview() {
         <div className="eyebrow">{isHr ? 'Team planning' : 'Cohort planning'}</div>
         <h1>{aggregateRecords.length} synthetic records across {stats.groups} {isHr ? 'departments' : 'programmes'}</h1>
         <p>Aggregates support learning investment and curriculum conversations. They are not for hiring, ranking or performance decisions about named people.</p>
+        <RaccoonArt name="waving" size={118} className="welcome-raccoon" />
         <div className="welcome-actions"><Link href="/team" className="btn btn-primary" data-testid="link-dashboard-team"><Users size={14} /> Open {isHr ? 'team' : 'cohort'} planning <ArrowRight size={14} /></Link></div>
       </article>
       <SummaryCard icon={<Compass size={15} />} eyebrow="Average coverage" title="Toward each record's target role" testId="avg"
@@ -83,6 +85,7 @@ function PersonalOverview() {
         <div className="eyebrow">Starting from</div>
         <h1 data-testid="text-dashboard-occupation">{profile.occupation || 'Your career profile'}</h1>
         <p>{profileContext || 'Add or update your skills in My profile to personalise this context.'}</p>
+        <RaccoonArt name="waving" size={118} className="welcome-raccoon" />
         <div className="welcome-actions">
           <Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> Explore career paths <ArrowRight size={14} /></Link>
           <Link href="/my-profile" className="btn btn-quiet" data-testid="link-edit-profile"><UserRound size={14} /> Edit profile</Link>

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
-  Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, Route as RouteIcon, ShieldCheck, UserRound,
+  AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, Route as RouteIcon, ShieldCheck, UserRound,
 } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { useCvSession } from '@/domain/cv-session';
@@ -9,6 +9,7 @@ import { audienceLabels } from '@/domain/demo-data';
 import { selectableAudiences } from '@/domain/storage';
 import type { Audience } from '@/domain/types';
 import { AiDrawerProvider } from '@/components/ai-drawer';
+import { RaccoonArt } from '@/components/brand/raccoon-art';
 
 export const mainNav = [
   { href: '/dashboard', label: 'Dashboard', icon: Compass, key: 'dashboard' },
@@ -50,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return <AiDrawerProvider><div className={`app-shell${phase === 'ready' ? ' has-candidate' : ''}`}>
     <aside className="sidebar">
       <Link href="/dashboard" className="brand" data-testid="link-brand">
-        <span className="brand-mark"><Activity size={19} strokeWidth={2.4} /></span>
+        <RaccoonArt name="logo" size={40} alt="FutureReady raccoon logo" className="brand-logo" testId="img-brand-logo" />
         <span className="brand-name">FutureReady<span>Workforce intelligence</span></span>
       </Link>
       <div className="nav-caption">WORKSPACE</div>

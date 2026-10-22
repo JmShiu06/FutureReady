@@ -267,3 +267,26 @@
 .profile-tab.active { color:#a94710; border-bottom-color:#b84d11; }
 .profile-tab:focus-visible { outline:2px solid #b84d11; outline-offset:2px; }
 [role=tabpanel][hidden] { display:none; }
+
+/* Hand-drawn raccoon artwork */
+.raccoon-art { display:block; object-fit:contain; pointer-events:none; user-select:none; height:auto; max-width:100%; }
+.brand-logo { width:40px; height:40px; flex:none; }
+.welcome-card .welcome-raccoon { position:absolute; right:22px; bottom:14px; width:clamp(78px,11vw,118px); z-index:1; animation:raccoon-bob 5s ease-in-out infinite; }
+.welcome-card > :not(.welcome-raccoon) { position:relative; z-index:2; }
+.welcome-card h1, .welcome-card p { max-width:min(450px, calc(100% - 110px)); }
+.page-art-head { position:relative; }
+.page-art { position:absolute; right:0; top:-6px; width:84px; }
+.page-head:has(+ .page-art) { padding-right:0; }
+.art-doodle-row { display:flex; gap:6px; align-items:center; }
+.art-doodle-row .raccoon-art { width:56px; height:56px; }
+.art-doodle-row .raccoon-art:last-child { width:30px; height:30px; }
+.state-box .state-raccoon { width:92px; opacity:.95; }
+@keyframes raccoon-bob { 50% { transform:translateY(-4px); } }
+@media (max-width:780px) {
+  .brand-logo { width:36px; height:36px; }
+  .welcome-card:has(.welcome-raccoon) { padding-bottom:90px; }
+  .welcome-card .welcome-raccoon { width:70px; right:12px; bottom:10px; opacity:.9; }
+  .welcome-card h1, .welcome-card p { max-width:100%; }
+  .page-art, .art-doodle-row { display:none; }
+}
+@media (prefers-reduced-motion:reduce) { .welcome-card .welcome-raccoon { animation:none; } }
