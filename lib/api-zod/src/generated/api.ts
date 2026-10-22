@@ -762,6 +762,107 @@ export const GetDosmLabourForceResponse = zod.object({
 
 
 /**
+ * Search a reviewed subset of Malaysian occupation titles and return the corresponding 2024 DOSM major-group employment count plus separate current national labour-force indicators. No occupation-specific unemployment count or rate is implied.
+ * @summary Search MASCO group employment with national DOSM context
+ */
+export const getDosmOccupationEmploymentSearchQueryQMax = 100;
+
+
+
+export const GetDosmOccupationEmploymentSearchQueryParams = zod.object({
+  "q": zod.coerce.string().max(getDosmOccupationEmploymentSearchQueryQMax).optional().describe('Optional job-title or occupation-group keyword, up to 100 characters.')
+})
+
+export const getDosmOccupationEmploymentSearchResponseOccupationSourceTotalEmployedThousandsMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseTitleSearchSourceRecordsInSearchIndexMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseTitleSearchSourceTotalOccupationsListedMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseOccupationGroupsItemCodeRegExp = new RegExp('^[1-9]$');
+export const getDosmOccupationEmploymentSearchResponseOccupationGroupsItemEmployedThousandsMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationLabourForceThousandsMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationEmployedThousandsMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationUnemployedThousandsMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationOutsideLabourForceThousandsMin = 0;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationParticipationRateMin = 0;
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationParticipationRateMax = 100;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationEmploymentPopulationRatioMin = 0;
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationEmploymentPopulationRatioMax = 100;
+
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationUnemploymentRateMin = 0;
+export const getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationUnemploymentRateMax = 100;
+
+
+
+export const GetDosmOccupationEmploymentSearchResponse = zod.object({
+  "query": zod.string(),
+  "occupationSource": zod.object({
+  "referenceYear": zod.number().int(),
+  "classification": zod.string(),
+  "unit": zod.string(),
+  "totalEmployedThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseOccupationSourceTotalEmployedThousandsMin),
+  "sourceName": zod.string(),
+  "table": zod.string(),
+  "sourceUrl": zod.string().url()
+}),
+  "titleSearchSource": zod.object({
+  "title": zod.string(),
+  "edition": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string().url(),
+  "recordsInSearchIndex": zod.number().int().min(getDosmOccupationEmploymentSearchResponseTitleSearchSourceRecordsInSearchIndexMin),
+  "totalOccupationsListed": zod.number().int().min(getDosmOccupationEmploymentSearchResponseTitleSearchSourceTotalOccupationsListedMin),
+  "scopeNote": zod.string()
+}),
+  "occupationGroups": zod.array(zod.object({
+  "code": zod.string().regex(getDosmOccupationEmploymentSearchResponseOccupationGroupsItemCodeRegExp),
+  "label": zod.string(),
+  "employedThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseOccupationGroupsItemEmployedThousandsMin),
+  "matchedOccupationTitles": zod.array(zod.string()),
+  "matchedJobTitles": zod.array(zod.string())
+})),
+  "nationalContext": zod.object({
+  "latestObservation": zod.object({
+  "date": zod.coerce.date(),
+  "labourForceThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationLabourForceThousandsMin),
+  "employedThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationEmployedThousandsMin),
+  "unemployedThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationUnemployedThousandsMin),
+  "outsideLabourForceThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationOutsideLabourForceThousandsMin),
+  "participationRate": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationParticipationRateMin).max(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationParticipationRateMax),
+  "employmentPopulationRatio": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationEmploymentPopulationRatioMin).max(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationEmploymentPopulationRatioMax),
+  "unemploymentRate": zod.number().min(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationUnemploymentRateMin).max(getDosmOccupationEmploymentSearchResponseNationalContextLatestObservationUnemploymentRateMax),
+  "publicationDate": zod.coerce.date().nullable().describe('Not supplied per observation by the OpenDOSM API; null is intentional.')
+}),
+  "metadata": zod.object({
+  "datasetId": zod.string(),
+  "sourceName": zod.string(),
+  "sourceUrl": zod.string().url(),
+  "apiUrl": zod.string().url(),
+  "license": zod.string(),
+  "licenseUrl": zod.string().url(),
+  "attribution": zod.string(),
+  "coverage": zod.string(),
+  "countUnit": zod.string(),
+  "rateUnit": zod.string(),
+  "methodology": zod.string(),
+  "caveats": zod.array(zod.string()),
+  "retrievedAt": zod.coerce.date(),
+  "latestObservationDate": zod.coerce.date()
+}),
+  "isStale": zod.boolean(),
+  "warning": zod.string().nullable()
+})
+})
+
+
+/**
  * Counts are online job offerings, not a complete vacancy count or skill-demand measure.
  * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
  */

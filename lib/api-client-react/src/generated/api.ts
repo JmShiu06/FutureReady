@@ -31,10 +31,12 @@ import type {
   CvUploadInput,
   DosmJobMarketInsightsResponse,
   DosmLabourForceResponse,
+  DosmOccupationEmploymentSearchResponse,
   DosmRefreshResponse,
   ErrorResponse,
   FilterJobsParams,
   GetDosmLabourForceParams,
+  GetDosmOccupationEmploymentSearchParams,
   HealthStatus,
   Job,
   JobMatchInput,
@@ -1337,6 +1339,91 @@ export function useGetDosmLabourForce<TData = Awaited<ReturnType<typeof getDosmL
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetDosmLabourForceQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDosmOccupationEmploymentSearchUrl = (params?: GetDosmOccupationEmploymentSearchParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dosm/occupation-employment-search?${stringifiedParams}` : `/api/dosm/occupation-employment-search`
+}
+
+/**
+ * Search a reviewed subset of Malaysian occupation titles and return the corresponding 2024 DOSM major-group employment count plus separate current national labour-force indicators. No occupation-specific unemployment count or rate is implied.
+ * @summary Search MASCO group employment with national DOSM context
+ */
+export const getDosmOccupationEmploymentSearch = async (params?: GetDosmOccupationEmploymentSearchParams, options?: Parameters<typeof customFetch>[1]): Promise<DosmOccupationEmploymentSearchResponse> => {
+
+  return customFetch<DosmOccupationEmploymentSearchResponse>(getGetDosmOccupationEmploymentSearchUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDosmOccupationEmploymentSearchQueryKey = (params?: GetDosmOccupationEmploymentSearchParams,) => {
+    return [
+    `/api/dosm/occupation-employment-search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDosmOccupationEmploymentSearchQueryOptions = <TData = Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>, TError = ErrorType<ErrorResponse>>(params?: GetDosmOccupationEmploymentSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDosmOccupationEmploymentSearchQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>> = ({ signal }) => getDosmOccupationEmploymentSearch(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDosmOccupationEmploymentSearchQueryResult = NonNullable<Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>>
+export type GetDosmOccupationEmploymentSearchQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Search MASCO group employment with national DOSM context
+ */
+
+export function useGetDosmOccupationEmploymentSearch<TData = Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>, TError = ErrorType<ErrorResponse>>(
+ params?: GetDosmOccupationEmploymentSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDosmOccupationEmploymentSearch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDosmOccupationEmploymentSearchQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

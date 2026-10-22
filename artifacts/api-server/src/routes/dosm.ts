@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import {
+  GetDosmOccupationEmploymentSearchResponse,
   GetDosmJobMarketInsightsResponse,
   GetDosmLabourForceResponse,
   RefreshDosmLabourForceResponse,
@@ -7,12 +8,16 @@ import {
 import { z } from "zod";
 import { validateDosmJobMarketInsightsSnapshot } from "../data/dosm-jmi-2026";
 import { dosmLabourForceService } from "../lib/dosmData";
+import { searchDosmOccupationEmployment } from "../services/occupation-employment-search";
 
 const router: IRouter = Router();
 
 const monthFilterSchema = z.object({
   fromMonth: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).optional(),
   toMonth: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).optional(),
+});
+const occupationSearchQuerySchema = z.object({
+  q: z.string().trim().max(100).optional(),
 });
 
 router.get("/dosm/labour-force", async (req, res): Promise<void> => {
@@ -40,6 +45,42 @@ router.get("/dosm/labour-force", async (req, res): Promise<void> => {
     );
     res.status(502).json({
       error: "Official DOSM data is unavailable and no validated cached copy exists.",
+    });
+  }
+});
+
+router.get("/dosm/occupation-employment-search", async (req, res): Promise<void> => {
+  const parsed = occupationSearchQuerySchema.safeParse({ ...req.query });
+  if (!parsed.success) {
+    res.status(400).json({ error: "The optional occupation keyword must be 100 characters or fewer." });
+    return;
+  }
+
+  try {
+    const labourForce = await dosmLabourForceService.get();
+    const latestObservation = labourForce.observations.at(-1);
+    if (!latestObservation) {
+      throw new Error("OpenDOSM returned no labour-force observations.");
+    }
+
+    const result = {
+      ...searchDosmOccupationEmployment(parsed.data.q ?? ""),
+      nationalContext: {
+        latestObservation,
+        metadata: labourForce.metadata,
+        isStale: labourForce.isStale,
+        warning: labourForce.warning,
+      },
+    };
+    GetDosmOccupationEmploymentSearchResponse.parse(result);
+    res.json(result);
+  } catch (error) {
+    req.log.warn(
+      { error: error instanceof Error ? error.message : "Unknown source error" },
+      "DOSM occupation-employment search failed",
+    );
+    res.status(502).json({
+      error: "Official DOSM national context is unavailable and no validated cached copy exists.",
     });
   }
 });

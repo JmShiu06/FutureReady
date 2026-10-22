@@ -7,7 +7,7 @@
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "test": "NODE_ENV=production LOG_LEVEL=silent tsx --test src/lib/*.test.ts src/routes/*.test.ts",
+    "test": "NODE_ENV=production LOG_LEVEL=silent tsx --test src/lib/*.test.ts src/routes/*.test.ts src/services/*.test.ts",
     "import:onet": "tsx src/data/occupation-evidence/import-onet.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

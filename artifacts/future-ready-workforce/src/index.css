@@ -213,6 +213,100 @@ h3 { font:700 14px var(--display-font); margin:0; }
 .table-wrap { overflow-x:auto; }
 .dosm-employed { color: hsl(145 63% 25%); }
 .dosm-unemployed { color: hsl(3 68% 40%); }
+
+.dosm-occupation-search {
+  padding: 22px;
+  margin: 18px 0 24px;
+  border-color: hsl(221 35% 86%);
+  background: linear-gradient(145deg, hsl(220 50% 99%), hsl(0 0% 100%) 58%);
+}
+.dosm-occupation-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.dosm-occupation-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  color: hsl(220 58% 37%);
+  background: hsl(218 70% 95%);
+  border-radius: 11px;
+}
+.dosm-occupation-heading h2 { margin: 3px 0 5px; font-size: 1.3rem; }
+.dosm-occupation-heading p { margin: 0; color: var(--muted); line-height: 1.55; }
+.dosm-occupation-input {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 13px;
+  border: 1px solid hsl(218 25% 81%);
+  border-radius: 10px;
+  background: white;
+  color: hsl(220 16% 47%);
+}
+.dosm-occupation-input:focus-within { border-color: hsl(220 61% 48%); box-shadow: 0 0 0 3px hsl(220 67% 54% / 12%); }
+.dosm-occupation-input input { flex: 1; min-width: 0; padding: 12px 0; border: 0; outline: 0; color: var(--foreground); background: transparent; font: inherit; }
+.dosm-occupation-scope {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 12px 0 18px;
+  padding: 11px 12px;
+  border: 1px solid hsl(41 71% 82%);
+  border-radius: 9px;
+  color: hsl(31 39% 31%);
+  background: hsl(43 100% 97%);
+  font-size: .88rem;
+  line-height: 1.5;
+}
+.dosm-occupation-scope svg { flex: 0 0 auto; margin-top: 1px; }
+.dosm-occupation-national { margin-top: 15px; padding: 16px; border: 1px solid hsl(220 29% 89%); border-radius: 11px; background: hsl(220 33% 98%); }
+.dosm-occupation-national-heading, .dosm-occupation-results-heading, .dosm-occupation-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dosm-occupation-national-heading h3, .dosm-occupation-results-heading h3 { margin: 0 0 4px; font-size: 1rem; }
+.dosm-occupation-national-heading p, .dosm-occupation-results-heading span { margin: 0; color: var(--muted); font-size: .84rem; }
+.dosm-occupation-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 13px; }
+.dosm-occupation-stat { min-width: 0; padding: 11px; border: 1px solid hsl(220 25% 91%); border-radius: 9px; background: white; }
+.dosm-occupation-stat span, .dosm-occupation-stat small { display: block; color: var(--muted); font-size: .77rem; line-height: 1.4; }
+.dosm-occupation-stat strong { display: block; margin: 7px 0 3px; color: hsl(220 36% 22%); font-size: 1.1rem; line-height: 1.2; overflow-wrap: anywhere; }
+.dosm-occupation-rate-explainer { margin: 12px 0 0; color: var(--muted); font-size: .83rem; line-height: 1.5; }
+.dosm-occupation-warning { margin: 10px 0 0; padding: 8px 10px; color: hsl(28 58% 31%); border-radius: 7px; background: hsl(41 100% 95%); font-size: .85rem; }
+.dosm-occupation-results-heading { align-items: center; margin: 18px 0 10px; }
+.dosm-occupation-data-year { flex: 0 0 auto; padding: 5px 8px; border-radius: 999px; background: hsl(220 43% 94%); color: hsl(220 42% 34%) !important; font-size: .76rem !important; }
+.dosm-occupation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.dosm-occupation-card { min-width: 0; padding: 15px; border: 1px solid hsl(220 25% 89%); border-radius: 11px; background: white; }
+.dosm-occupation-card-heading h4 { margin: 0 0 4px; color: hsl(220 35% 20%); font-size: 1rem; }
+.dosm-occupation-card-heading span { color: var(--muted); font-size: .78rem; }
+.dosm-occupation-source-tag { padding: 4px 7px; border: 1px solid hsl(144 33% 82%); border-radius: 999px; color: hsl(145 47% 29%) !important; background: hsl(144 42% 96%); font-weight: 650; }
+.dosm-occupation-match { margin: 12px 0 0; color: hsl(220 22% 40%); font-size: .83rem; line-height: 1.45; overflow-wrap: anywhere; }
+.dosm-occupation-count { margin-top: 12px; padding: 11px 12px; border-left: 3px solid hsl(220 65% 48%); border-radius: 0 8px 8px 0; background: hsl(220 54% 97%); }
+.dosm-occupation-count strong, .dosm-occupation-count span { display: block; }
+.dosm-occupation-count strong { color: hsl(220 44% 27%); font-size: 1.35rem; letter-spacing: -.02em; }
+.dosm-occupation-count span { margin-top: 3px; color: var(--muted); font-size: .8rem; }
+.dosm-occupation-card-note { margin: 11px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+.dosm-occupation-empty, .dosm-occupation-error { display: flex; justify-content: space-between; gap: 10px; padding: 13px; border: 1px solid hsl(220 25% 89%); border-radius: 9px; color: var(--muted); font-size: .86rem; }
+.dosm-occupation-empty { flex-direction: column; }
+.dosm-occupation-empty strong { color: hsl(220 35% 24%); }
+.dosm-occupation-error { align-items: center; border-color: hsl(3 55% 85%); background: hsl(3 72% 98%); color: hsl(3 48% 35%); }
+.dosm-occupation-methodology { margin-top: 14px; color: var(--muted); font-size: .86rem; }
+.dosm-occupation-methodology summary { cursor: pointer; color: hsl(220 37% 31%); font-weight: 600; }
+.dosm-occupation-methodology dl { display: grid; grid-template-columns: 155px minmax(0, 1fr); gap: 7px 13px; margin: 12px 0 0; line-height: 1.5; }
+.dosm-occupation-methodology dt { color: hsl(220 32% 31%); font-weight: 600; }
+.dosm-occupation-methodology dd { margin: 0; }
+@media (max-width: 760px) {
+  .dosm-occupation-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .dosm-occupation-search { padding: 16px; }
+  .dosm-occupation-grid { grid-template-columns: 1fr; }
+  .dosm-occupation-national-heading { flex-direction: column; }
+  .dosm-occupation-methodology dl { grid-template-columns: 1fr; gap: 3px; }
+  .dosm-occupation-methodology dd { margin-bottom: 9px; }
+}
 table { width:100%; border-collapse:collapse; min-width:590px; }
 th { text-align:left; color:#89958c; font:500 9px var(--mono-font); letter-spacing:.7px; text-transform:uppercase; padding:10px 9px; border-bottom:1px solid #e8e4db; }
 td { padding:13px 9px; border-bottom:1px solid #efebe3; font-size:10px; color:#4e655c; }

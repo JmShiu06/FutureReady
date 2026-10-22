@@ -468,6 +468,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /dosm/occupation-employment-search:
+    get:
+      operationId: getDosmOccupationEmploymentSearch
+      tags: [dosm]
+      summary: Search MASCO group employment with national DOSM context
+      description: Search a reviewed subset of Malaysian occupation titles and return the corresponding 2024 DOSM major-group employment count plus separate current national labour-force indicators. No occupation-specific unemployment count or rate is implied.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: Optional job-title or occupation-group keyword, up to 100 characters.
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: Matched broad occupational groups and the latest national labour-force context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DosmOccupationEmploymentSearchResponse"
+        "400":
+          description: Invalid occupation keyword
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: OpenDOSM is unavailable and no usable cached copy exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /dosm/job-market-insights:
     get:
       operationId: getDosmJobMarketInsights
@@ -1508,6 +1541,105 @@ components:
         warning:
           type: [string, "null"]
       required: [metadata, observations, isStale, warning]
+    DosmOccupationTitleMatch:
+      type: object
+      properties:
+        matchedOccupationTitles:
+          type: array
+          items:
+            type: string
+        matchedJobTitles:
+          type: array
+          items:
+            type: string
+      required: [matchedOccupationTitles, matchedJobTitles]
+    DosmOccupationEmploymentGroup:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: "^[1-9]$"
+        label:
+          type: string
+        employedThousands:
+          type: number
+          minimum: 0
+        matchedOccupationTitles:
+          type: array
+          items:
+            type: string
+        matchedJobTitles:
+          type: array
+          items:
+            type: string
+      required: [code, label, employedThousands, matchedOccupationTitles, matchedJobTitles]
+    DosmOccupationEmploymentSource:
+      type: object
+      properties:
+        referenceYear:
+          type: integer
+        classification:
+          type: string
+        unit:
+          type: string
+        totalEmployedThousands:
+          type: number
+          minimum: 0
+        sourceName:
+          type: string
+        table:
+          type: string
+        sourceUrl:
+          type: string
+          format: uri
+      required: [referenceYear, classification, unit, totalEmployedThousands, sourceName, table, sourceUrl]
+    DosmOccupationTitleSearchSource:
+      type: object
+      properties:
+        title:
+          type: string
+        edition:
+          type: string
+        publisher:
+          type: string
+        url:
+          type: string
+          format: uri
+        recordsInSearchIndex:
+          type: integer
+          minimum: 0
+        totalOccupationsListed:
+          type: integer
+          minimum: 0
+        scopeNote:
+          type: string
+      required: [title, edition, publisher, url, recordsInSearchIndex, totalOccupationsListed, scopeNote]
+    DosmOccupationEmploymentSearchResponse:
+      type: object
+      properties:
+        query:
+          type: string
+        occupationSource:
+          $ref: "#/components/schemas/DosmOccupationEmploymentSource"
+        titleSearchSource:
+          $ref: "#/components/schemas/DosmOccupationTitleSearchSource"
+        occupationGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/DosmOccupationEmploymentGroup"
+        nationalContext:
+          type: object
+          properties:
+            latestObservation:
+              $ref: "#/components/schemas/DosmLabourForceObservation"
+            metadata:
+              $ref: "#/components/schemas/DosmLabourForceMetadata"
+            isStale:
+              type: boolean
+            warning:
+              type: [string, "null"]
+          required: [latestObservation, metadata, isStale, warning]
+      required: [query, occupationSource, titleSearchSource, occupationGroups, nationalContext]
     DosmJobMarketObservation:
       type: object
       properties:

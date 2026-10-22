@@ -589,6 +589,60 @@ export interface DosmLabourForceResponse {
   warning: string | null;
 }
 
+export interface DosmOccupationTitleMatch {
+  matchedOccupationTitles: string[];
+  matchedJobTitles: string[];
+}
+
+export interface DosmOccupationEmploymentGroup {
+  /** @pattern ^[1-9]$ */
+  code: string;
+  label: string;
+  /** @minimum 0 */
+  employedThousands: number;
+  matchedOccupationTitles: string[];
+  matchedJobTitles: string[];
+}
+
+export interface DosmOccupationEmploymentSource {
+  referenceYear: number;
+  classification: string;
+  unit: string;
+  /** @minimum 0 */
+  totalEmployedThousands: number;
+  sourceName: string;
+  table: string;
+  sourceUrl: string;
+}
+
+export interface DosmOccupationTitleSearchSource {
+  title: string;
+  edition: string;
+  publisher: string;
+  url: string;
+  /** @minimum 0 */
+  recordsInSearchIndex: number;
+  /** @minimum 0 */
+  totalOccupationsListed: number;
+  scopeNote: string;
+}
+
+export type DosmOccupationEmploymentSearchResponseNationalContext = {
+  latestObservation: DosmLabourForceObservation;
+  metadata: DosmLabourForceMetadata;
+  isStale: boolean;
+  /** @nullable */
+  warning: string | null;
+};
+
+export interface DosmOccupationEmploymentSearchResponse {
+  query: string;
+  occupationSource: DosmOccupationEmploymentSource;
+  titleSearchSource: DosmOccupationTitleSearchSource;
+  occupationGroups: DosmOccupationEmploymentGroup[];
+  nationalContext: DosmOccupationEmploymentSearchResponseNationalContext;
+}
+
 export type DosmJobMarketObservationQuarter = typeof DosmJobMarketObservationQuarter[keyof typeof DosmJobMarketObservationQuarter];
 
 
@@ -987,5 +1041,13 @@ fromMonth?: string;
  * @pattern ^[0-9]{4}-(0[1-9]|1[0-2])$
  */
 toMonth?: string;
+};
+
+export type GetDosmOccupationEmploymentSearchParams = {
+/**
+ * Optional job-title or occupation-group keyword, up to 100 characters.
+ * @maxLength 100
+ */
+q?: string;
 };
 

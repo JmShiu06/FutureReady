@@ -9,6 +9,7 @@ import {
 } from '@workspace/api-client-react';
 import type { ListJobsParams } from '@workspace/api-client-react';
 import { AiExplanationPanel } from '@/components/ai-explanation-panel';
+import { DosmOccupationSearch } from '@/components/dosm-occupation-search';
 
 type Props = { profileSkills: string[] };
 
@@ -105,16 +106,17 @@ export function JobSearchPage({ profileSkills }: Props) {
     <div className="page-head jobs-page-head">
       <div>
         <div className="eyebrow">Career workspace / Role search</div>
-        <h1>Find a next-step role.</h1>
-        <p className="page-subtitle">Explore sample listings and compare their skill requirements with your profile.</p>
+        <h1>Explore Malaysian occupations.</h1>
+        <p className="page-subtitle">Search DOSM occupation-group employment figures alongside the latest Malaysia-wide labour-force context. Sample listings remain separate.</p>
       </div>
-      <span className="jobs-demo-flag" data-testid="status-jobs-demo">SAMPLE LISTINGS · DEMO DATA</span>
     </div>
 
     <div className="jobs-intro">
       <div className="jobs-intro-mark"><BriefcaseBusiness size={19} /></div>
-      <div><strong>A practical starting point</strong><p>Listings are illustrative examples, not live vacancies. Match scores show exact skill overlap—not a hiring probability.</p></div>
+      <div><strong>About the sample listings below</strong><p>They are illustrative examples, not live vacancies. Match scores show exact skill overlap—not a hiring probability.</p></div>
     </div>
+
+    <DosmOccupationSearch />
 
     <section className="jobs-search-panel panel" aria-label="Search and filter jobs">
       <label className="jobs-search-box">
@@ -144,7 +146,7 @@ export function JobSearchPage({ profileSkills }: Props) {
     </section>
 
     <div className="jobs-results-heading">
-      <div><div className="eyebrow">Explore opportunities</div><h2 data-testid="text-job-results-count">{jobsQuery.isLoading ? 'Finding roles…' : `${total.toLocaleString()} sample ${total === 1 ? 'role' : 'roles'}`}</h2></div>
+      <div><div className="eyebrow">Sample listings · Demo data</div><h2 data-testid="text-job-results-count">{jobsQuery.isLoading ? 'Finding roles…' : `${total.toLocaleString()} sample ${total === 1 ? 'role' : 'roles'}`}</h2><span className="jobs-demo-flag" data-testid="status-jobs-demo">SAMPLE LISTINGS · DEMO DATA</span></div>
       {profileSkills.length > 0
         ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from your saved device profile · review or update them on the dashboard</span>
         : <span className="jobs-profile-note">Add skills to your profile to see overlap</span>}
