@@ -2,17 +2,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MatchScore } from "@/components/shared/match-score";
 import { Link } from "wouter";
 import { ArrowUpRight, Sparkles } from "lucide-react";
-import { useMatchCareers, type CareerMatchResult } from "@workspace/api-client-react";
+import { useMatchCvCareers, type CareerMatchResult } from "@workspace/api-client-react";
 import { useWorkspace } from "@/domain/workspace-context";
 import { EmptyBlock, ErrorBlock, LoadingBlock } from "@/components/workspace/ui";
 
-/** Matched roles tab: dataset role families ranked from saved profile skills. CV upload lives only in My profile. */
+/** CV recommendations use uploaded career titles, with existing pooled skill evidence. */
 export function MatchedRolesTab() {
   const { profile } = useWorkspace();
   const hasCvSkills = profile.skills.some(
     (skill) => skill.cvDetected || skill.category === "CV detected",
   );
-  const matchCareers = useMatchCareers();
+  const matchCareers = useMatchCvCareers();
   const [result, setResult] = useState<CareerMatchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -61,11 +61,17 @@ export function MatchedRolesTab() {
     <>
       <div className="tab-intro">
         <p className="muted small" data-testid="text-recommendation-scope">
-          Role families ranked by <b>exact / related skill overlap</b> with the skills saved in your profile.
+          Career names from your uploaded AI Job Market Dataset, ranked by <b>exact / related skill overlap</b> with the skills saved in your profile.
         Related matches are labeled. These are role recommendations, not live vacancies or a hiring probability.
         </p>
         <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open AI Career Explanation</Link>
       </div>
+
+      {result && <details className="panel panel-pad" style={{ marginBottom: 16 }} data-testid="details-cv-career-source">
+        <summary>Career names and score sources</summary>
+        <p className="muted small">{result.scoring.note}</p>
+        <p className="muted small">Skill reference dataset: {result.source.datasetName}. Its citation and licence apply to the skill evidence, not to the uploaded career-name file.</p>
+      </details>}
 
       {!hasCvSkills && (
         <aside
@@ -126,6 +132,7 @@ export function MatchedRolesTab() {
                     <h2 style={{ margin: "4px 0 0", fontSize: 20 }} data-testid={`text-recommended-role-${index}`}>
                       {recommendation.roleFamily}
                     </h2>
+                    {recommendation.skillRoleFamily && <p className="muted small" style={{ margin: "6px 0 0" }} data-testid={`text-skill-reference-${index}`}>Skill reference: {recommendation.skillRoleFamily}</p>}
                   </div>
                 </div>
                 <MatchScore metric="overlap" value={recommendation.score} matched={recommendation.matchedSkills.length} considered={recommendation.skillsConsidered} testId={`text-skill-overlap-${index}`} />

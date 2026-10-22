@@ -1,0 +1,16 @@
+{
+  "source": {
+    "fileName": "AI_Job_Market_Dataset.csv",
+    "column": "job_title",
+    "rowCount": 10345,
+    "sha256": "6fa823c10f00de13ad9953f93e0aaedecad320259c6ecd3869267b865b7241f0"
+  },
+  "careers": [
+    { "title": "AI Engineer", "skillRoleFamily": "Data Scientist / ML" },
+    { "title": "Machine Learning Engineer", "skillRoleFamily": "Data Scientist / ML" },
+    { "title": "Business Analyst", "skillRoleFamily": "Business Analyst" },
+    { "title": "Data Scientist", "skillRoleFamily": "Data Scientist / ML" },
+    { "title": "Data Analyst", "skillRoleFamily": "Data Analyst / BI" },
+    { "title": "Data Engineer", "skillRoleFamily": "Data Engineer" }
+  ]
+}

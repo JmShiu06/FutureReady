@@ -1,7 +1,7 @@
 import { it } from "node:test";
 import assert from "node:assert/strict";
 import { prepareCvCareerExplanation, parseCvCareerExplanation, CvCareerInputError } from "./cvCareerExplanation";
-import { careerDataset, matchProfileSkills } from "./careerMatcher";
+import { matchCvCareerSkills } from "./cvCareerCatalogue";
 import { learningResources } from "../data/learningResources";
 import { cvCertifications } from "../data/cvCertifications";
 
@@ -23,7 +23,7 @@ export const syntheticSections = {
 it("uses only reviewed facts, unchanged match scores and catalogue resources", () => {
   const before = JSON.stringify(syntheticReviewedCv);
   const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
-  const matches = matchProfileSkills(careerDataset, syntheticReviewedCv.skills).matches.slice(0, 3);
+  const matches = matchCvCareerSkills(syntheticReviewedCv.skills).matches.slice(0, 3);
   assert.deepEqual(prepared.matches.map(match => match.score), matches.map(match => match.score));
   assert.deepEqual(prepared.request.context.reviewedCv, syntheticReviewedCv);
   assert.equal("sampleId" in prepared.request.context, false);
@@ -53,7 +53,7 @@ it("redacts contact details again at the API boundary and rejects unsupported ou
   assert.doesNotMatch(JSON.stringify(prepared.request.context), /manager@example/);
   for (const sections of [
     { ...syntheticSections, score: "high" },
-    { ...syntheticSections, careerMatchAnalysis: "Hiring probability is 99%." },
+    { ...syntheticSections, skillGapAnalysis: "Hiring probability is 99%." },
     { ...syntheticSections, areasForGrowth: "Visit https://made-up.invalid" },
     { ...syntheticSections, skillAnalysis: "Only python was explained." },
     { ...syntheticSections, strengths: "<think>private reasoning</think>" },
@@ -61,10 +61,13 @@ it("redacts contact details again at the API boundary and rejects unsupported ou
   ]) assert.throws(() => parseCvCareerExplanation(JSON.stringify(sections), prepared));
   const factual = parseCvCareerExplanation(JSON.stringify({ ...syntheticSections,
     candidateSummary: "The candidate is fluent in English.",
+    careerMatchAnalysis: "Backend: these roles require python and sql. Hiring probability is 99%.",
     strengths: "The candidate is a proficient expert.",
     improvementSuggestions: "Enroll in an invented certification course.",
   }), prepared);
   assert.doesNotMatch(factual.sections.candidateSummary, /fluent/);
+  assert.doesNotMatch(factual.sections.careerMatchAnalysis, /Backend|99%|roles require/);
+  for (const match of prepared.matches) assert.ok(factual.sections.careerMatchAnalysis.includes(match.title));
   assert.doesNotMatch(factual.sections.strengths, /proficient expert/);
   assert.doesNotMatch(factual.sections.improvementSuggestions, /invented certification/);
 });

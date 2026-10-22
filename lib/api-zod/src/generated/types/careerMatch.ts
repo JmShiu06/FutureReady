@@ -8,6 +8,8 @@
 
 export interface CareerMatch {
   roleFamily: string;
+  /** Existing pooled role family supplying the 30-skill reference for this uploaded-dataset career name. */
+  skillRoleFamily?: string;
   /** Matched skills / skills considered x 100, rounded to one decimal place. */
   score: number;
   skillsConsidered: number;

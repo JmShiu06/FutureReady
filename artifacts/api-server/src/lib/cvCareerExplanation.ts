@@ -3,7 +3,8 @@ import {
   GenerateCvCareerExplanationResponse,
   type CvCareerData,
 } from "@workspace/api-zod";
-import { careerDataset, matchProfileSkills } from "./careerMatcher";
+import { careerDataset } from "./careerMatcher";
+import { matchCvCareerSkills, CV_CAREER_TITLE_NOTE } from "./cvCareerCatalogue";
 import { learningResources } from "../data/learningResources";
 import { cvCertifications } from "../data/cvCertifications";
 import { CV_EXTRACTION_LIMITATION, redactCvContacts } from "./cvCareerData";
@@ -40,9 +41,10 @@ export function prepareCvCareerExplanation(body: unknown) {
   if (!reviewedCv.skills.length && !["education", "workExperience", "certifications", "projects", "languages"].some(field => (reviewedCv[field as keyof CvCareerData] as string[]).length)) {
     throw new CvCareerInputError("No CV information is available to explain. Upload a readable CV first.");
   }
-  const matches = (data.skills.length ? matchProfileSkills(careerDataset, data.skills).matches : []).slice(0, 3).map(match => ({
+  const matches = (data.skills.length ? matchCvCareerSkills(data.skills).matches : []).slice(0, 3).map(match => ({
     roleId: match.roleFamily.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     title: match.roleFamily, score: match.score,
+    skillRoleFamily: match.skillRoleFamily,
     matchedSkills: match.matchedSkills, missingSkills: match.missingSkills,
   }));
   const gaps = new Set(matches.flatMap(match => match.missingSkills));
@@ -59,6 +61,7 @@ export function prepareCvCareerExplanation(body: unknown) {
     "AI explanations may be inaccurate. Reported CV details are not verified qualifications.",
     "Match scores measure dataset skill overlap, not a hiring probability. Missing skills mean not evidenced in this CV.",
     "Course suggestions use the existing verified catalogue; uncovered skills and certification pathways may need further research.",
+    CV_CAREER_TITLE_NOTE,
   ];
   return {
     reviewedCv, matches, resources, warnings,
@@ -66,6 +69,7 @@ export function prepareCvCareerExplanation(body: unknown) {
       instruction: CV_CAREER_INSTRUCTION,
       context: {
         reviewedCv,
+        careerNameSource: "User-supplied AI Job Market Dataset, job_title column only. Skills are pooled reference evidence, not title-specific requirements. Recommend only the career titles in matches.",
         matches: matches.map(({ title, matchedSkills, missingSkills }) => ({
           title, matchedSkills, missingSkills: missingSkills.slice(0, 6),
           note: "A bounded subset of gaps for explanation; the full unchanged list is displayed separately.",
@@ -99,6 +103,12 @@ export function parseCvCareerExplanation(text: string, prepared: ReturnType<type
   const strengths = examples.length
     ? `Evidence you can use to discuss strengths: ${examples.slice(0, 4).map(excerpt).join("; ")}.${examples.length > 4 ? " Additional examples are shown in the preview." : ""}\n\nThese are reported examples, not a verified proficiency assessment.`
     : "No concrete work or project examples were extracted. The detected skill names can guide discussion, but do not establish proficiency or experience.";
+  const careerMatchAnalysis = prepared.matches.length
+    ? [
+      "These career names come from your uploaded dataset. Alignment means skill-reference overlap, not verified requirements or hiring suitability.",
+      ...prepared.matches.map(match => `${match.title}: the reviewed skills ${match.matchedSkills.join(", ")} overlap with the existing ${match.skillRoleFamily} skill reference. This is pooled evidence, not proof of this exact job title's requirements.`),
+    ].join("\n\n")
+    : "No skill overlap was found for the uploaded career-name catalogue. This does not establish a lack of ability or rule out other careers.";
   const courses = prepared.resources.filter(record => !record.id.startsWith("cert-"));
   const certificates = prepared.resources.filter(record => record.id.startsWith("cert-"));
   const improvementSuggestions = [
@@ -109,8 +119,8 @@ export function parseCvCareerExplanation(text: string, prepared: ReturnType<type
       : "No relevant provider-verified certification option is available in this catalogue.",
     "Use the provider links below to check current requirements and fees. These suggestions do not imply exam readiness or guarantee employment.",
   ].join("\n\n");
-  const sections = { ...generated, candidateSummary, strengths, improvementSuggestions };
-  for (const key of ["skillAnalysis", "careerMatchAnalysis", "skillGapAnalysis", "areasForGrowth"] as const) {
+  const sections = { ...generated, candidateSummary, careerMatchAnalysis, strengths, improvementSuggestions };
+  for (const key of ["skillAnalysis", "skillGapAnalysis", "areasForGrowth"] as const) {
     const prose = sections[key];
     if (/https?:|www\.|```|<\/?(?:think|analysis|reasoning)\b|%|\b(?:hiring probability|guaranteed employment)\b/i.test(prose)
       || /\b(?:is|are|am)\s+(?:(?:highly|very|already|an?)\s+){0,2}(?:proficient|fluent|expert|highly skilled)\b|\b(?:you|they|the candidate)\s+(?:have|has)\s+(?:advanced|expert)\s+(?:skills|knowledge)\b/i.test(prose)

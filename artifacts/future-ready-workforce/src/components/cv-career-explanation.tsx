@@ -109,7 +109,7 @@ function ExplanationResult() {
   const { sections, matches, resources, warnings } = explanation;
   return <section className="cvx-result" aria-labelledby="cvx-result-title" data-testid="panel-cvx-result">
     <h3 id="cvx-result-title">Your AI career explanation</h3>
-    <p className="muted small">Your summary, strength evidence and learning links come directly from reviewed CV details and verified records. AI explains skill meanings, career alignment, gaps and growth opportunities; it does not verify proficiency.</p>
+    <p className="muted small">Your summary, career alignment, strength evidence and learning links come directly from reviewed CV details and dataset records. AI explains skill meanings, gaps and growth opportunities; it does not verify proficiency or job requirements.</p>
     {warnings.length > 0 && <ul className="cvx-warnings" data-testid="list-cvx-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
     <div className="cvx-sections">
       {sectionDefs.map(({ key, title, icon: Icon }, i) => <details className="cvx-card" key={key} open={i === 0} data-testid={`card-cvx-${key}`}>
@@ -120,6 +120,7 @@ function ExplanationResult() {
             ? <p className="cvx-empty">No career matches were returned for these skills.</p>
             : <div className="cvx-matches">{matches.map(m => <article className="cvx-match" key={m.roleId} data-testid={`card-cvx-match-${m.roleId}`}>
               <h5>{m.title}</h5>
+              {m.skillRoleFamily && <p className="muted small">Skill reference: {m.skillRoleFamily} (pooled evidence, not title-specific requirements).</p>}
               <MatchScore metric="cv" variant="bar" value={m.score} matched={m.matchedSkills.length} considered={m.matchedSkills.length + m.missingSkills.length} testId={`score-cvx-${m.roleId}`} />
               {m.matchedSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Matched</span>{m.matchedSkills.map(s => <span className="cvx-chip ok" key={s}><Check size={11} aria-hidden="true" />{s}</span>)}</div>}
               {m.missingSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Missing</span>{m.missingSkills.map(s => <span className="cvx-chip gap" key={s}><X size={11} aria-hidden="true" />{s}</span>)}</div>}

@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type RequestHandler } from "express";
 import multer from "multer";
 import {
   ExtractCvSkillsResponse,
@@ -7,6 +7,7 @@ import {
   MatchCareersResponse,
 } from "@workspace/api-zod";
 import { careerDataset, matchProfileSkills, SCORING } from "../lib/careerMatcher";
+import { matchCvCareerSkills } from "../lib/cvCareerCatalogue";
 import { CvError, CV_PROCESSING_TIMEOUT_MS, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
 
 const router: IRouter = Router();
@@ -66,7 +67,8 @@ router.get("/career/skills", (_req, res): void => {
   res.json(ListCareerSkillsResponse.parse({ skills: careerDataset.allSkills }));
 });
 
-router.post("/career/match", (req, res): void => {
+function createMatchHandler(cvTitles: boolean): RequestHandler {
+  return (req, res): void => {
   const parsed = MatchCareersBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({
@@ -76,10 +78,15 @@ router.post("/career/match", (req, res): void => {
     return;
   }
 
-  const { normalizedSkills, unrecognizedSkills, skillMappings, matches } = matchProfileSkills(
+  const result = cvTitles ? matchCvCareerSkills(parsed.data.skills) : {
+    ...matchProfileSkills(
     careerDataset,
     parsed.data.skills,
-  );
+    ),
+    scoring: SCORING,
+    source: careerDataset.source,
+  };
+  const { normalizedSkills, unrecognizedSkills, skillMappings, matches } = result;
 
   if (normalizedSkills.length === 0) {
     res.status(400).json({ error: "Enter at least one skill that is not blank." });
@@ -92,10 +99,14 @@ router.post("/career/match", (req, res): void => {
       normalizedSkills,
       unrecognizedSkills,
       skillMappings,
-      scoring: SCORING,
-      source: careerDataset.source,
+      scoring: result.scoring,
+      source: result.source,
     }),
   );
-});
+  };
+}
+
+router.post("/career/match", createMatchHandler(false));
+router.post("/career/cv-match", createMatchHandler(true));
 
 export default router;

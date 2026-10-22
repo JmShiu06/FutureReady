@@ -228,6 +228,8 @@ export type CvCareerExplanationSections = {
 export type CvCareerExplanationMatchesItem = {
   roleId: string;
   title: string;
+  /** Existing pooled role family providing the skill evidence, not another recommended career name. */
+  skillRoleFamily?: string;
   /**
      * @minimum 0
      * @maximum 100
@@ -373,6 +375,8 @@ export interface SkillGapAnalysisInput {
 
 export interface CareerMatch {
   roleFamily: string;
+  /** Existing pooled role family supplying the 30-skill reference for this uploaded-dataset career name. */
+  skillRoleFamily?: string;
   /** Matched skills / skills considered x 100, rounded to one decimal place. */
   score: number;
   skillsConsidered: number;

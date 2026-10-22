@@ -37,9 +37,9 @@ AI exposure must be assessed at the task level from user-selected work character
 ## User-supplied career-name reference
 Use the user-supplied AI Job Market Dataset as a reference for career names.
 
-**Why:** The user supplied it specifically saying, “this is the dataset for career name.”
+**Why:** The user supplied it specifically saying, “this is the dataset for career name,” then approved its use for CV career recommendations and AI explanation only.
 
-**How to apply:** This identifies the intended title reference, not permission to treat its salary, openings or skill flags as verified Malaysian labour evidence. Keep official DOSM names/statistics separate and confirm the affected career views before replacing an existing catalogue.
+**How to apply:** Limit these names to CV recommendations and AI Career Explanation; keep general career browsing, DOSM and team features unchanged. Do not treat its salary, openings or skill flags as verified labour evidence or skill requirements. Use declared existing skill-reference families without changing the overlap algorithm; pooled AI/data-science evidence must not be presented as distinct title-specific requirements.
 
 ## Runpod AI skill explanations
 Candidate-facing AI Career Explanation must use the uploaded CV, not fictional profiles. The user explicitly approved sending reviewed structured skills, education, work experience, certifications, projects and languages to RunPod after a preview-and-confirm step for each upload. Never send the CV file, full extracted document text, name/contact fields, proficiency ratings or unrelated saved profile data. Details and explanations stay transient. The earlier single-skill explanation remains a narrower permitted path; non-candidate demonstration endpoints may still use labelled synthetic context.
@@ -50,9 +50,9 @@ Candidate-facing AI Career Explanation must use the uploaded CV, not fictional p
 
 A model can interpret a CV-detected skill label as proof of proficiency even when told not to. Treat generated CV explanations as untrusted on this point, not just the input.
 
-**Why:** Live Qwen responses repeatedly inferred English fluency from a language label and called certification exams courses despite explicit prompt prohibitions.
+**Why:** Live Qwen responses inferred English fluency from a language label, called certification exams courses, and treated pooled skill references as mandatory title-specific requirements despite prompt prohibitions.
 
-**How to apply:** Render personal fact summaries, strength evidence and course/certification classifications from reviewed data and verified records, not model assertions. Label that distinction in the UI. Validate the remaining AI prose; a detected label alone never verifies proficiency.
+**How to apply:** Render personal fact summaries, career alignments, strength evidence and course/certification classifications from reviewed data and reference records, not model assertions. Label that distinction in the UI. Validate remaining AI prose; neither a detected skill nor a pooled reference verifies proficiency or an exact job title's requirements.
 
 AI profile suggestions are the only approved addition workflow: users must explicitly confirm each skill, self-rate its proficiency and then separately save the profile. An AI suggestion cannot overwrite an existing skill or its level.
 

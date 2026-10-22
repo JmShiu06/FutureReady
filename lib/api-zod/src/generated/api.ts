@@ -191,6 +191,7 @@ export const GenerateCvCareerExplanationResponse = zod.object({
   "matches": zod.array(zod.object({
   "roleId": zod.string(),
   "title": zod.string(),
+  "skillRoleFamily": zod.string().optional().describe('Existing pooled role family providing the skill evidence, not another recommended career name.'),
   "score": zod.number().min(generateCvCareerExplanationResponseMatchesItemScoreMin).max(generateCvCareerExplanationResponseMatchesItemScoreMax),
   "matchedSkills": zod.array(zod.string()),
   "missingSkills": zod.array(zod.string())
@@ -204,6 +205,55 @@ export const GenerateCvCareerExplanationResponse = zod.object({
   "cost": zod.string()
 })),
   "warnings": zod.array(zod.string())
+})
+
+
+/**
+ * Career names come only from the user-supplied AI Job Market Dataset job_title column. Each title uses an explicitly identified existing 30-skill reference family. Pooled references can produce equal scores; CSV salary, openings and skill flags are not used. The general career matching endpoint and DOSM evidence are unchanged.
+ * @summary Match uploaded-dataset career titles using existing skill references
+ */
+export const matchCvCareersBodySkillsItemMax = 60;
+
+export const matchCvCareersBodySkillsMax = 50;
+
+
+
+export const MatchCvCareersBody = zod.object({
+  "skills": zod.array(zod.string().max(matchCvCareersBodySkillsItemMax)).min(1).max(matchCvCareersBodySkillsMax)
+})
+
+export const MatchCvCareersResponse = zod.object({
+  "matches": zod.array(zod.object({
+  "roleFamily": zod.string(),
+  "skillRoleFamily": zod.string().optional().describe('Existing pooled role family supplying the 30-skill reference for this uploaded-dataset career name.'),
+  "score": zod.number().describe('Matched skills / skills considered x 100, rounded to one decimal place.'),
+  "skillsConsidered": zod.number().int(),
+  "matchedSkills": zod.array(zod.string()),
+  "missingSkills": zod.array(zod.string())
+})),
+  "normalizedSkills": zod.array(zod.string()),
+  "unrecognizedSkills": zod.array(zod.string()),
+  "skillMappings": zod.array(zod.object({
+  "profileSkill": zod.string(),
+  "datasetSkill": zod.string(),
+  "matchType": zod.enum(['exact', 'related'])
+})),
+  "scoring": zod.object({
+  "label": zod.string(),
+  "formula": zod.string(),
+  "note": zod.string()
+}),
+  "source": zod.object({
+  "datasetName": zod.string(),
+  "publisher": zod.string(),
+  "period": zod.string(),
+  "license": zod.string(),
+  "citation": zod.string(),
+  "urls": zod.array(zod.string()),
+  "intendedUse": zod.string(),
+  "geographyNote": zod.string(),
+  "measurementNote": zod.string()
+})
 })
 
 
@@ -224,6 +274,7 @@ export const MatchCareersBody = zod.object({
 export const MatchCareersResponse = zod.object({
   "matches": zod.array(zod.object({
   "roleFamily": zod.string(),
+  "skillRoleFamily": zod.string().optional().describe('Existing pooled role family supplying the 30-skill reference for this uploaded-dataset career name.'),
   "score": zod.number().describe('Matched skills / skills considered x 100, rounded to one decimal place.'),
   "skillsConsidered": zod.number().int(),
   "matchedSkills": zod.array(zod.string()),
@@ -520,6 +571,7 @@ export const AnalyzeCareerPathBody = zod.object({
 export const AnalyzeCareerPathResponse = zod.object({
   "suitable_roles": zod.array(zod.object({
   "roleFamily": zod.string(),
+  "skillRoleFamily": zod.string().optional().describe('Existing pooled role family supplying the 30-skill reference for this uploaded-dataset career name.'),
   "score": zod.number().describe('Matched skills / skills considered x 100, rounded to one decimal place.'),
   "skillsConsidered": zod.number().int(),
   "matchedSkills": zod.array(zod.string()),

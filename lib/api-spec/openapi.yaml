@@ -131,6 +131,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /career/cv-match:
+    post:
+      operationId: matchCvCareers
+      tags: [career]
+      summary: Match uploaded-dataset career titles using existing skill references
+      description: >
+        Career names come only from the user-supplied AI Job Market Dataset job_title column.
+        Each title uses an explicitly identified existing 30-skill reference family.
+        Pooled references can produce equal scores; CSV salary, openings and skill flags are not used.
+        The general career matching endpoint and DOSM evidence are unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareerSkillsInput"
+      responses:
+        "200":
+          description: Ranked uploaded-dataset career names with mapped skill references
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerMatchResult"
+        "400":
+          description: Invalid skills input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /career/match:
     post:
       operationId: matchCareers
@@ -931,6 +960,9 @@ components:
             properties:
               roleId: { type: string }
               title: { type: string }
+              skillRoleFamily:
+                type: string
+                description: Existing pooled role family providing the skill evidence, not another recommended career name.
               score: { type: number, minimum: 0, maximum: 100 }
               matchedSkills:
                 type: array
@@ -1081,6 +1113,9 @@ components:
       properties:
         roleFamily:
           type: string
+        skillRoleFamily:
+          type: string
+          description: Existing pooled role family supplying the 30-skill reference for this uploaded-dataset career name.
         score:
           type: number
           description: Matched skills / skills considered x 100, rounded to one decimal place.

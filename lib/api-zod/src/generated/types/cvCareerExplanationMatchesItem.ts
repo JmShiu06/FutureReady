@@ -9,6 +9,8 @@
 export type CvCareerExplanationMatchesItem = {
   roleId: string;
   title: string;
+  /** Existing pooled role family providing the skill evidence, not another recommended career name. */
+  skillRoleFamily?: string;
   /**
      * @minimum 0
      * @maximum 100

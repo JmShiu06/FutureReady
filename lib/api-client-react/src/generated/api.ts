@@ -405,6 +405,95 @@ export const useGenerateCvCareerExplanation = <TError = ErrorType<ErrorResponse>
       return useMutation(getGenerateCvCareerExplanationMutationOptions(options));
     }
 
+export const getMatchCvCareersUrl = () => {
+
+
+
+
+  return `/api/career/cv-match`
+}
+
+/**
+ * Career names come only from the user-supplied AI Job Market Dataset job_title column. Each title uses an explicitly identified existing 30-skill reference family. Pooled references can produce equal scores; CSV salary, openings and skill flags are not used. The general career matching endpoint and DOSM evidence are unchanged.
+ * @summary Match uploaded-dataset career titles using existing skill references
+ */
+export const matchCvCareers = async (careerSkillsInput: CareerSkillsInput, options?: Parameters<typeof customFetch>[1]): Promise<CareerMatchResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CareerMatchResult>(getMatchCvCareersUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(careerSkillsInput)
+  }
+);}
+
+
+
+
+
+export const getMatchCvCareersMutationKey = () => ['matchCvCareers'] as const;
+
+export const getMatchCvCareersMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof matchCvCareers>>, TError,MatchCvCareersMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof matchCvCareers>>, TError,MatchCvCareersMutationVariables, TContext> => {
+
+const mutationKey = getMatchCvCareersMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof matchCvCareers>>, MatchCvCareersMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  matchCvCareers(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MatchCvCareersMutationResult = NonNullable<Awaited<ReturnType<typeof matchCvCareers>>>
+    export type MatchCvCareersMutationBody = BodyType<CareerSkillsInput>
+    export type MatchCvCareersMutationError = ErrorType<ErrorResponse>
+    export type MatchCvCareersMutationVariables = {data: BodyType<CareerSkillsInput>}
+
+    /**
+ * @summary Match uploaded-dataset career titles using existing skill references
+ */
+export const useMatchCvCareers = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof matchCvCareers>>, TError,MatchCvCareersMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof matchCvCareers>>,
+        TError,
+        MatchCvCareersMutationVariables,
+        TContext
+      > => {
+      return useMutation(getMatchCvCareersMutationOptions(options));
+    }
+
 export const getMatchCareersUrl = () => {
 
 
