@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { getOccupationSources, matchOccupations } from '../../../api-server/src/lib/occupationEvidence';
 import { defaultWorkspace, parseWorkspace } from './storage';
 import { documentedOverlap, occupationSnapshot, officialMilestones, officialPlanId } from './official-roadmap';
-import { activeBaseline, clearPlanData, confirmSkillUpdate, roadmapMilestones, setMilestoneComplete, startRoadmap } from './learning';
+import { activeBaseline, clearPlanData, confirmSkillUpdate, roadmapMilestones, resetActiveRoadmap, setMilestoneComplete, startRoadmap } from './learning';
 import { completionKey } from './services';
 import type { OccupationEvidenceResult } from '@workspace/api-client-react';
 import type { Audience, OfficialRoadmapOccupation } from './types';
@@ -99,6 +99,26 @@ test('official targets and resets remain isolated for all four audiences', () =>
   assert.equal(Object.keys(cleared.baselines).length, 3);
   assert.equal(cleared.confirmations.length, 0);
   assert.equal(parseWorkspace(JSON.stringify(changed)).warning, '');
+});
+
+test('reset removes only the active roadmap and progress while preserving skills and other audiences', () => {
+  let state = begin();
+  const milestone = roadmapMilestones(state)[0];
+  const key = completionKey('adult', milestone.id);
+  state = setMilestoneComplete(state, key, true);
+  state = confirmSkillUpdate(state, { milestoneId: milestone.id, toLevel: 1 }).state;
+  state = startRoadmap({ ...state, audience: 'graduate' }, id, new Date(), snapshot);
+  const adultSkills = state.profiles.adult.skills;
+  const graduateBaseline = activeBaseline(state);
+
+  const reset = resetActiveRoadmap({ ...state, audience: 'adult' });
+
+  assert.equal(activeBaseline({ ...reset, audience: 'adult' }), null);
+  assert.deepEqual(reset.profiles.adult.skills, adultSkills);
+  assert.equal(reset.completion[key], undefined);
+  assert.equal(reset.confirmations.some(c => c.audience === 'adult'), false);
+  assert.deepEqual(activeBaseline({ ...reset, audience: 'graduate' }), graduateBaseline);
+  assert.equal(resetActiveRoadmap(reset), reset);
 });
 
 test('unavailable courses have no invented costs, durations or broad skill substitutions', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
-import { Info } from 'lucide-react';
+import { Info, RotateCcw } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoRoles } from '@/domain/demo-data';
 import { completionKey } from '@/domain/services';
@@ -9,9 +9,13 @@ import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, PriorityTag, SectionTitle } from '@/components/workspace/ui';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { learningResourceCatalog } from '@workspace/workforce-evidence';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export function RoadmapSection({ onReview }: { onReview: () => void }) {
-  const { state, profile, targetRoleId, saveProfile, setMilestoneComplete } = useWorkspace();
+  const { state, profile, targetRoleId, saveProfile, setMilestoneComplete, resetActiveRoadmap } = useWorkspace();
   const [costFilter, setCostFilter] = useState<'all' | 'free' | 'low'>('all');
   const [hours, setHours] = useState(profile.learningHours === null ? '' : String(profile.learningHours));
   const [budget, setBudget] = useState(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
@@ -50,7 +54,24 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
 
   return <>
     <div className="panel panel-pad" style={{ marginBottom: 18 }} data-testid="panel-roadmap-target">
-      <SectionTitle title="Roadmap target" note={built ? 'BUILT FROM CAREERS & JOBS' : 'NOT BUILT YET'} />
+      <SectionTitle title="Roadmap target" note={built ? 'BUILT FROM CAREERS & JOBS' : 'NOT BUILT YET'}
+        action={built ? <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button type="button" className="btn btn-secondary btn-small" data-testid="button-reset-roadmap"><RotateCcw size={14} /> Reset roadmap</button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="roadmap-reset-dialog" data-testid="dialog-reset-roadmap">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset this roadmap?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes this roadmap and its milestone completion and confirmation history. Your saved profile skills, learning hours and budget will stay unchanged. Other audiences’ roadmaps are not affected. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-reset-roadmap">Keep roadmap</AlertDialogCancel>
+              <AlertDialogAction onClick={resetActiveRoadmap} data-testid="button-confirm-reset-roadmap">Reset roadmap</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog> : undefined} />
       {built
         ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{occupation?.title ?? role?.title}</strong> <span className="muted">· Only an explicit Build or Resume action changes this target. Browsing <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Careers & jobs</Link> never does.</span></p>
         : <p className="muted" style={{ margin: 0 }}>No roadmap yet. Explore a role in <Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-roadmap-careers">Careers & jobs</Link> and choose “Build my learning roadmap”.</p>}

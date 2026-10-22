@@ -281,6 +281,7 @@
 .art-doodle-row .raccoon-art { width:56px; height:56px; }
 .art-doodle-row .raccoon-art:last-child { width:30px; height:30px; }
 .state-box .state-raccoon { width:92px; opacity:.95; }
+.roadmap-reset-dialog { border-color:#dfd1c0; background:#fcf9f2; color:#493628; }
 @keyframes raccoon-bob { 50% { transform:translateY(-4px); } }
 @media (max-width:780px) {
   .brand-logo { width:36px; height:36px; }

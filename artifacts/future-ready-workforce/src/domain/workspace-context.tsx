@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { blankProfile, migrateLegacySkills } from './demo-data';
-import { clearPlanData, confirmSkillUpdate as applyConfirmation, setMilestoneComplete, startRoadmap as applyStartRoadmap } from './learning';
+import { clearPlanData, confirmSkillUpdate as applyConfirmation, resetActiveRoadmap as applyResetActiveRoadmap, setMilestoneComplete, startRoadmap as applyStartRoadmap } from './learning';
 import { audiences, defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
 import type { Audience, DemoProfile, OfficialRoadmapOccupation, WorkspaceState } from './types';
 
@@ -8,7 +8,7 @@ interface WorkspaceContextValue {
   state: WorkspaceState; profile: DemoProfile; targetRoleId: string; storageWarning: string;
   setAudience(audience: Audience): void; saveProfile(profile: DemoProfile): void;
   resetProfile(): void;
-  startRoadmap(roleId: string, occupation?: OfficialRoadmapOccupation): void; setMilestoneComplete(key: string, done: boolean): void;
+  startRoadmap(roleId: string, occupation?: OfficialRoadmapOccupation): void; resetActiveRoadmap(): void; setMilestoneComplete(key: string, done: boolean): void;
   confirmSkillUpdate(milestoneId: string, toLevel: number): string;
 }
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -75,6 +75,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       ...clearPlanData(s, s.audience), profiles: { ...s.profiles, [s.audience]: blankProfile(s.audience) },
     })),
     startRoadmap: (roleId, occupation) => update(s => applyStartRoadmap(s, roleId, new Date(), occupation)),
+    resetActiveRoadmap: () => update(s => applyResetActiveRoadmap(s)),
     setMilestoneComplete: (key, done) => update(s => setMilestoneComplete(s, key, done)),
     confirmSkillUpdate: (milestoneId, toLevel) => {
       // Evaluate against the latest committed state so a double click cannot confirm twice.

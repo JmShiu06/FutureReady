@@ -98,6 +98,32 @@ export function clearPlanData(state: WorkspaceState, audience: Audience): Worksp
   };
 }
 
+/** Clears only the active roadmap and its progress, preserving profile skills and other saved plans. */
+export function resetActiveRoadmap(state: WorkspaceState): WorkspaceState {
+  const audience = state.audience;
+  const roleId = state.targets[audience];
+  const baselineKey = planKey(audience, roleId);
+  const baseline = state.baselines[baselineKey];
+  if (!baseline) return state;
+
+  const milestones = baseline.occupation
+    ? officialMilestones(baseline)
+    : buildRoadmap({ ...state.profiles[audience], skills: baseline.skills }, roleId);
+  const activeCompletionKeys = new Set(milestones.map(m => completionKey(audience, m.id)));
+  const keepActive = <T,>(record: Record<string, T>) =>
+    Object.fromEntries(Object.entries(record).filter(([key]) => !activeCompletionKeys.has(key)));
+  const baselines = { ...state.baselines };
+  delete baselines[baselineKey];
+
+  return {
+    ...state,
+    baselines,
+    completion: keepActive(state.completion),
+    completedAt: keepActive(state.completedAt),
+    confirmations: state.confirmations.filter(c => !(c.audience === audience && c.roleId === roleId)),
+  };
+}
+
 export interface ProgressReport {
   role: CareerRole; startedAt: string; start: CareerAssessment; current: CareerAssessment;
   /** Current minus starting illustrative coverage, in percentage points of the same 0-100 coverage score. */
