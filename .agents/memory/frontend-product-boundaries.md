@@ -19,7 +19,7 @@ Readiness, observed market evidence and scenario assumptions are different conce
 
 **Why:** The user explicitly prohibits fake live signals, random match scores, fabricated sources, unvalidated forecasts and individual hiring decisions from aggregate planning views.
 
-**How to apply:** Use documented deterministic prototype calculations; keep source URLs nullable and show missing/stale evidence. Do not make synthetic refresh controls pretend to fetch live data. New hackathon profile entry uses fictional samples/manual skills rather than CV extraction claims.
+**How to apply:** Use documented deterministic prototype calculations; keep source URLs nullable and show missing/stale evidence. Do not make synthetic refresh controls pretend to fetch live data. Candidate skills come from reviewed CV extraction or manual entry; do not seed fictional skills.
 
 For official labour-market data integrations, use DOSM sources only unless the user explicitly approves additional providers.
 
@@ -33,6 +33,13 @@ AI exposure must be assessed at the task level from user-selected work character
 **Why:** The app has no validated per-skill AI exposure source, and a skill label alone cannot establish whether a person's work can be automated.
 
 **How to apply:** Describe possible task automation or assistance only from the user's own task details. A sourced exposure model or saved assessment history requires separate evidence and explicit scope.
+
+## User-supplied career-name reference
+Use the user-supplied AI Job Market Dataset as a reference for career names.
+
+**Why:** The user supplied it specifically saying, “this is the dataset for career name.”
+
+**How to apply:** This identifies the intended title reference, not permission to treat its salary, openings or skill flags as verified Malaysian labour evidence. Keep official DOSM names/statistics separate and confirm the affected career views before replacing an existing catalogue.
 
 ## Runpod AI skill explanations
 Candidate-facing AI Career Explanation must use the uploaded CV, not fictional profiles. The user explicitly approved sending reviewed structured skills, education, work experience, certifications, projects and languages to RunPod after a preview-and-confirm step for each upload. Never send the CV file, full extracted document text, name/contact fields, proficiency ratings or unrelated saved profile data. Details and explanations stay transient. The earlier single-skill explanation remains a narrower permitted path; non-candidate demonstration endpoints may still use labelled synthetic context.
