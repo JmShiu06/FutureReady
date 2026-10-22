@@ -84,11 +84,28 @@ test('CV review adds confirmed skills without exposing or changing About You det
   await expect.poll(() => storedAdultProfile(page)).toMatchObject({ occupation: '', education: '' });
   await expect.poll(async () => (await storedAdultProfile(page))?.skills?.find(skill => skill.name === skillName))
     .toMatchObject({ name: skillName, level: 1 });
-  await page.goto('/market-and-ai-impact?tab=ai-impact');
+  await page.screenshot({ path: '/tmp/candidate-badge-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const badgeBox = await page.getByTestId('text-candidate-badge').boundingBox();
+  expect(badgeBox).not.toBeNull();
+  expect(badgeBox!.x).toBeGreaterThanOrEqual(0);
+  expect(badgeBox!.x + badgeBox!.width).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: '/tmp/candidate-badge-mobile.png' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByTestId('link-nav-market-and-ai-impact').click();
+  await page.getByRole('tab', { name: 'AI Explanation', exact: true }).click();
   await expect(page.getByTestId('text-candidate-explanation')).toContainText('Candidate: Mina Tan');
-  await page.goto('/careers-and-jobs?tab=matched-roles');
+  await page.getByTestId('link-nav-careers-and-jobs').click();
+  await page.getByRole('tab', { name: 'Matched roles', exact: true }).click();
   await expect(page.getByTestId('text-candidate-job-matching')).toContainText('Candidate: Mina Tan');
-  await page.goto('/my-profile');
+  await page.getByTestId('link-nav-my-profile').click();
+  await page.getByTestId('input-profile-cv').setInputFiles({
+    name: 'replacement-resume.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('Second synthetic CV without personal details.'),
+  });
+  await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Nura Ismail');
+  await expect(page.getByTestId('text-candidate-profile')).toContainText('Candidate: Nura Ismail');
   await page.reload();
   await expect(page.getByTestId('text-candidate-badge')).toHaveCount(0);
   await expect(page.getByTestId('text-shell-name')).toHaveText('Your profile');
@@ -97,12 +114,6 @@ test('CV review adds confirmed skills without exposing or changing About You det
     (inputs, name) => inputs.some(input => (input as HTMLInputElement).value === name),
     skillName,
   )).toBe(true);
-  await page.getByTestId('input-profile-cv').setInputFiles({
-    name: 'replacement-resume.txt',
-    mimeType: 'text/plain',
-    buffer: Buffer.from('Second synthetic CV without personal details.'),
-  });
-  await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Nura Ismail');
 });
 
 test('a successful parse without a detected name displays the explicit unknown fallback', async ({ page }) => {

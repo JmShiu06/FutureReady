@@ -372,7 +372,10 @@ tr:last-child td { border-bottom:0; }
   .welcome-card h1 { font-size:27px; }
   .team-stat-grid { grid-template-columns:repeat(2,1fr); }
   .page-head { align-items:flex-start; flex-direction:column; }
-  .candidate-badge { left:12px; bottom:calc(84px + env(safe-area-inset-bottom)); max-width:calc(100vw - 24px); }
+  .app-shell.has-candidate { padding-bottom:calc(64px + env(safe-area-inset-bottom)); }
+  .app-shell.has-candidate::after { content:""; position:fixed; inset:auto 0 0; height:calc(64px + env(safe-area-inset-bottom)); z-index:999; background:hsl(var(--background) / .96); border-top:1px solid hsl(var(--border) / .8); pointer-events:none; }
+  .has-candidate .profile-save-bar { bottom:calc(64px + env(safe-area-inset-bottom)); }
+  .candidate-badge { left:12px; bottom:calc(12px + env(safe-area-inset-bottom)); max-width:calc(100vw - 24px); }
 }
 @media (max-width:480px) {
   .brand-name { display:none; }

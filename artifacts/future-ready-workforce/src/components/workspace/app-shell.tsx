@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const current = activeKey(location);
   const displayName = profile.occupation || 'Your profile';
   const initials = displayName.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
-  return <AiDrawerProvider><div className="app-shell">
+  return <AiDrawerProvider><div className={`app-shell${phase === 'ready' ? ' has-candidate' : ''}`}>
     <aside className="sidebar">
       <Link href="/dashboard" className="brand" data-testid="link-brand">
         <span className="brand-mark"><Activity size={19} strokeWidth={2.4} /></span>
@@ -63,9 +63,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>;
         })}
       </nav>
-      <div className="sidebar-bottom">
+      {phase !== 'ready' && <div className="sidebar-bottom">
         <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-name">{displayName}</strong><span>{audienceLabels[state.audience]}</span></div></div>
-      </div>
+      </div>}
     </aside>
     <div className="main-wrap">
       <header className="topbar">
