@@ -2,3 +2,4 @@
 - [Watermarked CV OCR](watermarked-cv-ocr.md) — compare layout/resolution variants before applying destructive watermark thresholding.
 - [Frontend product boundaries](frontend-product-boundaries.md) — audience/evidence boundaries and synthetic-only Runpod explanations; real profiles and CV text remain local.
 - [Learning recommendation boundaries](learning-recommendation-boundaries.md) — Python learning engine was explicitly retired; preserve existing analysis and verified learning resources.
+- [SDG duty evidence](sdg-duty-evidence.md) — require target-plus-duty evidence and sub-role limits; real-occupation citations must not silently reuse fictional goal-only AI explanations.

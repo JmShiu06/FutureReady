@@ -66,6 +66,7 @@ export function OfficialOccupationsPanel({ query }: { query: OccupationEvidenceQ
       Separate from the illustrative coverage above. Each occupation is on TalentCorp's MyCOL 2024/2025 list and mapped by review to an O*NET occupation.
       The count shows how many skills O*NET documents for that occupation appear by name in your profile. DOSM statistics in Market & AI impact are not used here.
     </p>
+    <p className="muted small">SDG tags are separately reviewed thematic links, not official MyCOL classifications or measured impact. Expand a tag for UN targets, occupational duties, scope limits and citation dates. Other occupations remain unassessed.</p>
     {query.isPending && <LoadingBlock rows={2} />}
     {query.isError && <ErrorBlock message="Official occupation evidence could not be loaded. Check that the API server is running." onRetry={query.retry} />}
     {query.data && <>
@@ -104,6 +105,7 @@ function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOc
     <span className="muted small">
       MASCO {occupation.mycol.masco4} → O*NET {occupation.onet.code} {occupation.onet.title} · {relationLabel[occupation.mapping.relation]}
     </span>
+    <SdgTags roleId={occupation.id} compact />
     {occupation.recommendationStatus === 'excluded' || !overlap
       ? <div className="state-box" style={{ marginTop: 12 }} data-testid={`text-compare-excluded-${index}`}>
         {occupation.exclusionReason ?? 'A skill comparison is not available for this occupation.'}
@@ -239,6 +241,10 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
             <dt>Mapping review</dt><dd>{relationLabel[o.mapping.relation]} · {o.mapping.status} · reviewed {data.sources.mapping.reviewedAt}</dd>
           </dl>
           <p className="muted small">{onet.localDemandNote}</p>
+        </div>
+        <div className="panel panel-pad" data-testid="panel-occupation-sdg">
+          <SectionTitle title="SDG relevance" note="APPLICATION REVIEW · NOT MEASURED IMPACT" />
+          <SdgTags roleId={o.id} />
         </div>
       </div>
     </div>

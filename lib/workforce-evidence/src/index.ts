@@ -6,6 +6,9 @@ export interface SdgMapping {
   sourceObservation: string | null;
 }
 
+export { mycolSdgMappings } from './mycol-sdg';
+export type { MycolSdgMapping, SdgCitation } from './mycol-sdg';
+
 export const sdgMappings: SdgMapping[] = [
   {
     goal: 4, roleId: 'learning-partner', skills: ['Learning design', 'Facilitation'],
