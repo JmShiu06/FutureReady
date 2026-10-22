@@ -7,6 +7,8 @@ import { occupationEvidence, getOccupationSources } from "./occupationEvidence";
 import { jobProvider } from "../services/job_provider";
 import { detectSkills } from "./cvSkillExtractor";
 import { matchProfileSkills, careerDataset } from "./careerMatcher";
+import { FEATURE_PROMPTS } from "./llmPrompts";
+import { learningResources, learningResourceCatalog, type VerifiedLearningResource } from "../data/learningResources";
 
 export class AiContextError extends Error {
   constructor(readonly status: 422 | 503, message: string) { super(message); }
@@ -22,6 +24,8 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
   const base = syntheticExplanationContext(input.feature, input.sampleId);
   const evidence: AiEvidence[] = [];
   let allowedSuggestions: string[] = [];
+  let resources: readonly VerifiedLearningResource[] = [];
+  const sourceIds: string[] = [];
   const add = (item: AiEvidence) => {
     evidence.push(item);
     base.contextSummary.push(`${item.title}${item.date ? ` (${item.date})` : ""}: ${item.note}`);
@@ -45,7 +49,6 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
       add({ title: sources.mycol.title, url: sources.mycol.landingUrl, note: "TalentCorp MyCOL critical-occupation evidence, separate from personal overlap." });
       add({ title: sources.onet.name, url: sources.onet.databaseUrl, date: sources.onet.releaseDate, note: "US occupational skill evidence; mapped relationships have documented limitations." });
     }
-    base.instruction += " Describe strengths, gaps, one realistic transition step and the official-evidence limitations. Keep the two evidence sources and dataset overlap separate.";
   }
   if (input.feature === "cv-analysis") {
     const fictionalCv = input.sampleId === "data-starter"
@@ -53,12 +56,18 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
       : "Fictional sample CV: practised project coordination, customer research and data storytelling in a training project.";
     const detected = detectSkills(fictionalCv);
     base.context.fictionalCv = { text: fictionalCv, detectedSkills: detected, matching: matchProfileSkills(careerDataset, detected).skillMappings };
-    base.instruction += " Explain the locally detected skills, missing target skills, a truthful CV-improvement example and a practice step. Never invent achievements, employment or proficiency. Do not advise adding a missing skill or experience to a CV before it has been acquired; suggest practice first and only evidence-based edits.";
+    base.context.canonicalCandidates = detected.filter(skill => careerDataset.allSkills.includes(skill));
     base.contextSummary.push("Fixed fictional CV excerpt; locally detected using the existing CV detector. Real uploads are never used here.");
   }
   if (input.feature === "learning-roadmap") {
     base.context.studyConstraints = { weeklyHours: input.sampleId === "data-starter" ? 4 : 2, budgetMYR: 0, level: "beginner", sequence: sampleMatch.missingSkills.slice(0, 3) };
-    base.instruction += " Explain the supplied practice sequence, short beginner exercises and a study strategy within the fictional time budget using free practice. Do not name course providers, prices or URLs.";
+    resources = learningResources.filter(resource => resource.skills.some(skill => sampleMatch.missingSkills.includes(skill)));
+    base.context.verifiedResources = resources.map(resource => ({
+      resourceId: resource.id, skills: resource.skills, prerequisites: resource.prerequisites,
+      recommendedPrerequisites: resource.recommended_prerequisites, cost: resource.cost,
+      duration: "Provider-reported duration is displayed separately by the server.",
+    }));
+    base.contextSummary.push(`Eligible verified catalogue records (reviewed ${learningResourceCatalog.reviewed_at}): ${resources.map(r => `${r.id}: ${r.title}, ${r.provider}, ${r.cost}, ${r.duration_label}`).join("; ") || "none for these gaps"}.`);
     base.contextSummary.push(`Fictional study budget: RM 0; ${input.sampleId === "data-starter" ? 4 : 2} hours weekly. No real roadmap is modified.`);
   }
   if (input.feature === "digital-twin") {
@@ -66,7 +75,11 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
       { name: "Moderate AI adoption", assumptions: ["Assistive tools adopted team by team.", "Human review remains mandatory.", "Existing workflows change gradually."], priorities: ["AI literacy", "Data storytelling", "Facilitation"] },
       { name: "Fast AI adoption", assumptions: ["Assistive tools spread across several functions at once.", "Teams invest in oversight and change support.", "Workflow redesign proceeds faster than in the moderate scenario."], priorities: ["AI literacy", "Critical thinking", "Process improvement", "Workforce planning"] },
     ];
-    base.instruction += " Compare the moderate and rapid adoption assumptions, possible priority changes and preparation. These workshop assumptions are not predictions or results from a forecasting model. Preserve existing before/after calculations.";
+    base.context.progressBoundary = {
+      actualSavedLearningHistorySupplied: false,
+      completedCourses: [], completedMilestones: [],
+      limitation: "Only a fictional skill-confirmation illustration is supplied, not actual learner progress or calculated scenario effects.",
+    };
     base.contextSummary.push("Moderate/fast adoption: existing manually authored workshop assumptions, no validated probabilities or effect sizes.");
   }
   if (input.feature === "market-trends") {
@@ -77,12 +90,14 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
     if (!recent.length) throw new AiContextError(503, "No dated DOSM observations are available to explain.");
     const first = recent[0];
     const last = recent.at(-1)!;
+    sourceIds.push("dosm:lfs_month");
     const direction = (before: number, after: number) => after > before ? "increased" : after < before ? "decreased" : "unchanged";
     // Numerical observations remain in the authoritative evidence panel. Give the model
     // computed directions only, so it cannot round or reinterpret official figures.
     base.context = {
       synthetic: true, profileUsed: false, source: data.metadata.sourceName,
       period: "The latest available observation months; exact dates are shown separately.",
+      sourceContext: [{ sourceId: "dosm:lfs_month", observationPeriod: "Exact dates and retrieval metadata are preserved in the server evidence panel." }],
       observedDirections: {
         unemploymentRate: direction(first.unemploymentRate, last.unemploymentRate),
         participationRate: direction(first.participationRate, last.participationRate),
@@ -97,6 +112,7 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
     };
     base.sampleLabel = "Dated DOSM evidence · AI interpretation";
     base.contextSummary = recent.map(o => `${o.date}: unemployment ${o.unemploymentRate}%; participation ${o.participationRate}%. National aggregates, not skill demand.`);
+    base.contextSummary.push(`Source ID: dosm:lfs_month; observation period: ${first.date} to ${last.date}; retrieved at: ${data.metadata.retrievedAt ?? "unavailable"}.`);
     add({ title: data.metadata.sourceName, url: data.metadata.sourceUrl, date: data.metadata.latestObservationDate, note: `${data.isStale ? "Stale observations; " : ""}${data.warning ?? "Latest available official observations, not a live jobs feed."} ${data.metadata.caveats.join(" ")}` });
   }
   if (input.feature === "job-fit") {
@@ -169,12 +185,18 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
     const listing = base.context.listing as { match?: { matchedSkills: string[]; missingSkills: string[] } };
     if (listing.match) listing.match = { matchedSkills: listing.match.matchedSkills, missingSkills: listing.match.missingSkills };
   }
-  return { ...base, evidence, allowedSuggestions, json: input.feature === "profile-skills" };
+  if (input.feature === "task-exposure") {
+    const traits = base.context.taskTraits as readonly string[];
+    base.context = { synthetic: true, taskTraits: traits, boundary: "Fictional task traits only; no saved self-check, personal profile or validated assessment result is supplied." };
+    base.contextSummary = ["Fictional task characteristics only; no profile, real task selections or assessment results are sent.", ...traits];
+  }
+  base.context.task = input.feature;
+  return { ...base, evidence, allowedSuggestions, resources, sourceIds, output: FEATURE_PROMPTS[input.feature].output, json: FEATURE_PROMPTS[input.feature].output !== "text" };
 }
 
 /** Authoritative numbers, source links and citations come from the server, never from model prose. */
 export function validateQualitativeAnswer(text: string): void {
-  if (/\d|https?:|www\.|\[[^\]]+\]\(|\bdoi:|【/i.test(text)) {
+  if (!text.trim() || text.length > 2400 || /\d|https?:|www\.|\[[^\]]+\]\(|\bdoi:|【|<\/?(?:think|thinking|analysis|reasoning)\b/i.test(text)) {
     throw new Error("Model prose must be qualitative; figures and citations are displayed separately.");
   }
 }

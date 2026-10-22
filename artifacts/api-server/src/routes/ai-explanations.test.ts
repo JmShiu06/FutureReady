@@ -6,11 +6,32 @@ import { createAiRouter } from "./ai";
 import type { generateLlmExplanation } from "../lib/runpod";
 import { CreateAiExplanationResponse } from "@workspace/api-zod";
 import { RunpodConfigurationError, RunpodRequestError } from "../lib/runpod";
+import { prepareAiContext } from "../lib/aiEvidence";
+import { FEATURE_PROMPTS, type PromptFeature } from "../lib/llmPrompts";
+
+const marketFixture = {
+  metadata: { sourceName: "DOSM mocked observations", sourceUrl: "https://open.dosm.gov.my/data-catalogue/lfs_month",
+    latestObservationDate: "2026-01-01", retrievedAt: "2026-01-02T00:00:00Z", caveats: ["National aggregates only"] },
+  observations: [{ date: "2026-01-01", unemploymentRate: 3, participationRate: 70 }], isStale: false,
+};
+function mockReply(input: Parameters<typeof generateLlmExplanation>[0]) {
+  const explanation = "Synthetic final answer.";
+  switch (input.context.task) {
+    case "cv-analysis": return { explanation: JSON.stringify({ explanation, skills: [] }) };
+    case "learning-roadmap": return { explanation: JSON.stringify({ explanation, resources: [] }) };
+    case "market-trends": return { explanation: JSON.stringify({ explanation, sourceIds: ["dosm:lfs_month"] }) };
+    case "profile-skills": return { explanation: JSON.stringify({ suggestions: [{ skill: (input.context.allowedSuggestions as string[])[0], rationale: "Useful for the fictional goal." }] }) };
+    default: return { explanation };
+  }
+}
+function requestFor(feature: PromptFeature) {
+  return { feature, sampleId: "data-starter", ...(feature === "job-fit" ? { jobId: "demo-data-analyst" } : {}), ...(feature === "sdg-contribution" ? { goal: 4 } : {}) };
+}
 
 async function testServer(provider: typeof generateLlmExplanation, run: (post: (body: unknown, path?: string) => Promise<Response>) => Promise<void>) {
   const app = express();
   app.use(express.json({ limit: "1mb" }));
-  app.use("/api", createAiRouter(provider));
+  app.use("/api", createAiRouter(provider, input => prepareAiContext(input, { getLabourForce: async () => marketFixture as never })));
   const server = app.listen(0);
   await new Promise<void>(resolve => server.once("listening", resolve));
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
@@ -70,7 +91,7 @@ it("deduplicates identical in-flight requests rather than calling the GPU twice"
   let notify!: () => void;
   const gate = new Promise<void>(r => { release = r; });
   const started = new Promise<void>(r => { notify = r; });
-  await testServer(async () => { calls++; notify(); await gate; return { explanation: "Fictional final answer." }; }, async post => {
+  await testServer(async input => { calls++; notify(); await gate; return mockReply(input); }, async post => {
     const input = { feature: "cv-analysis", sampleId: "data-starter" };
     const first = post(input);
     await started;
@@ -100,33 +121,51 @@ it("handles Pod failures safely without mutating state or exposing provider inte
   });
 });
 
-it("connects all requested features to one provider using synthetic context and a typed final-answer envelope", async () => {
-  await testServer(async input => {
+it("connects every existing feature to its prompt and validates the unchanged response envelope", async () => {
+  for (const feature of Object.keys(FEATURE_PROMPTS) as PromptFeature[]) await testServer(async input => {
     assert.equal(input.context.synthetic, true);
     assert.equal("profile" in input.context, false);
-    return { explanation: "Synthetic final answer." };
+    assert.equal(input.context.task, feature);
+    assert.equal(input.json, FEATURE_PROMPTS[feature].output !== "text");
+    return mockReply(input);
   }, async post => {
-    for (const feature of ["career-explorer", "cv-analysis", "learning-roadmap", "digital-twin", "task-exposure"]) {
-      const response = await post({ feature, sampleId: "data-starter" });
+      const response = await post(requestFor(feature));
       assert.equal(response.status, 200);
       assert.equal(response.headers.get("cache-control"), "no-store");
       const body = CreateAiExplanationResponse.parse(await response.json());
       assert.equal(body.synthetic, true);
       assert.equal(body.finalAnswerOnly, true);
-      assert.equal(body.explanation, "Synthetic final answer.");
-    }
+      if (feature !== "profile-skills") assert.equal(body.explanation, "Synthetic final answer.");
   });
 });
 
 it("limits repeated requests before the provider can incur further cost", async () => {
   let calls = 0;
-  await testServer(async () => { calls++; return { explanation: "Synthetic final answer." }; }, async post => {
+  await testServer(async input => { calls++; return mockReply(input); }, async post => {
     for (let i = 0; i < 8; i++) assert.equal((await post({ feature: "cv-analysis", sampleId: "data-starter" })).status, 200);
     const blocked = await post({ feature: "cv-analysis", sampleId: "data-starter" });
     assert.equal(blocked.status, 429);
     assert.equal(blocked.headers.get("retry-after"), "60");
     assert.equal(calls, 8);
   });
+});
+
+it("each connected feature rejects malformed output and has safe provider-error fallback", async () => {
+  for (const feature of Object.keys(FEATURE_PROMPTS) as PromptFeature[]) {
+    await testServer(async input => {
+      const reply = mockReply(input);
+      return { explanation: input.json ? JSON.stringify({ ...JSON.parse(reply.explanation), untrusted: "do not expose" }) : "Invented 99% forecast." };
+    }, async post => {
+      const response = await post(requestFor(feature));
+      assert.equal(response.status, 502, feature);
+      assert.doesNotMatch(JSON.stringify(await response.json()), /untrusted|forecast/);
+    });
+    await testServer(async () => { throw new RunpodRequestError("completion", 503); }, async post => {
+      const response = await post(requestFor(feature));
+      assert.equal(response.status, 502, feature);
+      assert.equal(typeof (await response.json() as { error: unknown }).error, "string");
+    });
+  }
 });
 
 it("limits concurrent model calls and releases the slots after completion", async () => {

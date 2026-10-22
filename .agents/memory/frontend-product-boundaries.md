@@ -53,6 +53,12 @@ Authoritative figures, dates and citations belong in server-rendered evidence/co
 
 **How to apply:** Retain output validation; do not relax it merely to make responses pass. Keep all numerical computations deterministic, and present source-supported thematic SDG relevance separately from measured impact or official occupational classification.
 
+An opt-in fictional explanation beside a deterministic feature does not make its actual calculations or private learner data LLM-powered.
+
+**Why:** The prompt-improvement request explicitly requires an honest inventory of connected inference paths, including distinguishing actual learning progress from hypothetical examples.
+
+**How to apply:** Describe exactly what context reaches the shared service. Prompt improvements alone do not authorize sending real CVs, saved learning histories or profile data; report those inference flows as unconnected until explicitly approved and implemented.
+
 ## Roadmap and confirmation rules (My Profile)
 - Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.
 - Roadmap milestones derive from a baseline snapshot taken at build time, so confirmed level changes never shrink the roadmap or lose progress.

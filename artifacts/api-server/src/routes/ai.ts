@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
 import { CreateAiExplanationBody, CreateAiExplanationResponse, type AiExplanation } from "@workspace/api-zod";
 import { generateLlmExplanation, RunpodConfigurationError, RunpodRequestError } from "../lib/runpod";
-import { prepareAiContext, AiContextError, parseSkillSuggestions, validateQualitativeAnswer } from "../lib/aiEvidence";
+import { prepareAiContext, AiContextError } from "../lib/aiEvidence";
+import { parseFeatureAnswer } from "../lib/aiOutput";
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 8;
@@ -72,13 +73,12 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
     pending = Promise.resolve().then(async () => {
       const example = await prepare(input);
       const result = await provider({ instruction: example.instruction, context: example.context, json: example.json });
-      const suggestions = example.json ? parseSkillSuggestions(result.explanation, example.allowedSuggestions) : undefined;
-      if (!suggestions) validateQualitativeAnswer(result.explanation);
+      const parsed = parseFeatureAnswer(result.explanation, example);
       return CreateAiExplanationResponse.parse({
-        explanation: suggestions ? "Review these AI-suggested skills for the fictional career goal. Confirm each skill and self-rate proficiency before adding it to your draft." : result.explanation,
-        ...(suggestions ? { suggestions } : {}),
-        sampleLabel: example.sampleLabel, contextSummary: example.contextSummary,
-        evidence: example.evidence, synthetic: true, finalAnswerOnly: true,
+        explanation: parsed.explanation,
+        ...(parsed.suggestions ? { suggestions: parsed.suggestions } : {}),
+        sampleLabel: example.sampleLabel, contextSummary: parsed.contextSummary,
+        evidence: parsed.evidence, synthetic: true, finalAnswerOnly: true,
       });
     }).finally(() => {
       activeRequests -= 1;
