@@ -59,6 +59,12 @@
 .kpi small { color:#8a7466; font-size:10px; }
 .role-card { border:1px solid #eadfd3; border-radius:12px; background:#fffaf4; padding:15px; display:grid; gap:10px; }
 .role-card.selected { border-color:#d66a27; box-shadow:0 0 0 2px #f6d6bc; }
+.recommendation-skills summary { display:flex; align-items:center; width:fit-content; min-height:40px; padding:0 4px; color:var(--text, #36574c); font-size:12px; font-weight:700; cursor:pointer; }
+.recommendation-skills summary:focus-visible { outline:2px solid #3989d5; outline-offset:2px; border-radius:4px; }
+.recommendation-skills-open { display:none; }
+.recommendation-skills[open] .recommendation-skills-closed { display:none; }
+.recommendation-skills[open] .recommendation-skills-open { display:inline; }
+.recommendation-skills[open] summary { margin-bottom:10px; }
 .rank { font:600 10px var(--mono-font); color:#a94710; background:#fae8d9; border-radius:7px; padding:4px 7px; }
 .bar-track { height:7px; background:#f0e4d8; border-radius:9px; overflow:hidden; }
 .bar-track i { display:block; height:100%; background:#d66a27; border-radius:9px; }

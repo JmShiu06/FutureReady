@@ -136,33 +136,40 @@ export default function CvRecommendationsPage() {
                 also appear in your profile.
               </p>
 
-              <div className="stack" aria-label={`How your skills relate to ${recommendation.roleFamily}`}>
-                {recommendation.matchedSkills.map((skill) => (
-                  (() => {
-                    const mapping = skillMappings.find((item) => item.datasetSkill === skill);
-                    return (
-                      <div
-                        className="panel"
-                        key={skill}
-                        style={{ padding: "11px 13px", background: "var(--surface, #fff)" }}
-                        data-testid={`skill-reason-${index}-${skill.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                      >
-                        <strong>{mapping?.profileSkill ?? skill}</strong>
-                        {mapping?.matchType === "related" && (
-                          <div className="muted small" style={{ marginTop: 4 }}>
-                            Related dataset skill: {mapping.datasetSkill}
-                          </div>
-                        )}
-                        <p className="muted small" style={{ margin: "4px 0 0" }}>
-                          {mapping?.matchType === "related"
-                            ? `The engine linked this profile wording to “${mapping.datasetSkill}”, a skill listed for this role.`
-                            : "This profile skill is also listed for this role in the dataset."}
-                        </p>
-                      </div>
-                    );
-                  })()
-                ))}
-              </div>
+              {recommendation.matchedSkills.length > 0 && (
+                <details className="recommendation-skills" data-testid={`details-recommendation-skills-${index}`}>
+                  <summary>
+                    <span className="recommendation-skills-closed">Show matched skills</span>
+                    <span className="recommendation-skills-open">Hide matched skills</span>
+                    {' '}<span className="muted small">({recommendation.matchedSkills.length})</span>
+                  </summary>
+                  <div className="stack" aria-label={`How your skills relate to ${recommendation.roleFamily}`}>
+                    {recommendation.matchedSkills.map((skill) => {
+                      const mapping = skillMappings.find((item) => item.datasetSkill === skill);
+                      return (
+                        <div
+                          className="panel"
+                          key={skill}
+                          style={{ padding: "11px 13px", background: "var(--surface, #fff)" }}
+                          data-testid={`skill-reason-${index}-${skill.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                        >
+                          <strong>{mapping?.profileSkill ?? skill}</strong>
+                          {mapping?.matchType === "related" && (
+                            <div className="muted small" style={{ marginTop: 4 }}>
+                              Related dataset skill: {mapping.datasetSkill}
+                            </div>
+                          )}
+                          <p className="muted small" style={{ margin: "4px 0 0" }}>
+                            {mapping?.matchType === "related"
+                              ? `The engine linked this profile wording to “${mapping.datasetSkill}”, a skill listed for this role.`
+                              : "This profile skill is also listed for this role in the dataset."}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              )}
             </article>
           ))}
         </section>

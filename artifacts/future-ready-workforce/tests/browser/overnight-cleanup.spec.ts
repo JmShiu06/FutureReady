@@ -98,3 +98,68 @@ test('the recommendation label, comparison, and real progress remain while demo 
   await expect(page).toHaveURL(/\/cv-analysis$/);
   await expect(page.getByRole('heading', { name: 'Your job recommendations' })).toBeVisible();
 });
+
+test('recommended role skill details stay collapsed until requested', async ({ page }) => {
+  await page.addInitScript(() => {
+    const profile = {
+      id: 'adult', audience: 'adult', occupation: '', experienceYears: null, education: '',
+      qualification: '', studyField: '', interests: [],
+      skills: [{ name: 'Python', level: 3, category: 'Technical' }],
+      location: '', workPreference: '', learningHours: null, budgetMYR: null, goals: '',
+    };
+    window.localStorage.setItem('frw-demo-workspace-v1', JSON.stringify({
+      version: 1,
+      audience: 'adult',
+      profiles: { adult: profile },
+      targets: { adult: 'service-designer' },
+      completion: {},
+      baselines: {},
+      completedAt: {},
+      confirmations: [],
+    }));
+  });
+  await page.route('**/api/career/match', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      matches: [{
+        roleFamily: 'Data Analyst',
+        score: 50,
+        skillsConsidered: 4,
+        matchedSkills: ['Python', 'Data analysis'],
+        missingSkills: ['SQL', 'Statistics'],
+      }],
+      normalizedSkills: ['python'],
+      unrecognizedSkills: [],
+      skillMappings: [
+        { profileSkill: 'Python', datasetSkill: 'Python', matchType: 'exact' },
+        { profileSkill: 'Data analysis', datasetSkill: 'Data analysis', matchType: 'exact' },
+      ],
+      scoring: { label: 'Skill overlap', formula: 'matched / considered', note: 'Illustrative' },
+      source: {
+        datasetName: 'Test dataset', publisher: 'Test', period: '2026', license: 'Test',
+        citation: 'Test', urls: [], intendedUse: 'Test', geographyNote: 'Test', measurementNote: 'Test',
+      },
+    }),
+  }));
+
+  await page.goto('/cv-analysis');
+  const skillDetails = page.getByTestId('details-recommendation-skills-0');
+  const matchedSkill = page.getByTestId('skill-reason-0-python');
+  await expect(page.getByTestId('card-job-recommendation-0')).toBeVisible();
+  await expect(skillDetails).not.toHaveAttribute('open', '');
+  await expect(skillDetails.locator('.recommendation-skills-closed')).toBeVisible();
+  await expect(skillDetails.locator('.recommendation-skills-open')).toBeHidden();
+  await expect(matchedSkill).toBeHidden();
+
+  await skillDetails.locator('summary').click();
+  await expect(skillDetails).toHaveAttribute('open', '');
+  await expect(skillDetails.locator('.recommendation-skills-closed')).toBeHidden();
+  await expect(skillDetails.locator('.recommendation-skills-open')).toBeVisible();
+  await expect(matchedSkill).toBeVisible();
+  await expect(page.getByTestId('skill-reason-0-data-analysis')).toBeVisible();
+
+  await skillDetails.locator('summary').click();
+  await expect(skillDetails).not.toHaveAttribute('open', '');
+  await expect(matchedSkill).toBeHidden();
+});
