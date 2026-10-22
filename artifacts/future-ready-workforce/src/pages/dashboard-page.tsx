@@ -88,16 +88,16 @@ function PersonalOverview() {
           <Link href="/my-profile" className="btn btn-quiet" data-testid="link-edit-profile"><UserRound size={14} /> Edit profile</Link>
         </div>
       </article>
-      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Current target" title={occupation?.title ?? target.title} testId="target"
+      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Current target" title={occupation?.title ?? 'No career target selected'} testId="target"
         value={overlap ? <MatchScore metric="onet" value={overlap.score} matched={overlap.matched} considered={overlap.total} variant="pill" testId="stat-target-overlap" />
-          : <MatchScore metric="coverage" value={targetAssessment.readiness} variant="pill" testId="stat-target-coverage" />}
-        foot={overlap ? `${overlap.total - overlap.matched} documented skills not in profile` : `${targetAssessment.gaps.length} gap${targetAssessment.gaps.length === 1 ? '' : 's'} remaining`} href={`/careers-and-jobs/roles/${occupation?.id ?? target.id}`} cta="Role detail" />
+          : undefined}
+        foot={overlap ? `${overlap.total - overlap.matched} documented skills not in profile` : 'Choose an occupation from Careers & jobs.'} href={occupation ? `/careers-and-jobs/roles/${occupation.id}` : '/careers-and-jobs?tab=career-paths'} cta={occupation ? 'Role detail' : 'Choose target'} />
     </section>
     <section className="summary-grid">
       <SummaryCard icon={<UserRound size={15} />} eyebrow="My profile" title={`${profile.skills.length} skill${profile.skills.length === 1 ? '' : 's'} saved`} testId="profile"
         foot="Upload a CV or edit skills. CVs are processed transiently; only skills you confirm are saved in this browser." href="/my-profile" cta="Open My profile" />
-      <SummaryCard icon={<BriefcaseBusiness size={15} />} eyebrow="Careers & jobs" title={top ? `Top path: ${top.role.title}` : 'No ranked paths yet'} testId="careers"
-        value={top ? <MatchScore metric="coverage" value={top.readiness} /> : undefined} foot="Career paths, matched roles and sample listings" href="/careers-and-jobs?tab=career-paths" cta="Compare paths" />
+      <SummaryCard icon={<BriefcaseBusiness size={15} />} eyebrow="Careers & jobs" title={profile.skills.length ? 'Explore matches for your saved skills' : 'No CV-based matches yet'} testId="careers"
+        foot="Use reviewed skills to explore role alignment, not hiring predictions." href="/careers-and-jobs?tab=matched-roles" cta="View matched roles" />
       <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Learning roadmap" title={built ? `${done} of ${milestones.length} milestones complete` : 'No roadmap yet'} testId="roadmap"
         foot={built ? 'Completion tracks progress only' : 'Build one from a career path'} href="/learning-roadmap" cta="Open learning roadmap" />
       <SummaryCard icon={<BarChart3 size={15} />} eyebrow="Market & AI impact" title="Labour-market indicators and AI task support" testId="market"

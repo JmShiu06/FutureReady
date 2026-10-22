@@ -3,6 +3,7 @@ import { CreateAiExplanationBody, CreateAiExplanationResponse, type AiExplanatio
 import { generateLlmExplanation, RunpodConfigurationError, RunpodRequestError } from "../lib/runpod";
 import { prepareAiContext, AiContextError } from "../lib/aiEvidence";
 import { parseFeatureAnswer } from "../lib/aiOutput";
+import { CvCareerInputError, prepareCvCareerExplanation, parseCvCareerExplanation } from "../lib/cvCareerExplanation";
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 8;
@@ -38,6 +39,39 @@ function allowRequest(client: string): boolean {
 router.post("/ai/task-exposure/explanation", (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.status(410).json({ error: "Profile-based AI requests are disabled. Use the synthetic AI explanation examples." });
+});
+
+router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
+  res.setHeader("Cache-Control", "no-store");
+  let prepared: ReturnType<typeof prepareCvCareerExplanation>;
+  try {
+    prepared = prepareCvCareerExplanation(req.body);
+  } catch (error) {
+    res.status(400).json({ error: error instanceof CvCareerInputError ? error.message : "Invalid reviewed CV details." });
+    return;
+  }
+  if (!allowRequest(req.ip || req.socket.remoteAddress || "unknown")) {
+    res.setHeader("Retry-After", "60");
+    res.status(429).json({ error: "Too many AI explanation requests. Please wait a minute and try again." });
+    return;
+  }
+  if (activeRequests >= MAX_ACTIVE_REQUESTS) {
+    res.setHeader("Retry-After", "5");
+    res.status(503).json({ error: "AI explanations are busy. Please try again shortly." });
+    return;
+  }
+  // Reviewed CV facts are transient, never cached, deduplicated across users, or logged.
+  activeRequests++;
+  try {
+    const result = await provider(prepared.request);
+    if (!res.destroyed) res.json(parseCvCareerExplanation(result.explanation, prepared));
+  } catch (error) {
+    if (!res.destroyed) res.status(error instanceof RunpodConfigurationError ? 503 : 502).json({
+      error: "The AI career explanation is unavailable or could not be validated. Your CV review and profile are unchanged. Please retry.",
+    });
+  } finally {
+    activeRequests--;
+  }
 });
 
 router.post("/ai/explanations", async (req, res): Promise<void> => {

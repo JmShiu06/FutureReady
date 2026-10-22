@@ -118,10 +118,139 @@ export interface CvProfileSuggestions {
   goals?: string;
 }
 
+export type CvSkillExtractionCategorizedSkillsItemCategory = typeof CvSkillExtractionCategorizedSkillsItemCategory[keyof typeof CvSkillExtractionCategorizedSkillsItemCategory];
+
+
+export const CvSkillExtractionCategorizedSkillsItemCategory = {
+  Technical_Skills: 'Technical Skills',
+  Soft_Skills: 'Soft Skills',
+  Languages: 'Languages',
+  Certifications: 'Certifications',
+  Other_Skills: 'Other Skills',
+} as const;
+
+export type CvSkillExtractionCategorizedSkillsItem = {
+  name: string;
+  category: CvSkillExtractionCategorizedSkillsItemCategory;
+};
+
+export interface CvCareerData {
+  /**
+     * @maxItems 50
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  skills: string[];
+  /**
+     * @maxItems 12
+     * @items.minLength 1
+     * @items.maxLength 500
+     */
+  education: string[];
+  /**
+     * @maxItems 12
+     * @items.minLength 1
+     * @items.maxLength 500
+     */
+  workExperience: string[];
+  /**
+     * @maxItems 12
+     * @items.minLength 1
+     * @items.maxLength 500
+     */
+  certifications: string[];
+  /**
+     * @maxItems 12
+     * @items.minLength 1
+     * @items.maxLength 500
+     */
+  projects: string[];
+  /**
+     * @maxItems 12
+     * @items.minLength 1
+     * @items.maxLength 500
+     */
+  languages: string[];
+  extractionLimited: boolean;
+}
+
 export interface CvSkillExtraction {
   skills: string[];
   warnings: string[];
   profileSuggestions: CvProfileSuggestions;
+  careerData?: CvCareerData;
+  categorizedSkills?: CvSkillExtractionCategorizedSkillsItem[];
+}
+
+export interface CvCareerExplanationInput {
+  data: CvCareerData;
+  consent: true;
+}
+
+export type CvCareerExplanationSections = {
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  candidateSummary: string;
+  /**
+     * @minLength 1
+     * @maxLength 12000
+     */
+  skillAnalysis: string;
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  careerMatchAnalysis: string;
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  skillGapAnalysis: string;
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  improvementSuggestions: string;
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  strengths: string;
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  areasForGrowth: string;
+};
+
+export type CvCareerExplanationMatchesItem = {
+  roleId: string;
+  title: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+};
+
+export type CvCareerExplanationResourcesItem = {
+  id: string;
+  title: string;
+  provider: string;
+  url: string;
+  skills: string[];
+  cost: string;
+};
+
+export interface CvCareerExplanation {
+  sections: CvCareerExplanationSections;
+  matches: CvCareerExplanationMatchesItem[];
+  resources: CvCareerExplanationResourcesItem[];
+  warnings: string[];
 }
 
 export interface CareerSkillList {

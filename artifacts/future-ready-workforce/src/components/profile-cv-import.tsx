@@ -3,6 +3,8 @@ import { Check, CloudUpload, FileText, Info, Loader2, Sparkles, X } from 'lucide
 import { extractCvSkills } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
+import { useCvSession } from '@/domain/cv-session';
+import { LIMITED_MESSAGE, NO_SKILLS_MESSAGE } from '@/components/cv-career-explanation';
 import { useAiDrawer } from '@/components/ai-drawer';
 import './profile-cv-import.css';
 
@@ -31,8 +33,8 @@ export function ProfileCvImport({
   existingSkills,
   onApply,
 }: {
-  existingSkills: Pick<ProfileSkill, 'name'>[];
-  onApply: (skills: ProfileSkill[]) => void;
+  existingSkills: Pick<ProfileSkill, 'name' | 'cvDetected' | 'category'>[];
+  onApply: (skills: ProfileSkill[], detectedNames: string[]) => void;
 }) {
   const [phase, setPhase] = useState<'idle' | 'extracting' | 'review' | 'error'>('idle');
   const [reviewSkills, setReviewSkills] = useState<ReviewSkill[]>([]);
@@ -46,9 +48,12 @@ export function ProfileCvImport({
   const inputRef = useRef<HTMLInputElement>(null);
   const reviewDialogRef = useRef<HTMLDialogElement>(null);
   const linkedInPreviewRef = useRef<HTMLDialogElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
-
-  useEffect(() => () => abortRef.current?.abort(), []);
+  const session = useCvSession();
+  const isCv = (skill: Pick<ProfileSkill, 'cvDetected' | 'category'>) => !!skill.cvDetected || skill.category === 'CV detected';
+  const detectedKeys = new Set(reviewSkills.map(skill => skillKey(skill.name)));
+  // Skills that stay after applying: all manual skills plus earlier CV skills detected again.
+  const retainedCount = existingSkills.filter(skill => !isCv(skill) || detectedKeys.has(skillKey(skill.name))).length;
+  const staleCvSkills = existingSkills.filter(skill => isCv(skill) && !detectedKeys.has(skillKey(skill.name)));
   useEffect(() => {
     const dialog = reviewDialogRef.current;
     if (!dialog) return;
@@ -62,11 +67,20 @@ export function ProfileCvImport({
     else if (!linkedInPreviewOpen && dialog.open) dialog.close();
   }, [linkedInPreviewOpen]);
 
-  const extract = async (file: File) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const resetLocal = () => {
     setReviewDialogOpen(false);
+    setReviewSkills([]);
+    setWarnings([]);
+  };
+
+  useEffect(() => {
+    // Session cleared elsewhere (audience switch, discard): drop local review copies too.
+    if (!session.draft && phase === 'review') { resetLocal(); setPhase('idle'); }
+  }, [session.draft, phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const extract = async (file: File) => {
+    const { signal, id } = session.beginUpload();
+    resetLocal();
     setPhase('extracting');
     setError('');
     setWarnings([]);
@@ -74,11 +88,13 @@ export function ProfileCvImport({
     setAnnouncement('Reading your CV.');
 
     try {
-      const result = await extractCvSkills({ file }, { signal: controller.signal });
-      if (controller.signal.aborted) return;
+      const result = await extractCvSkills({ file }, { signal });
+      if (signal.aborted || !session.completeUpload(id, result)) return;
       const existing = new Set(existingSkills.map(skill => skillKey(skill.name)));
       const unique = [...new Set(result.skills.map(name => name.trim()).filter(Boolean))];
-      const remainingSlots = Math.max(0, 50 - existingSkills.length);
+      const newKeys = new Set(unique.map(skillKey));
+      const retained = existingSkills.filter(skill => !isCv(skill) || newKeys.has(skillKey(skill.name))).length;
+      const remainingSlots = Math.max(0, 50 - retained);
       let selectedCount = 0;
       setReviewSkills(unique.map(name => {
         const alreadyInProfile = existing.has(skillKey(name));
@@ -89,32 +105,34 @@ export function ProfileCvImport({
       setWarnings(result.warnings);
       setPhase('review');
       setReviewDialogOpen(true);
-      setAnnouncement(`${unique.length} recognizable skills found. Review them before adding them to your profile.`);
+      setAnnouncement(unique.length ? `${unique.length} recognizable skills found. Review them before adding them to your profile.` : NO_SKILLS_MESSAGE);
     } catch (caught) {
-      if (controller.signal.aborted) return;
+      if (signal.aborted) return;
       const message = getErrorMessage(caught);
+      session.failUpload(id, message);
       setError(message);
       setPhase('error');
       setAnnouncement(message);
-    } finally {
-      if (abortRef.current === controller) abortRef.current = null;
     }
   };
 
   const acceptFile = (file?: File) => {
     if (!file) return;
-    abortRef.current?.abort();
+    const fail = (message: string) => {
+      const { id } = session.beginUpload();
+      session.failUpload(id, message);
+      resetLocal();
+      setError(message);
+      setPhase('error');
+      setAnnouncement(message);
+    };
     const extension = file.name.split('.').pop()?.toLowerCase();
     if (!extension || !ACCEPTED_EXTENSIONS.includes(extension)) {
-      setError('Choose a PDF, DOCX, TXT, JPG, JPEG or PNG file.');
-      setPhase('error');
-      setReviewSkills([]);
+      fail('Choose a PDF, DOCX, TXT, JPG, JPEG or PNG file.');
       return;
     }
     if (file.size > MAX_BYTES) {
-      setError('This file is larger than 5 MB. Choose a smaller file.');
-      setPhase('error');
-      setReviewSkills([]);
+      fail('This file is larger than 5 MB. Choose a smaller file.');
       return;
     }
     void extract(file);
@@ -132,7 +150,7 @@ export function ProfileCvImport({
   };
 
   const toggleSkill = (index: number, selected: boolean) => {
-    const capacity = Math.max(0, 50 - existingSkills.length);
+    const capacity = Math.max(0, 50 - retainedCount);
     const selectedCount = reviewSkills.filter(skill => skill.selected && !skill.alreadyInProfile).length;
     if (selected && selectedCount >= capacity) return;
     setReviewSkills(current => current.map((skill, i) => i === index ? { ...skill, selected } : skill));
@@ -144,23 +162,23 @@ export function ProfileCvImport({
   };
 
   const selectedSkills = reviewSkills.filter(skill => skill.selected && !skill.alreadyInProfile);
-  const remainingSlots = Math.max(0, 50 - existingSkills.length);
-  const canApply = selectedSkills.length > 0 && selectedSkills.every(skill => skill.level !== '');
+  const remainingSlots = Math.max(0, 50 - retainedCount);
+  const canApply = reviewSkills.length > 0 && (selectedSkills.length > 0 || staleCvSkills.length > 0) && selectedSkills.every(skill => skill.level !== '');
 
   const applyCvData = () => {
     if (!canApply) return;
     const importedSkills = selectedSkills.map(skill => ({
       name: skill.name,
       level: skill.level as Proficiency,
-      category: 'CV detected',
+      category: session.draft?.categories[skill.name.trim().toLowerCase()] ?? 'CV detected',
       cvDetected: true,
     }));
-    onApply(importedSkills);
+    onApply(importedSkills, reviewSkills.map(skill => skill.name));
     setReviewSkills([]);
     setWarnings([]);
     setPhase('idle');
     setReviewDialogOpen(false);
-    setAnnouncement(`${importedSkills.length} confirmed skill${importedSkills.length === 1 ? '' : 's'} added to your profile. Review and save your skills.`);
+    setAnnouncement(`${importedSkills.length} confirmed skill${importedSkills.length === 1 ? '' : 's'} applied. Earlier CV-derived skills were replaced; manual skills were kept. Save your skills to keep them.`);
   };
   const explainCvSkill = (skillName: string) => {
     setReviewDialogOpen(false);
@@ -181,7 +199,7 @@ export function ProfileCvImport({
       <span className="profile-cv-icon"><CloudUpload size={18} /></span>
       <div>
         <h2 id="profile-cv-title">Find skills from your CV</h2>
-        <p>Review each recognized skill and choose its proficiency before adding it to your profile.</p>
+        <p>Review each recognized skill and choose its proficiency before adding it to your profile. Applying a new CV replaces skills from an earlier CV; skills you added manually stay.</p>
       </div>
     </div>
 
@@ -214,7 +232,7 @@ export function ProfileCvImport({
       />
     </div>
 
-    <p className="profile-cv-privacy"><Info size={14} /> Your CV and extracted text are processed by this app and are not saved. Only skills you review and apply can be saved in your browser profile.</p>
+    <p className="profile-cv-privacy"><Info size={14} /> Your CV and extracted text are processed by this app and are not saved. Other CV details (education, work, projects) stay in this tab only and are cleared by the next upload. Only skills you review, apply and save are kept in your browser profile.</p>
 
     {phase === 'error' && <p className="profile-cv-error" role="alert" data-testid="error-profile-cv">{error}</p>}
     {phase === 'extracting' && <p className="profile-cv-status" role="status">Extracting recognizable skills. This can take a short while for scanned documents.</p>}
@@ -245,9 +263,10 @@ export function ProfileCvImport({
         <h2 id="profile-cv-review-title">Review and explain CV skills</h2>
         <p id="profile-cv-review-description">Ask AI to explain any detected skill, or select skills and set your own proficiency before adding them. AI receives only the chosen skill name, never your CV.</p>
       </header>
+      {session.draft?.extractionLimited && <p className="cvx-limited" role="note" data-testid="text-cv-limited">{LIMITED_MESSAGE}</p>}
       {warnings.length > 0 && <ul className="profile-cv-warnings" data-testid="warnings-profile-cv">{warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>}
       {reviewSkills.length === 0
-        ? <div className="profile-cv-empty" data-testid="empty-profile-cv">No career-catalogue skills were recognized. Return to Skills to add one manually.</div>
+        ? <div className="profile-cv-empty" data-testid="empty-profile-cv">{NO_SKILLS_MESSAGE}{existingSkills.length > 0 && ' Your existing profile skills, including any from an earlier CV, are unchanged. Remove them manually in Skills if they no longer apply.'}</div>
         : <>
           <div className="profile-cv-dialog-review-head">
             <strong>Skills from your CV</strong>
@@ -283,12 +302,18 @@ export function ProfileCvImport({
                 />}
             </div>)}
           </div>
-          {!canApply && <p className="profile-cv-level-note" role="status">Select at least one new skill and choose its level to continue.</p>}
+          {staleCvSkills.length > 0 && <p className="profile-cv-level-note" data-testid="text-cv-stale">Applying will remove {staleCvSkills.length} skill{staleCvSkills.length === 1 ? '' : 's'} from an earlier CV not found in this one: {staleCvSkills.map(s => s.name).join(', ')}. Skills found again keep your earlier rating; manual skills always stay.</p>}
+          {!canApply && <p className="profile-cv-level-note" role="status">Choose a self-rated level for every selected new skill, or uncheck skills you do not want to add.</p>}
         </>}
+      {session.draft && (session.draft.certifications.length > 0 || session.draft.languages.length > 0) && <div className="profile-cv-extra" data-testid="list-cv-extra">
+        {session.draft.certifications.length > 0 && <div><strong>Certifications found</strong><ul>{session.draft.certifications.map(c => <li key={c.id}>{c.text}</li>)}</ul></div>}
+        {session.draft.languages.length > 0 && <div><strong>Languages found</strong><ul>{session.draft.languages.map(c => <li key={c.id}>{c.text}</li>)}</ul></div>}
+        <p>Shown separately from dataset skills. Review them in AI Career Explanation below.</p>
+      </div>}
       <div className="profile-cv-dialog-footer">
         <button type="button" className="btn btn-secondary btn-small" onClick={() => setReviewDialogOpen(false)}>Back to profile</button>
         {reviewSkills.length > 0 && <button type="button" className="btn btn-primary btn-small" onClick={() => applyCvData()} disabled={!canApply} data-testid="button-apply-cv-skills">
-          <Check size={14} /> Add selected skills
+          <Check size={14} /> Apply CV skills
         </button>}
       </div>
     </dialog>

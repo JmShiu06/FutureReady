@@ -13,7 +13,7 @@ CV files and full extracted document text must remain transient and must not be 
 
 **Why:** The user explicitly treats CVs as sensitive personal documents and requires a non-LLM, no-paid-service workflow.
 
-**How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it.
+**How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it. The user later approved transient, reviewed structured CV details for RunPod career explanations after explicit consent; see frontend-product-boundaries.md for that exception.
 
 The job-recommendation page uses the user's saved profile skills as input; it does not upload or re-read a CV. Show role matches and the specific saved skills that contribute to each recommendation, without presenting overlap as a hiring probability.
 
@@ -25,7 +25,7 @@ New and reset profiles start with blank About You fields. On every app reload, c
 
 **Why:** The user later explicitly changed the saved-profile behavior and requested that About You details reset whenever the website is refreshed.
 
-**How to apply:** Apply the refresh reset when loading the workspace, preserving skills, targets, and completion. Keep the manual Reset button, which also restores default skills and clears roadmap completion for the selected audience.
+**How to apply:** Apply the refresh reset when loading the workspace, preserving skills, targets, and completion. Candidate profiles now start/reset with no seeded skills: the user requested actual CV-derived skills instead of fictional defaults. Do not erase manual or reviewed CV skills merely because they resemble an example.
 
 The CV import review is one popup: open it automatically after extraction and keep detected skills, skill selection, warnings and self-assessed proficiency choices together. Do not show the review list inline on the profile page; leave a button to reopen it if dismissed.
 
@@ -39,7 +39,7 @@ Show proficiency as five chili icons, from 1 “New to it” through 5 “Can te
 
 **How to apply:** Reuse this visual scale anywhere users set profile or CV-review proficiency, and label CV evidence as detection rather than validated expertise.
 
-Non-keyword skill matching should stay local and transparent: use curated related-phrase mappings, label related matches separately from exact matches, and leave CV-derived suggestions subject to profile review. Do not infer proficiency or send CV/profile text to an external AI service.
+Non-keyword skill matching should stay local and transparent: use curated related-phrase mappings, label related matches separately from exact matches, and leave CV-derived suggestions subject to profile review. Do not infer proficiency or send full CV/profile text externally. Only explicitly consented, minimized structured CV details may use the approved RunPod explanation path.
 
 **Why:** The user requested recognition of skills expressed with different wording while retaining the project's no-external-service CV privacy boundary.
 

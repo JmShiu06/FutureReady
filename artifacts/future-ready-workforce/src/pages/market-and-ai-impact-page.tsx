@@ -10,7 +10,7 @@ import { AiImpactTab } from '@/pages/scenarios-page';
 type Tab = 'market' | 'ai-impact';
 const tabs: TabDef<Tab>[] = [
   { key: 'market', label: 'Labour market', icon: <BarChart3 size={14} aria-hidden="true" /> },
-  { key: 'ai-impact', label: 'AI task impact', icon: <Cpu size={14} aria-hidden="true" /> },
+  { key: 'ai-impact', label: 'AI Explanation', icon: <Cpu size={14} aria-hidden="true" /> },
 ];
 
 export default function MarketAndAiImpactPage() {

@@ -88,3 +88,6 @@
 @media (prefers-reduced-motion:reduce) {
   .profile-cv-spinner { animation:none; }
 }
+
+.profile-cv-extra { display:grid; gap:8px; margin:12px 0; padding:10px 12px; border:1px solid #e1e8f0; border-radius:10px; background:#f5f9fe; font-size:10.5px; color:#425870; }
+.profile-cv-extra ul { margin:4px 0 0; padding-left:18px; } .profile-cv-extra p { margin:0; color:#72849a; font-size:10px; }

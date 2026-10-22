@@ -35,17 +35,17 @@ AI exposure must be assessed at the task level from user-selected work character
 **How to apply:** Describe possible task automation or assistance only from the user's own task details. A sourced exposure model or saved assessment history requires separate evidence and explicit scope.
 
 ## Runpod AI skill explanations
-Runpod explanations use server-owned synthetic profiles for general features, requested explicitly by feature and fixed sample ID, optionally with a public listing ID or SDG selector. The user has also approved one narrow exception for CV analysis: when explicitly invoked from CV review, it may receive one canonical detected skill name only. Never send CV files, extracted text, proficiency ratings, other detected skills, or saved profile data. Public evidence is selected on the server, never fabricated by the model.
+Candidate-facing AI Career Explanation must use the uploaded CV, not fictional profiles. The user explicitly approved sending reviewed structured skills, education, work experience, certifications, projects and languages to RunPod after a preview-and-confirm step for each upload. Never send the CV file, full extracted document text, name/contact fields, proficiency ratings or unrelated saved profile data. Details and explanations stay transient. The earlier single-skill explanation remains a narrower permitted path; non-candidate demonstration endpoints may still use labelled synthetic context.
 
-**Why:** The user expanded the shared Qwen3 integration but explicitly required synthetic profiles only. They later consented specifically to sending a single CV-detected skill name for a general explanation, and to the necessary API contract change.
+**Why:** The user superseded the earlier synthetic-only and single-skill limits by approving reviewed structured CV details for the seven-section career explanation, with names/contact fields and raw files/text excluded.
 
-**How to apply:** Build synthetic demonstration context on the server and reject arbitrary profile/text fields at the API boundary. For the CV exception, accept only an exact canonical skill from the existing detector catalogue and build a context containing that name alone. Preserve matching algorithms, official datasets, team features and Replit configuration. Do not let model prose become scores, forecasts, evidence or state updates.
+**How to apply:** Require explicit consent, bounded allowlisted structured fields and canonical detected skills. Invalidate the previous explanation and consent on new uploads or edits. Keep matching scores and provider-verified learning links server-owned; distinguish missing CV evidence from a lack of ability. Preserve algorithms, official datasets, team features and Replit configuration.
 
 A model can interpret a CV-detected skill label as proof of proficiency even when told not to. Treat generated CV explanations as untrusted on this point, not just the input.
 
-**Why:** A live Qwen response made an unsupported proficiency claim despite an explicit prohibition in its prompt.
+**Why:** Live Qwen responses repeatedly inferred English fluency from a language label and called certification exams courses despite explicit prompt prohibitions.
 
-**How to apply:** Check CV explanation text on the server for claims of personal proficiency, experience or qualifications before showing it. A detected label alone does not verify them.
+**How to apply:** Render personal fact summaries, strength evidence and course/certification classifications from reviewed data and verified records, not model assertions. Label that distinction in the UI. Validate the remaining AI prose; a detected label alone never verifies proficiency.
 
 AI profile suggestions are the only approved addition workflow: users must explicitly confirm each skill, self-rate its proficiency and then separately save the profile. An AI suggestion cannot overwrite an existing skill or its level.
 

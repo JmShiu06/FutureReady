@@ -76,7 +76,7 @@ async function resolveModel(baseUrl: string, apiKey: string, env: RunpodEnvironm
   return models[0];
 }
 
-export function cleanFinalAnswer(message: Record<string, unknown>, finishReason: unknown): string {
+export function cleanFinalAnswer(message: Record<string, unknown>, finishReason: unknown, maxCharacters = 4000): string {
   for (const field of ["reasoning_content", "reasoning", "analysis", "reasoning_details"]) {
     const value = message[field];
     if (value != null && value !== "" && !(typeof value === "string" && !value.trim()) && !(Array.isArray(value) && value.length === 0)) {
@@ -86,7 +86,7 @@ export function cleanFinalAnswer(message: Record<string, unknown>, finishReason:
   if (typeof message.content !== "string" || finishReason === "length") throw new RunpodRequestError("response");
   // Empty think blocks are harmless vLLM formatting; never hide non-empty reasoning.
   const content = message.content.replace(/<think>\s*<\/think>/gi, "").trim();
-  if (!content || content.length > 4000 || /<\/?(?:think|thinking|analysis|reasoning)\b|<\|(?:im_start|im_end|analysis|channel|message)|^\s*(?:analysis|reasoning|thinking)\s*:/im.test(content)) {
+  if (!content || content.length > maxCharacters || /<\/?(?:think|thinking|analysis|reasoning)\b|<\|(?:im_start|im_end|analysis|channel|message)|^\s*(?:analysis|reasoning|thinking)\s*:/im.test(content)) {
     throw new RunpodRequestError("response");
   }
   return content;
@@ -94,7 +94,7 @@ export function cleanFinalAnswer(message: Record<string, unknown>, finishReason:
 
 /** One server-only provider used by all explanation features. Never call from a browser. */
 export async function generateLlmExplanation(
-  input: { instruction: string; context: Record<string, unknown>; json?: boolean },
+  input: { instruction: string; context: Record<string, unknown>; json?: boolean; maxTokens?: number; maxOutputCharacters?: number },
   options: { env?: RunpodEnvironment; fetcher?: Fetcher } = {},
 ): Promise<{ explanation: string }> {
   const env = options.env ?? process.env;
@@ -118,7 +118,7 @@ export async function generateLlmExplanation(
       body: JSON.stringify({
         model,
         temperature: 0.2,
-        max_tokens: 600,
+        max_tokens: Math.min(4000, Math.max(600, input.maxTokens ?? 600)),
         chat_template_kwargs: { enable_thinking: false },
         ...(input.json ? { response_format: { type: "json_object" } } : {}),
         messages: buildLlmMessages(input),
@@ -135,5 +135,5 @@ export async function generateLlmExplanation(
   };
   const choice = payload?.choices?.[0];
   if (!choice?.message || typeof choice.message !== "object") throw new RunpodRequestError("response");
-  return { explanation: cleanFinalAnswer(choice.message, choice.finish_reason) };
+  return { explanation: cleanFinalAnswer(choice.message, choice.finish_reason, Math.min(24000, Math.max(4000, input.maxOutputCharacters ?? 4000))) };
 }

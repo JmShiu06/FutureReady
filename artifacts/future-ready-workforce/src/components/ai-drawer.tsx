@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useLocation, useSearch } from 'wouter';
+import { Link, useLocation, useSearch } from 'wouter';
 import { Sparkles, X } from 'lucide-react';
 import type { AiExplanationInput } from '@workspace/api-client-react';
 import { AiExplanationPanel, aiFeatureTitles } from '@/components/ai-explanation-panel';
@@ -99,6 +99,11 @@ export function AiExplainButton({ request, label = 'Explain with AI', testId, sm
   request: AiRequest; label?: string; testId?: string; small?: boolean; quiet?: boolean;
 }) {
   const { open } = useAiDrawer();
+  if (request.feature !== 'cv-analysis' && request.feature !== 'market-trends') {
+    return <Link href="/market-and-ai-impact?tab=ai-impact" className={`btn ai-trigger ${quiet ? 'btn-quiet' : 'btn-secondary'}${small ? ' btn-small' : ''}`} data-testid={testId ?? `button-open-ai-${request.feature}`}>
+      <Sparkles size={small ? 12 : 14} aria-hidden="true" /> AI Career Explanation
+    </Link>;
+  }
   return <button type="button" className={`btn ai-trigger ${quiet ? 'btn-quiet' : 'btn-secondary'}${small ? ' btn-small' : ''}`} aria-haspopup="dialog"
     onClick={() => open(request)} data-testid={testId ?? `button-open-ai-${request.feature}`}>
     <Sparkles size={small ? 12 : 14} aria-hidden="true" /> {label}

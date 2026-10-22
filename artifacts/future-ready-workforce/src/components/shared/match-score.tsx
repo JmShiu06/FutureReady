@@ -3,7 +3,7 @@
  * It never calculates a score: callers pass the value already returned by the
  * existing deterministic service or API, plus which metric that value means.
  */
-export type MatchMetric = 'coverage' | 'overlap' | 'exact' | 'onet';
+export type MatchMetric = 'coverage' | 'overlap' | 'exact' | 'onet' | 'cv';
 
 export const matchMetricMeta: Record<MatchMetric, { label: string; short: string; meaning: string }> = {
   coverage: {
@@ -20,6 +20,11 @@ export const matchMetricMeta: Record<MatchMetric, { label: string; short: string
     label: 'Exact skill overlap',
     short: 'exact overlap',
     meaning: 'Share of the listing requirements that appear in your saved profile by exact name. Not a hiring probability.',
+  },
+  cv: {
+    label: 'CV skill match',
+    short: 'CV skill match',
+    meaning: 'Score returned by the career matcher for the skills you confirmed from your CV. Not a hiring probability.',
   },
   onet: {
     label: 'O*NET documented skill overlap',

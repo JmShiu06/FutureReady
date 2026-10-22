@@ -61,7 +61,33 @@ export function blankProfile(audience: Audience): DemoProfile {
     learningHours: null,
     budgetMYR: null,
     goals: '',
+    skills: [],
   };
+}
+/** Exact skill lists that older versions seeded into every blank profile. */
+const legacySeededSkillSets = [sampleProfile('adult', 'default').skills, sampleProfile('adult', 'data').skills];
+export function isLegacySeededSkills(skills: { name: string; level: number; category: string; cvDetected?: boolean }[]) {
+  return legacySeededSkillSets.some(seed => seed.length === skills.length && seed.every((s, i) => {
+    const o = skills[i];
+    return o.name === s.name && o.level === s.level && o.category === s.category && !o.cvDetected;
+  }));
+}
+export function migrateLegacySkills<T extends { name: string; level: number; category: string; cvDetected?: boolean }>(skills: T[]): T[] {
+  return isLegacySeededSkills(skills) ? [] : skills;
+}
+const isCvSkill = (s: { cvDetected?: boolean; category: string }) => !!s.cvDetected || s.category === 'CV detected';
+const keyOf = (name: string) => name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+/**
+ * Explicitly applying a new CV: manual skills always stay; earlier CV skills found again keep
+ * their self-rating; earlier CV skills absent from the new CV are removed; confirmed new ones are added.
+ */
+export function mergeCvSkills<T extends { name: string; level: number; category: string; cvDetected?: boolean }>(current: T[], imported: T[], detectedNames: string[]) {
+  const detected = new Set(detectedNames.map(keyOf));
+  const kept = current.filter(s => !isCvSkill(s) || detected.has(keyOf(s.name)));
+  const removed = current.filter(s => !kept.includes(s)).map(s => s.name);
+  const keptKeys = new Set(kept.map(s => keyOf(s.name)));
+  const added = imported.filter(s => !keptKeys.has(keyOf(s.name)));
+  return { skills: [...kept, ...added].slice(0, 50), removed };
 }
 const marketSkills = [
   ['research', 'Customer research', 'People', 'Services', [31, 35, 34, 38]],

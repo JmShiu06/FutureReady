@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AiExplainButton } from "@/components/ai-drawer";
 import { MatchScore } from "@/components/shared/match-score";
 import { Link } from "wouter";
 import { ArrowUpRight, Sparkles } from "lucide-react";
@@ -65,7 +64,7 @@ export function MatchedRolesTab() {
           Role families ranked by <b>exact / related skill overlap</b> with the skills saved in your profile.
         Related matches are labeled. These are role recommendations, not live vacancies or a hiring probability.
         </p>
-        <AiExplainButton request={{ feature: "cv-analysis" }} label="Explain matched roles with AI" />
+        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open AI Career Explanation</Link>
       </div>
 
       {!hasCvSkills && (

@@ -1,4 +1,6 @@
 import { createRequire } from "node:module";
+import { buildCvCareerData, categorizeCvSkill, CV_EXTRACTION_LIMITATION } from "./cvCareerData";
+import type { CvCareerData } from "@workspace/api-zod";
 import { dirname, join } from "node:path";
 import { createCanvas } from "@napi-rs/canvas";
 import { imageSize } from "image-size";
@@ -446,7 +448,7 @@ export async function extractCvSkills(
   buffer: Buffer,
   filename: string,
   requestSignal?: AbortSignal,
-): Promise<{ skills: string[]; warnings: string[]; profileSuggestions: CvProfileSuggestions }> {
+): Promise<{ skills: string[]; warnings: string[]; profileSuggestions: CvProfileSuggestions; careerData: CvCareerData; categorizedSkills: { name: string; category: ReturnType<typeof categorizeCvSkill> }[] }> {
   const signal = requestSignal ?? AbortSignal.timeout(CV_PROCESSING_TIMEOUT_MS);
   checkProcessing(signal);
   if (!buffer.length) throw new CvError(400, "The file is empty. Choose a readable PDF, DOCX, TXT, JPG, JPEG or PNG.");
@@ -512,7 +514,11 @@ export async function extractCvSkills(
   return {
     skills,
     profileSuggestions,
+    careerData: buildCvCareerData(text, skills),
+    categorizedSkills: skills.map(name => ({ name, category: categorizeCvSkill(name) })),
     warnings: [
+      CV_EXTRACTION_LIMITATION,
+      "The AI preview includes up to 50 recognized skills and six short entries per section. Review it for omitted or truncated information.",
       "The engine checks exact skill names and a small reviewed set of related phrases. Review the suggestions before saving them.",
       ...(relatedMappings.length
         ? [`Related CV wording suggested these dataset skills: ${relatedMappings.map((mapping) => mapping.datasetSkill).join(", ")}. They are related-phrase matches, not exact wording; review each before adding it to your profile.`]

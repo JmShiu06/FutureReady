@@ -7,11 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowRight, Check, Plus, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
+import { CvCareerExplanation } from '@/components/cv-career-explanation';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useWorkspace } from '@/domain/workspace-context';
 import { profileSchema } from '@/domain/storage';
-import { audienceLabels, skillCatalogue } from '@/domain/demo-data';
+import { mergeCvSkills } from '@/domain/demo-data';
+import { audienceLabels } from '@/domain/demo-data';
 import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
 
@@ -41,19 +43,10 @@ export default function ProfilePage() {
     saveProfile({ ...rest, interests: interestsText.split(',').map(s => s.trim()).filter(Boolean) } as DemoProfile);
     setSaved('Profile updated for this session. Browser storage warnings, if any, are shown above.');
   };
-  const applyCvImport = (imported: ProfileSkill[]) => {
-    if (!imported.length) return;
-    skills.append(imported);
-    setSaved(`${imported.length} confirmed CV skill${imported.length === 1 ? '' : 's'} added. Review and save your skills.`);
-  };
-  const applyAiSkills = (suggested: ProfileSkill[]) => {
-    const current = form.getValues('skills');
-    if (current.length + suggested.length > 50) return 'A profile can hold up to 50 skills. Remove an existing skill before adding these suggestions.';
-    const duplicate = suggested.find(s => current.some(existing => normaliseSkillName(existing.name) === normaliseSkillName(s.name)));
-    if (duplicate) return `"${duplicate.name}" is already in your profile draft. Its proficiency was not changed.`;
-    skills.append(suggested);
-    setSaved(`${suggested.length} confirmed AI suggestion${suggested.length === 1 ? '' : 's'} added to the draft. Review and save your profile.`);
-    return undefined;
+  const applyCvImport = (imported: ProfileSkill[], detectedNames: string[]) => {
+    const next = mergeCvSkills(form.getValues('skills'), imported, detectedNames);
+    skills.replace(next.skills);
+    setSaved(`${imported.length} new CV skill${imported.length === 1 ? '' : 's'} applied${next.removed.length ? `; ${next.removed.length} skill${next.removed.length === 1 ? '' : 's'} from an earlier CV not found in this one removed` : ''}. Manual skills and skills found again kept their ratings. Save your skills to keep them.`);
   };
   const addSkill = () => {
     const name = newSkill.trim().replace(/\s+/g, ' ');
@@ -84,9 +77,7 @@ export default function ProfilePage() {
   if (sectionParam === 'roadmap') return <Redirect to="/learning-roadmap" replace />;
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : 'See how far you have come.'} subtitle="Your skills, CV import and progress. Each audience keeps its own profile."
-      action={section === 'skills'
-        ? <AiExplainButton request={{ feature: 'profile-skills', onApplySkills: applyAiSkills }} label="Suggest skills with AI" />
-        : <AiExplainButton request={{ feature: 'digital-twin' }} />} />
+      action={section === 'twin' ? <AiExplainButton request={{ feature: 'digital-twin' }} /> : undefined} />
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}
@@ -97,6 +88,7 @@ export default function ProfilePage() {
     </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
+    <CvCareerExplanation />
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
         <div className="panel panel-pad">
@@ -105,7 +97,7 @@ export default function ProfilePage() {
             note={`${skills.fields.length} OF 50 · LEVELS 1–5`}
             info="Set each level yourself: 1 is new to it and 5 means you can teach it. CV verification only confirms a skill name; it never sets proficiency."
           />
-          {skills.fields.length === 0 && <p className="muted">No skills yet. Add one below.</p>}
+          {skills.fields.length === 0 && <p className="muted" data-testid="text-no-skills">No skills detected from CV. Upload a CV above or add a skill manually below.</p>}
           {skills.fields.map((f, i) => <div className="skill-edit" key={f.id} data-testid={`row-skill-${i}`}>
             <FormField control={form.control} name={`skills.${i}.name`} render={({ field }) => <FormItem className="field"><FormControl><div className="skill-name-control">
               <input className="fr-input" aria-label={`Skill ${i + 1} name`} maxLength={60} {...field} data-testid={`input-skill-name-${i}`} />
@@ -123,13 +115,11 @@ export default function ProfilePage() {
           {form.formState.errors.skills?.root?.message && <p className="field-error" role="alert">{form.formState.errors.skills.root.message}</p>}
           {form.formState.errors.skills?.message && <p className="field-error" role="alert">{form.formState.errors.skills.message}</p>}
           <div className="row" style={{ marginTop: 14 }}>
-            <input className="fr-input" style={{ maxWidth: 260 }} list="skill-catalogue" maxLength={80} value={newSkill} onChange={e => { setNewSkill(e.target.value); setSkillError(''); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} placeholder="Add a skill" aria-label="New skill name" data-testid="input-new-skill" />
-            <datalist id="skill-catalogue">{skillCatalogue.map(s => <option key={s} value={s} />)}</datalist>
+            <input className="fr-input" style={{ maxWidth: 260 }} maxLength={80} value={newSkill} onChange={e => { setNewSkill(e.target.value); setSkillError(''); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} placeholder="Add a skill" aria-label="New skill name" data-testid="input-new-skill" />
             <input className="fr-input" style={{ maxWidth: 160 }} value={newCategory} onChange={e => setNewCategory(e.target.value)} aria-label="New skill category" data-testid="input-new-skill-category" />
             <button type="button" className="btn btn-secondary btn-small" onClick={addSkill} data-testid="button-add-skill"><Plus size={12} /> Add skill</button>
           </div>
           {skillError && <p className="field-error" role="alert" data-testid="error-add-skill">{skillError}</p>}
-          <div className="row" style={{ marginTop: 10 }}>{skillCatalogue.filter(s => !skills.fields.some(f => f.name.toLowerCase() === s.toLowerCase())).slice(0, 8).map(s => <button type="button" key={s} className="chip" style={{ border: 0 }} onClick={() => setNewSkill(s)} data-testid={`button-suggest-${slug(s)}`}>{s}</button>)}</div>
         </div>
 
         <div className="profile-save-bar" role="region" aria-label="Profile save controls">

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { aggregateRecords, blankProfile, demoRoles, sampleProfile, sdgGoals, sdgMappings } from './demo-data.ts';
+import { aggregateRecords, blankProfile, demoRoles, isLegacySeededSkills, mergeCvSkills, migrateLegacySkills, sampleProfile, sdgGoals, sdgMappings } from './demo-data.ts';
 import { assessRole, buildRoadmap, completionKey, createApiWorkforceService, demoService, evidenceWarnings, filterMarket, meanSkillGap, rankCareers, simulateProfile } from './services.ts';
 import { defaultWorkspace, loadWorkspace, parseWorkspace, persistWorkspace, profileSchema } from './storage.ts';
 
@@ -206,4 +206,40 @@ test('reset clears only one audience plan data; storage round-trips new fields a
   assert.equal(cleared.confirmations.length, 0);
   const legacy = JSON.stringify({ version: 1, audience: 'adult', profiles: s.profiles, targets: s.targets, completion: s.completion });
   assert.ok(parseWorkspace(legacy).state.baselines['adult:service-designer']);
+});
+
+test('blank and default/reset profiles start with no skills', () => {
+  for (const a of ['adult', 'graduate', 'hr', 'education'] as const) {
+    assert.deepEqual(blankProfile(a).skills, []);
+    assert.deepEqual(defaultWorkspace().profiles[a].skills, []);
+  }
+});
+test('only exact legacy seeded skill lists are migrated to empty', () => {
+  const seedA = sampleProfile('adult').skills;
+  const seedB = sampleProfile('adult', 'data').skills;
+  assert.deepEqual(migrateLegacySkills(seedA.map(s => ({ ...s }))), []);
+  assert.deepEqual(migrateLegacySkills(seedB.map(s => ({ ...s }))), []);
+  const edited = seedA.map((s, i) => i === 0 ? { ...s, level: s.level === 5 ? 4 : s.level + 1 } as typeof s : s);
+  assert.equal(migrateLegacySkills(edited), edited);
+  const extraManual = [...seedA, { name: 'Welding', level: 2 as const, category: 'Custom' }];
+  assert.equal(migrateLegacySkills(extraManual), extraManual);
+  const cvMarked = seedA.map(s => ({ ...s, cvDetected: true }));
+  assert.equal(isLegacySeededSkills(cvMarked), false);
+  assert.equal(migrateLegacySkills(cvMarked), cvMarked);
+  const manual = [{ name: 'Excel', level: 2, category: 'Custom' }];
+  assert.equal(migrateLegacySkills(manual), manual);
+  assert.deepEqual(migrateLegacySkills([]), []);
+});
+test('applying a new CV keeps manual skills, keeps re-detected CV ratings and drops stale CV skills', () => {
+  const current = [
+    { name: 'Facilitation', level: 4, category: 'Custom' },
+    { name: 'Python', level: 3, category: 'Technical Skills', cvDetected: true },
+    { name: 'Excel', level: 2, category: 'CV detected', cvDetected: true },
+    { name: 'SQL', level: 5, category: 'Custom' },
+  ];
+  const imported = [{ name: 'Docker', level: 2, category: 'Technical Skills', cvDetected: true }, { name: 'python', level: 1, category: 'x', cvDetected: true }];
+  const result = mergeCvSkills(current, imported, ['Python', 'Docker', 'SQL']);
+  assert.deepEqual(result.skills.map(s => [s.name, s.level]), [['Facilitation', 4], ['Python', 3], ['SQL', 5], ['Docker', 2]]);
+  assert.deepEqual(result.removed, ['Excel']);
+  assert.equal(result.skills.find(s => s.name === 'SQL')?.cvDetected, undefined);
 });

@@ -5,10 +5,14 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CvCareerData } from './cvCareerData';
 import type { CvProfileSuggestions } from './cvProfileSuggestions';
+import type { CvSkillExtractionCategorizedSkillsItem } from './cvSkillExtractionCategorizedSkillsItem';
 
 export interface CvSkillExtraction {
   skills: string[];
   warnings: string[];
   profileSuggestions: CvProfileSuggestions;
+  careerData?: CvCareerData;
+  categorizedSkills?: CvSkillExtractionCategorizedSkillsItem[];
 }
