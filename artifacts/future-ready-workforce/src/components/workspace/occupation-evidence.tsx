@@ -5,6 +5,7 @@ import { useMatchOccupationEvidence } from '@workspace/api-client-react';
 import type { OccupationEvidence, OccupationEvidenceResult } from '@workspace/api-client-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { EmptyBlock, ErrorBlock, LoadingBlock, SectionTitle } from '@/components/workspace/ui';
+import { useState } from 'react';
 
 /**
  * Official occupation evidence (TalentCorp MyCOL + O*NET), shown alongside but
@@ -35,6 +36,9 @@ export function useOccupationEvidence() {
   };
 }
 
+type OccupationEvidenceQuery = ReturnType<typeof useOccupationEvidence>;
+type MatchedOccupation = OccupationEvidenceResult['occupations'][number];
+
 const relationLabel: Record<OccupationEvidence['mapping']['relation'], string> = {
   exact: 'Exact match', approximate: 'Approximate match', broader: 'O*NET occupation is broader', narrower: 'O*NET occupation is narrower',
 };
@@ -48,9 +52,8 @@ function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
   </span></div>;
 }
 
-export function OfficialOccupationsPanel() {
+export function OfficialOccupationsPanel({ query }: { query: OccupationEvidenceQuery }) {
   const { profile } = useWorkspace();
-  const query = useOccupationEvidence();
   const eligible = query.data?.occupations.filter(o => o.recommendationStatus === 'eligible') ?? [];
   const excluded = query.data?.occupations.filter(o => o.recommendationStatus === 'excluded') ?? [];
   return <section className="panel panel-pad" style={{ marginTop: 18 }} data-testid="panel-official-occupations">
@@ -85,6 +88,88 @@ export function OfficialOccupationsPanel() {
       </div>}
       <SourceFooter data={query.data} />
     </>}
+  </section>;
+}
+
+function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOccupation; index: number }) {
+  const overlap = occupation.overlap;
+  return <article className="role-card" data-testid={`card-compare-${index}`}>
+    <div className="spread">
+      <strong>{occupation.mycol.title}</strong>
+      <span className="match-pill">{occupation.mycol.edition}</span>
+    </div>
+    <span className="muted small">
+      MASCO {occupation.mycol.masco4} → O*NET {occupation.onet.code} {occupation.onet.title} · {relationLabel[occupation.mapping.relation]}
+    </span>
+    {occupation.recommendationStatus === 'excluded' || !overlap
+      ? <div className="state-box" style={{ marginTop: 12 }} data-testid={`text-compare-excluded-${index}`}>
+        {occupation.exclusionReason ?? 'A skill comparison is not available for this occupation.'}
+      </div>
+      : <>
+        <div className="spread small" style={{ marginTop: 12 }}>
+          <span>O*NET documented skills in your profile</span>
+          <b className="mono">{overlap.matchedSkills.length} of {overlap.skillsConsidered}</b>
+        </div>
+        <div className="row" style={{ marginTop: 8 }}>
+          {overlap.matchedSkills.map(skill => <span key={skill} className="chip">{skill}</span>)}
+          {overlap.missingSkills.slice(0, 4).map(skill => <span key={skill} className="chip gap">{skill}</span>)}
+          {overlap.missingSkills.length > 4 && <span className="muted small">+{overlap.missingSkills.length - 4} more unmatched skills</span>}
+        </div>
+        <p className="muted small" style={{ marginBottom: 0 }}>{occupation.explanation}</p>
+      </>}
+  </article>;
+}
+
+export function OccupationComparisonPanel({ query }: { query: OccupationEvidenceQuery }) {
+  const [firstId, setFirstId] = useState('');
+  const [secondId, setSecondId] = useState('');
+  const occupations = query.data?.occupations ?? [];
+  const first = occupations.find(occupation => occupation.id === firstId);
+  const second = occupations.find(occupation => occupation.id === secondId);
+  const options = occupations.map(occupation => ({
+    ...occupation,
+    label: `${occupation.mycol.title}${occupation.recommendationStatus === 'excluded' ? ' — no skill comparison' : ''}`,
+  }));
+  const emptyMessage = query.isError
+    ? 'Official occupation data is unavailable. Retry from the Malaysian critical occupations panel.'
+    : 'Choose a Malaysian critical occupation above to compare its documented skills.';
+
+  return <section className="panel panel-pad" style={{ marginTop: 18 }} data-testid="panel-comparison">
+    <SectionTitle
+      title="Compare two careers"
+      note="MYCOL · SIDE BY SIDE"
+      info="Choose occupations from TalentCorp's MyCOL 2024/2025 list. The comparison shows profile overlap with reviewed O*NET skills, not a hiring probability or Malaysian vacancy count."
+    />
+    <div className="row" style={{ marginBottom: 14 }}>
+      <select
+        className="select-field"
+        value={firstId}
+        onChange={event => setFirstId(event.target.value)}
+        aria-label="First Malaysian critical occupation"
+        data-testid="select-compare-a"
+        disabled={!query.data}
+      >
+        <option value="">Choose first occupation</option>
+        {options.map(occupation => <option key={occupation.id} value={occupation.id}>{occupation.label}</option>)}
+      </select>
+      <select
+        className="select-field"
+        value={secondId}
+        onChange={event => setSecondId(event.target.value)}
+        aria-label="Second Malaysian critical occupation"
+        data-testid="select-compare-b"
+        disabled={!query.data}
+      >
+        <option value="">Choose second occupation</option>
+        {options.map(occupation => <option key={occupation.id} value={occupation.id}>{occupation.label}</option>)}
+      </select>
+    </div>
+    <div className="side-by-side">
+      {first ? <OccupationComparisonCard occupation={first} index={0} />
+        : <div className="state-box" data-testid="text-compare-empty-0">{emptyMessage}</div>}
+      {second ? <OccupationComparisonCard occupation={second} index={1} />
+        : <div className="state-box" data-testid="text-compare-empty-1">{emptyMessage}</div>}
+    </div>
   </section>;
 }
 

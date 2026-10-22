@@ -77,10 +77,20 @@ test('the recommendation label, comparison, and real progress remain while demo 
   for (const roleId of ['ai-operations', 'service-designer', 'learning-partner', 'workforce-analyst']) {
     await expect(page.getByTestId(`card-career-${roleId}`)).toHaveCount(0);
   }
-  await page.getByTestId('select-compare-a').selectOption('ai-operations');
-  await page.getByTestId('select-compare-b').selectOption('workforce-analyst');
-  await expect(page.getByTestId('card-compare-0')).toContainText('Responsible AI operations coordinator');
-  await expect(page.getByTestId('card-compare-1')).toContainText('Workforce insights analyst');
+  const firstOccupation = page.getByTestId('select-compare-a');
+  const secondOccupation = page.getByTestId('select-compare-b');
+  await expect(firstOccupation).toBeEnabled();
+  await expect(firstOccupation).toHaveValue('');
+  await expect(secondOccupation).toHaveValue('');
+  await expect(page.getByTestId('card-compare-0')).toHaveCount(0);
+  await expect(page.getByTestId('card-compare-1')).toHaveCount(0);
+  await firstOccupation.selectOption('mycol-2512');
+  await expect(page.getByTestId('card-compare-0')).toContainText('Software Developers');
+  await expect(page.getByTestId('text-compare-empty-1')).toBeVisible();
+  await secondOccupation.selectOption('mycol-2524');
+  await expect(page.getByTestId('card-compare-1')).toContainText('Data Professionals');
+  await secondOccupation.selectOption('mycol-2413');
+  await expect(page.getByTestId('text-compare-excluded-1')).toContainText('no skill ratings');
 
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Job Recommendations' })).toBeVisible();
