@@ -5,9 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { CvCareerData } from './cvCareerData';
+import type { CvAiSkillData } from './cvAiSkillData';
 
 export interface CvCareerExplanationInput {
-  data: CvCareerData;
+  data: CvAiSkillData;
   consent: true;
 }

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { Link } from 'wouter';
-import { AlertTriangle, BookOpen, Briefcase, Check, ChevronDown, ExternalLink, GraduationCap, Languages, Lightbulb, Loader2, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, UserRound, X } from 'lucide-react';
+import { AlertTriangle, BookOpen, Check, ChevronDown, ExternalLink, Languages, Lightbulb, Loader2, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react';
 import { useCvSession, type CvDraft, type DraftItem } from '@/domain/cv-session';
 import { MatchScore } from '@/components/shared/match-score';
 import { cvExplanationSectionInView, type CvExplanationView } from '@/domain/cv-explanation-sections';
@@ -10,15 +10,7 @@ export const NO_SKILLS_MESSAGE = 'No skills detected from CV.';
 export const LIMITED_MESSAGE = 'Some information may be incomplete due to CV extraction limitations.';
 
 type ListField = keyof Omit<CvDraft, 'extractionLimited' | 'categories'>;
-const listFields: { key: Exclude<ListField, 'skills'>; label: string; icon: typeof GraduationCap; empty: string }[] = [
-  { key: 'education', label: 'Education', icon: GraduationCap, empty: 'No education details detected.' },
-  { key: 'workExperience', label: 'Work experience', icon: Briefcase, empty: 'No work experience detected.' },
-  { key: 'certifications', label: 'Certifications', icon: BookOpen, empty: 'No certifications detected.' },
-  { key: 'projects', label: 'Projects', icon: Lightbulb, empty: 'No projects detected.' },
-  { key: 'languages', label: 'Languages', icon: Languages, empty: 'No languages detected.' },
-];
 const sectionDefs = [
-  { key: 'candidateSummary', title: 'Candidate summary', icon: UserRound },
   { key: 'skillAnalysis', title: 'Skill analysis', icon: Sparkles },
   { key: 'careerMatchAnalysis', title: 'Career match analysis', icon: Target },
   { key: 'skillGapAnalysis', title: 'Skill gap analysis', icon: AlertTriangle },
@@ -31,61 +23,47 @@ function Paragraphs({ text }: { text: string }) {
   return <>{text.split(/\n{1,}/).map(t => t.trim()).filter(Boolean).map((t, i) => <p key={i}>{t}</p>)}</>;
 }
 
-function ItemRow({ field, item, multiline, label }: { field: ListField; item: DraftItem; multiline: boolean; label: string }) {
+function ItemRow({ field, item, label }: { field: ListField; item: DraftItem; label: string }) {
   const { updateItem } = useCvSession();
   const id = useId();
   return <div className={`cvx-item${item.include ? '' : ' is-off'}`}>
     <input type="checkbox" id={id} checked={item.include} onChange={e => updateItem(field, item.id, { include: e.target.checked })}
       aria-label={`Include ${label}: ${item.text || 'empty item'}`} data-testid={`checkbox-cvx-${field}-${item.id}`} />
-    {field === 'skills'
-      ? <label htmlFor={id} className="cvx-skill-label" data-testid={`text-cvx-skill-${item.id}`}>{item.text}</label>
-      : multiline
-      ? <textarea value={item.text} maxLength={500} rows={2} onChange={e => updateItem(field, item.id, { text: e.target.value })} aria-label={`Edit ${label}`} disabled={!item.include} data-testid={`input-cvx-${field}-${item.id}`} />
-      : <input className="fr-input" value={item.text} maxLength={60} onChange={e => updateItem(field, item.id, { text: e.target.value })} aria-label={`Edit ${label}`} disabled={!item.include} data-testid={`input-cvx-${field}-${item.id}`} />}
+    <label htmlFor={id} className="cvx-skill-label" data-testid={`text-cvx-${field}-${item.id}`}>{item.text}</label>
   </div>;
 }
 
-/** Editable preview of extracted CV fields. Nothing here is saved or sent until the user consents. */
+/** Compact name-only sharing controls; no removed CV sections or narrative fields. */
 function CvPreview() {
   const { draft, payload, consent, setConsent, requestExplanation, explainPhase, clear } = useCvSession();
   if (!draft || !payload) return null;
-  const grouped = draft.skills.reduce<Record<string, DraftItem[]>>((acc, item) => {
-    const cat = draft.categories[item.text.trim().toLowerCase()] ?? 'Detected skills';
-    (acc[cat] ??= []).push(item);
-    return acc;
-  }, {});
   const sendable = Object.entries(payload).some(([k, v]) => k !== 'extractionLimited' && Array.isArray(v) && v.length > 0);
   return <section className="cvx-preview" aria-labelledby="cvx-preview-title" data-testid="panel-cvx-preview">
     <div className="cvx-preview-head">
       <div>
         <h3 id="cvx-preview-title">Review what will be shared</h3>
-        <p><Lock size={12} aria-hidden="true" /> These details live only in this browser tab. They are not saved and not sent anywhere until you confirm below. Name, contact details and the CV file itself are never included.</p>
+        <p><Lock size={12} aria-hidden="true" /> Only selected skill names and recognized language names go to RunPod after consent. Education, work history, certifications, projects, fluency ratings, contact details and the CV file are not included.</p>
       </div>
       <button type="button" className="btn btn-secondary btn-small" onClick={clear} data-testid="button-cvx-discard"><Trash2 size={12} aria-hidden="true" /> Discard CV details</button>
     </div>
     {draft.extractionLimited && <p className="cvx-limited" role="note" data-testid="text-cvx-limited"><AlertTriangle size={13} aria-hidden="true" /> {LIMITED_MESSAGE}</p>}
 
-    <div className="cvx-field">
-      <h4>Detected skills <span>{payload.skills.length} selected</span></h4>
+    <details className="cvx-field" data-testid="details-cvx-sharing-names">
+      <summary>Choose skill names to share ({payload.skills.length} selected)</summary>
       {draft.skills.length === 0
         ? <p className="cvx-empty" data-testid="text-cvx-no-skills">{NO_SKILLS_MESSAGE}</p>
-        : Object.entries(grouped).map(([cat, items]) => <div className="cvx-cat" key={cat}>
-          <span className="cvx-cat-label">{cat}</span>
-          <div className="cvx-skill-grid">{items.map(item => <ItemRow key={item.id} field="skills" item={item} multiline={false} label="skill" />)}</div>
-        </div>)}
-    </div>
-    <div className="cvx-fields">
-      {listFields.map(({ key, label, icon: Icon, empty }) => <div className="cvx-field" key={key}>
-        <h4><Icon size={13} aria-hidden="true" /> {label} <span>{payload[key].length} selected</span></h4>
-        {draft[key].length === 0 ? <p className="cvx-empty">{empty}</p>
-          : draft[key].map(item => <ItemRow key={item.id} field={key} item={item} multiline label={label} />)}
-      </div>)}
+        : <div className="cvx-skill-grid">{draft.skills.map(item => <ItemRow key={item.id} field="skills" item={item} label="skill name" />)}</div>}
+    </details>
+    <div className="cvx-field">
+      <h4><Languages size={13} aria-hidden="true" /> Languages <span>{payload.languages.length} selected</span></h4>
+      {draft.languages.length === 0 ? <p className="cvx-empty">No recognized language names detected. No free-text language descriptions are shared.</p>
+        : draft.languages.map(item => <ItemRow key={item.id} field="languages" item={item} label="language name" />)}
     </div>
 
     <div className="cvx-consent">
       <label>
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} disabled={!sendable || explainPhase === 'loading'} data-testid="checkbox-cvx-consent" />
-        <span>I consent to sending only the selected details above to the AI service (RunPod) to generate a one-off career explanation. The result is not saved.</span>
+        <span>I consent to sending only the selected skill names and language names to RunPod for a one-off explanation. No other CV details are shared. The result is not saved.</span>
       </label>
       <button type="button" className="btn btn-primary" disabled={!consent || !sendable || explainPhase === 'loading'} onClick={requestExplanation} data-testid="button-cvx-generate">
         {explainPhase === 'loading' ? <Loader2 size={14} className="cvx-spin" aria-hidden="true" /> : <Sparkles size={14} aria-hidden="true" />}
@@ -113,7 +91,7 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
     <h3 id={titleId}>{view === 'learning' ? 'Your CV learning guidance' : 'Your AI career explanation'}</h3>
     <p className="muted small">{view === 'learning'
       ? 'Improvement options use reviewed CV details and verified learning records. AI explains growth opportunities; suggestions do not verify qualifications or exam readiness.'
-      : 'Your summary, career alignment and strength evidence come directly from reviewed CV details and dataset records. AI explains skill meanings and gaps; it does not verify proficiency or job requirements.'}</p>
+      : 'Career alignment uses the selected skill names and dataset references. AI explains skill meanings and gaps; skill and language names do not verify proficiency, experience or qualifications.'}</p>
     {warnings.length > 0 && <ul className="cvx-warnings" data-testid="list-cvx-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
     <div className="cvx-sections">
       {sectionDefs.filter(({ key }) => cvExplanationSectionInView(key, view)).map(({ key, title, icon: Icon }, i) => <details className="cvx-card" key={key} open={i === 0} data-testid={`card-cvx-${key}`}>
@@ -148,7 +126,7 @@ export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink
       <span className="cvx-head-icon"><Sparkles size={18} aria-hidden="true" /></span>
       <div>
         <h2 id="cvx-title">AI Career Explanation</h2>
-        <p>A summary, skill analysis, career matches, gaps and strengths built only from the CV details you confirm. Learning guidance is on Learning roadmap.</p>
+        <p>Skill analysis, career matches, gaps and discussion areas based only on selected skill names and languages. Learning guidance is on Learning roadmap.</p>
       </div>
     </div>
     {phase === 'extracting' && <div className="cvx-skeleton" role="status"><span className="sr-only">Reading your CV.</span><i style={{ width: '80%' }} /><i style={{ width: '60%' }} /></div>}

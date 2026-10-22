@@ -9,11 +9,6 @@
 export type CvCareerExplanationSections = {
   /**
      * @minLength 1
-     * @maxLength 3000
-     */
-  candidateSummary: string;
-  /**
-     * @minLength 1
      * @maxLength 12000
      */
   skillAnalysis: string;

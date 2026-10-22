@@ -182,17 +182,76 @@ export interface CvSkillExtraction {
   categorizedSkills?: CvSkillExtractionCategorizedSkillsItem[];
 }
 
+export type CvLanguageName = typeof CvLanguageName[keyof typeof CvLanguageName];
+
+
+export const CvLanguageName = {
+  English: 'English',
+  Malay: 'Malay',
+  Mandarin: 'Mandarin',
+  Chinese: 'Chinese',
+  Tamil: 'Tamil',
+  Arabic: 'Arabic',
+  French: 'French',
+  German: 'German',
+  Spanish: 'Spanish',
+  Japanese: 'Japanese',
+  Korean: 'Korean',
+  Hindi: 'Hindi',
+  Portuguese: 'Portuguese',
+  Indonesian: 'Indonesian',
+  Thai: 'Thai',
+  Vietnamese: 'Vietnamese',
+  Cantonese: 'Cantonese',
+  Hokkien: 'Hokkien',
+  Russian: 'Russian',
+  Italian: 'Italian',
+  Dutch: 'Dutch',
+  Turkish: 'Turkish',
+  Urdu: 'Urdu',
+  Bengali: 'Bengali',
+  Punjabi: 'Punjabi',
+  Tagalog: 'Tagalog',
+  Filipino: 'Filipino',
+  Burmese: 'Burmese',
+  Khmer: 'Khmer',
+  Lao: 'Lao',
+  Nepali: 'Nepali',
+  Sinhala: 'Sinhala',
+  Telugu: 'Telugu',
+  Kannada: 'Kannada',
+  Marathi: 'Marathi',
+  Persian: 'Persian',
+  Greek: 'Greek',
+  Polish: 'Polish',
+  Romanian: 'Romanian',
+  Ukrainian: 'Ukrainian',
+  Swahili: 'Swahili',
+  Hebrew: 'Hebrew',
+  Malay_Sign_Language: 'Malay Sign Language',
+  American_Sign_Language: 'American Sign Language',
+  British_Sign_Language: 'British Sign Language',
+} as const;
+
+export interface CvAiSkillData {
+  /**
+     * @maxItems 50
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  skills: string[];
+  /** @maxItems 12 */
+  languages: CvLanguageName[];
+  /** Local extraction warning metadata; not included in model context. */
+  extractionLimited: boolean;
+}
+
 export interface CvCareerExplanationInput {
-  data: CvCareerData;
+  data: CvAiSkillData;
   consent: true;
 }
 
 export type CvCareerExplanationSections = {
-  /**
-     * @minLength 1
-     * @maxLength 3000
-     */
-  candidateSummary: string;
   /**
      * @minLength 1
      * @maxLength 12000

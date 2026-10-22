@@ -1,16 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { generateCvCareerExplanation, type CvCareerData, type CvCareerExplanation, type CvSkillExtraction } from '@workspace/api-client-react';
+import { generateCvCareerExplanation, type CvAiSkillData, type CvCareerExplanation, type CvSkillExtraction } from '@workspace/api-client-react';
 import { useWorkspace } from './workspace-context';
+import { buildCvAiPayload as buildPayload, recognizeCvLanguageNames } from './cv-ai-payload';
+export { buildPayload };
 
 /**
  * Transient CV session. Lives only in memory: never written to localStorage.
  * Cleared on every new upload, on audience switch and on explicit discard.
  */
-export type CvListField = 'education' | 'workExperience' | 'certifications' | 'projects' | 'languages';
+export type CvListField = 'languages';
 export interface DraftItem { id: number; text: string; include: boolean }
 export interface CvDraft {
   skills: DraftItem[];
-  education: DraftItem[]; workExperience: DraftItem[]; certifications: DraftItem[]; projects: DraftItem[]; languages: DraftItem[];
+  languages: DraftItem[];
   extractionLimited: boolean;
   categories: Record<string, string>;
 }
@@ -26,10 +28,9 @@ interface CvSessionValue {
   setConsent(value: boolean): void;
   requestExplanation(): void;
   clear(): void;
-  payload: CvCareerData | null;
+  payload: CvAiSkillData | null;
 }
 const CvSessionContext = createContext<CvSessionValue | null>(null);
-const fields: CvListField[] = ['education', 'workExperience', 'certifications', 'projects', 'languages'];
 let seq = 0;
 const EXPLAIN_TIMEOUT_MS = 90_000;
 const toItems = (list: string[] | undefined) => (list ?? []).map(text => ({ id: ++seq, text, include: true }));
@@ -37,15 +38,6 @@ const toItems = (list: string[] | undefined) => (list ?? []).map(text => ({ id: 
 function errorMessage(error: unknown, fallback: string) {
   const data = (error as { data?: { error?: unknown } } | null)?.data;
   return typeof data?.error === 'string' ? data.error : fallback;
-}
-
-export function buildPayload(draft: CvDraft): CvCareerData {
-  const pick = (items: DraftItem[], max: number, len: number) => [...new Set(items.filter(i => i.include).map(i => i.text.trim().replace(/\s+/g, ' ').slice(0, len)).filter(Boolean))].slice(0, max);
-  return {
-    skills: pick(draft.skills, 50, 60),
-    ...Object.fromEntries(fields.map(f => [f, pick(draft[f], 12, 500)])) as Record<CvListField, string[]>,
-    extractionLimited: draft.extractionLimited,
-  };
 }
 
 export function CvSessionProvider({ children }: { children: ReactNode }) {
@@ -93,15 +85,13 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
     completeUpload: (id, result) => {
       if (uploadRef.current?.id !== id || id !== uploadId.current) return false;
       uploadRef.current = null;
-      const data: CvCareerData = result.careerData ?? {
-        skills: result.skills, education: [], workExperience: [], certifications: [], projects: [], languages: [], extractionLimited: true,
-      };
+      const data = result.careerData;
       const categories: Record<string, string> = {};
       for (const c of result.categorizedSkills ?? []) categories[c.name.trim().toLowerCase()] = c.category;
       setDraft({
-        skills: toItems(data.skills), education: toItems(data.education), workExperience: toItems(data.workExperience),
-        certifications: toItems(data.certifications), projects: toItems(data.projects), languages: toItems(data.languages),
-        extractionLimited: data.extractionLimited, categories,
+        skills: toItems(data?.skills ?? result.skills),
+        languages: toItems(recognizeCvLanguageNames(data?.languages ?? [])),
+        extractionLimited: data?.extractionLimited ?? true, categories,
       });
       setWarnings(result.warnings);
       setPhase('ready');
