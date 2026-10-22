@@ -27,6 +27,13 @@ For official labour-market data integrations, use DOSM sources only unless the u
 
 **How to apply:** Verify the requested official DOSM pages, API endpoints and data files before implementation. If a DOSM link is unavailable, document the official replacement; do not broaden the provider list on your own.
 
+## AI task-exposure self-check
+AI exposure must be assessed at the task level from user-selected work characteristics, not inferred from a skill name alone. Keep the result qualitative and clearly distinguish it from an AI prediction or a validated exposure dataset. Do not persist task-check answers into profile data without an explicit request.
+
+**Why:** The app has no validated per-skill AI exposure source, and a skill label alone cannot establish whether a person's work can be automated.
+
+**How to apply:** Describe possible task automation or assistance only from the user's own task details. A sourced exposure model or saved assessment history requires separate evidence and explicit scope.
+
 ## Roadmap and confirmation rules (My Profile)
 - Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.
 - Roadmap milestones derive from a baseline snapshot taken at build time, so confirmed level changes never shrink the roadmap or lose progress.

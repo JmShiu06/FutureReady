@@ -15,7 +15,7 @@ const nav = [
   { href: '/careers', label: 'Career explorer', icon: Map, key: 'careers' },
   { href: '/cv-analysis', label: 'Job Recommendations', icon: FileText, key: 'cv-analysis' },
   { href: '/trends', label: 'Skills radar', icon: Radar, key: 'trends' },
-  { href: '/scenarios', label: 'AI scenarios', icon: BarChart3, key: 'scenarios' },
+  { href: '/scenarios', label: 'AI skill check', icon: BarChart3, key: 'scenarios' },
   { href: '/sdgs', label: 'SDG explorer', icon: Globe2, key: 'sdgs' },
   { href: '/team', label: 'Team & cohort', icon: Users, key: 'team' },
   { href: '/jobs', label: 'Job search', icon: BriefcaseBusiness, key: 'jobs' },

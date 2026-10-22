@@ -48,7 +48,7 @@ function AggregateOverview() {
         <div className="gap-list">{stats.top.map(([name, n]) => <div className="gap-row" key={name}><span><strong>{name}</strong><small>{n} of {aggregateRecords.length} records below the target level</small></span><span className="gap-tag">{n}</span></div>)}</div>
         <div className="row" style={{ marginTop: 16 }}>
           <Link href="/team" className="btn btn-primary" data-testid="link-dashboard-team"><Users size={14} /> Open {isHr ? 'team' : 'cohort'} planning</Link>
-          <Link href="/scenarios" className="btn btn-secondary" data-testid="link-dashboard-scenarios">Compare AI scenarios</Link>
+          <Link href="/scenarios" className="btn btn-secondary" data-testid="link-dashboard-scenarios">Check AI task exposure</Link>
         </div>
       </div>
       <div className="panel panel-pad">

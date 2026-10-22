@@ -46,7 +46,7 @@ function HrView() {
         <div className="panel panel-pad"><SectionTitle title="Readiness distribution" note={`${records.length} RECORDS`} /><Distribution records={records} /></div>
         <div className="panel panel-pad"><SectionTitle title="Priorities & shortages" note="RECORDS BELOW TARGET" />
           <div className="gap-list">{gaps.slice(0, 5).map(([s, n]) => <div key={s} className="gap-row"><span><strong>{s}</strong><small>{n} of {records.length} records below target</small></span><span className="gap-tag">{Math.round(100 * n / records.length)}%</span></div>)}</div>
-          <Link href="/scenarios" className="btn btn-secondary" style={{ marginTop: 14, width: '100%' }} data-testid="link-team-scenarios">Test against AI scenarios</Link></div>
+          <Link href="/scenarios" className="btn btn-secondary" style={{ marginTop: 14, width: '100%' }} data-testid="link-team-scenarios">Review AI task exposure</Link></div>
       </div>
     </>}
   </>;
