@@ -45,7 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { candidateName, phase } = useCvSession();
   const crumbs = pageTitle(location);
   const current = activeKey(location);
-  const displayName = profile.occupation || 'Your profile';
+  const displayName = phase === 'ready' ? candidateName || 'Unknown' : profile.occupation || 'Your profile';
   const initials = displayName.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
   return <AiDrawerProvider><div className={`app-shell${phase === 'ready' ? ' has-candidate' : ''}`}>
     <aside className="sidebar">
@@ -63,9 +63,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>;
         })}
       </nav>
-      {phase !== 'ready' && <div className="sidebar-bottom">
+      <div className="sidebar-bottom">
         <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-name">{displayName}</strong><span>{audienceLabels[state.audience]}</span></div></div>
-      </div>}
+      </div>
     </aside>
     <div className="main-wrap">
       <header className="topbar">

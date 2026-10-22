@@ -15,11 +15,11 @@ CV files and full extracted document text must remain transient and must not be 
 
 **How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it. The user later approved transient, reviewed structured CV details for RunPod career explanations after explicit consent; see frontend-product-boundaries.md for that exception.
 
-A detected CV name is shared across the profile, AI Explanation, job-matching UI and fixed bottom-left candidate badge, but stays in the in-memory CV session: do not persist it or include it in AI requests.
+A detected CV name stays in the in-memory CV session: show it in the My Profile sidebar label in place of “Your profile,” on the AI Explanation and job-matching pages, and in the fixed bottom-left candidate badge. Keep the My Profile page heading unchanged, and do not persist the name or include it in AI requests.
 
-**Why:** The user expanded candidate-name display to these pages while the existing CV workflow keeps identifying document details transient. Displaying it on the AI page is not permission to send it to the model.
+**Why:** The user requested the name in these UI locations, then clarified that only the “Your profile” label—not the My Profile page heading—should change. The existing CV workflow keeps identifying document details transient; displaying the name on the AI page is not permission to send it to the model.
 
-**How to apply:** Show candidate identity only after successful parsing, use “Candidate: Unknown” when no credible name is found, reject demo-name placeholders, and refresh it on re-upload. Clear it with the CV session (new upload, discard, audience change, or reload); return only the selected name, not surrounding document text.
+**How to apply:** Show candidate identity only after successful parsing, use “Candidate: Unknown” when no credible name is found, reject demo-name placeholders, and refresh it on re-upload. Replace only the existing “Your profile” shell label; retain the profile page's existing heading and design. Clear the name with the CV session (new upload, discard, audience change, or reload); return only the selected name, not surrounding document text.
 
 The job-recommendation page uses the user's saved profile skills as input; it does not upload or re-read a CV. Show role matches and the specific saved skills that contribute to each recommendation, without presenting overlap as a hiring probability.
 
