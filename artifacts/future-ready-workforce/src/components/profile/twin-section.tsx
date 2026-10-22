@@ -4,6 +4,9 @@ import { useWorkspace } from '@/domain/workspace-context';
 import { completionKey } from '@/domain/services';
 import { confirmationFor, currentLevel, progressReport, proposedLevel, roadmapMilestones } from '@/domain/learning';
 import { Bar, EmptyBlock, SectionTitle, levelLabel } from '@/components/workspace/ui';
+import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
+import type { RoadmapBaseline } from '@/domain/types';
+import { MatchScore } from '@/components/shared/match-score';
 
 function Proposal({ milestoneId, skill, required, title }: { milestoneId: string; skill: string; required: number; title: string }) {
   const { state, confirmSkillUpdate } = useWorkspace();
@@ -29,12 +32,57 @@ function Proposal({ milestoneId, skill, required, title }: { milestoneId: string
   </div>;
 }
 
+function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
+  const { state, profile } = useWorkspace();
+  const occupation = baseline.occupation!;
+  const start = documentedOverlap(baseline.skills, occupation);
+  const current = documentedOverlap(profile.skills, occupation);
+  const milestones = roadmapMilestones(state);
+  const completed = milestones.filter(m => state.completion[completionKey(state.audience, m.id)]);
+  const confirmations = state.confirmations.filter(c => c.audience === state.audience && c.roleId === state.targets[state.audience]);
+  return <section data-testid="section-twin-progress">
+    <div className="eyebrow">Digital twin · official occupation plan</div>
+    <h2>Your progress against {occupation.title}</h2>
+    <div className="panel panel-pad" style={{ marginBottom: 18 }}>
+      <SectionTitle title="Documented skill overlap" note="NAME OVERLAP · NOT PROFICIENCY" />
+      <div className="side-by-side">
+        <div><p className="small muted">Starting</p><MatchScore metric="onet" variant="bar" value={start.score} matched={start.matched} considered={start.total} testId="text-start-overlap" /></div>
+        <div><p className="small muted">Current</p><MatchScore metric="onet" variant="bar" value={current.score} matched={current.matched} considered={current.total} testId="text-current-overlap" /></div>
+      </div>
+      <p className="muted small">The original name-overlap formula is unchanged. A higher self-rating for an existing skill does not increase this score. Completing activities alone never changes skills or overlap. No O*NET rating is a 1–5 proficiency target.</p>
+      <p data-testid="text-twin-summary">{completed.length} completed activities · {confirmations.length} confirmed skill updates · {current.total - current.matched} documented skills not in profile</p>
+      <p className="small muted">Started {new Date(baseline.startedAt).toLocaleDateString()} · evidence snapshot: O*NET {occupation.release}.</p>
+    </div>
+    <div className="panel panel-pad" style={{ marginBottom: 18 }}>
+      <SectionTitle title="Review skill updates" note="SELF-RATING · YOU DECIDE" />
+      <p className="muted small">After practice, review your own proficiency. The offered next level is only a self-rating suggestion, not an O*NET requirement or a course award.</p>
+      {completed.length === 0 ? <p className="muted">Complete a roadmap milestone to review a possible skill level change.</p>
+        : <div className="stack">{completed.map(m => <Proposal key={m.id} milestoneId={m.id} skill={m.skill} title={m.title} required={5} />)}</div>}
+    </div>
+    <div className="panel panel-pad">
+      <SectionTitle title="Starting vs current self-ratings" />
+      <div style={{ overflowX: 'auto' }}><table className="compare-table" data-testid="table-skill-progress">
+        <thead><tr><th>Documented skill</th><th>Starting</th><th>Current</th><th>Update</th></tr></thead>
+        <tbody>{occupation.documentedSkills.map(s => {
+          const normalize = (v: string) => v.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+          const starting = baseline.skills.find(p => normalize(p.name) === normalize(s.name))?.level ?? 0;
+          const level = currentLevel(state, s.name);
+          return <tr key={s.elementId}><td>{s.name}</td><td>{starting || 'Not in profile'}</td><td>{level || 'Not in profile'}</td>
+            <td>{confirmations.some(c => c.skill === s.name) ? 'Confirmed improvement' : level !== starting ? 'Profile edit' : 'Unchanged'}</td></tr>;
+        })}</tbody>
+      </table></div>
+    </div>
+  </section>;
+}
+
 export function TwinSection() {
   const { state } = useWorkspace();
   const report = progressReport(state);
   const completed = roadmapMilestones(state).filter(m => state.completion[completionKey(state.audience, m.id)]);
   const role = report?.role;
   const sign = (n: number) => `${n > 0 ? '+' : ''}${n}`;
+  const official = officialBaseline(state);
+  if (official) return <OfficialTwinProgress key={`${state.audience}:${state.targets[state.audience]}`} baseline={official} />;
   return <>
     <section aria-labelledby="progress-title" data-testid="section-twin-progress">
       <div className="eyebrow">Digital twin · actual progress</div>

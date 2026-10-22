@@ -31,7 +31,7 @@ export interface SkillMarketRecord {
 }
 export interface LearningMilestone {
   id: string; skill: string; title: string; provider: string; verifiedUrl: string | null;
-  synthetic: boolean; durationHours: number; costMYR: number; prerequisites: string[];
+  synthetic: boolean; durationHours: number | null; costMYR: number | null; prerequisites: string[];
   priority: RequiredSkill['priority']; order: number;
 }
 export interface Scenario {
@@ -50,7 +50,12 @@ export interface SdgMapping {
   sourceObservation: string | null;
 }
 /** Skills at the moment the user chose "Build my learning roadmap" for a role. Milestones are derived from it. */
-export interface RoadmapBaseline { skills: ProfileSkill[]; startedAt: string }
+export interface OfficialRoadmapOccupation {
+  id: string; title: string; edition: string; masco4: string; onetCode: string; onetTitle: string;
+  sourceUrl: string; release: string; selectionRule: string; mappingLimitations: string;
+  documentedSkills: { elementId: string; name: string; importance: number; level: number; levelLowPrecision: boolean }[];
+}
+export interface RoadmapBaseline { skills: ProfileSkill[]; startedAt: string; occupation?: OfficialRoadmapOccupation }
 /** A user-confirmed proficiency change. Kept apart from milestone completion; one per milestone. */
 export interface SkillConfirmation {
   id: string; audience: Audience; roleId: string; milestoneId: string; skill: string;

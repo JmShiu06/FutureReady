@@ -7,6 +7,7 @@ import { assessRole, completionKey, rankCareers } from '@/domain/services';
 import { activeBaseline, roadmapMilestones } from '@/domain/learning';
 import { PageHead } from '@/components/workspace/ui';
 import { MatchScore } from '@/components/shared/match-score';
+import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
 
 function SummaryCard({ icon, eyebrow, title, value, foot, href, cta, testId }: {
   icon: React.ReactNode; eyebrow: string; title: string; value?: React.ReactNode; foot?: React.ReactNode; href: string; cta: string; testId: string;
@@ -60,6 +61,8 @@ function PersonalOverview() {
   const { state, profile, targetRoleId } = useWorkspace();
   const ranked = useMemo(() => rankCareers(profile), [profile]);
   const target = demoRoles.find(r => r.id === targetRoleId) ?? demoRoles[0];
+  const occupation = officialBaseline(state)?.occupation;
+  const overlap = occupation ? documentedOverlap(profile.skills, occupation) : null;
   const targetAssessment = useMemo(() => assessRole(profile, target), [profile, target]);
   const milestones = useMemo(() => roadmapMilestones(state), [state]);
   const built = !!activeBaseline(state);
@@ -85,9 +88,10 @@ function PersonalOverview() {
           <Link href="/my-profile" className="btn btn-quiet" data-testid="link-edit-profile"><UserRound size={14} /> Edit profile</Link>
         </div>
       </article>
-      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Current target" title={target.title} testId="target"
-        value={<MatchScore metric="coverage" value={targetAssessment.readiness} variant="pill" testId="stat-target-coverage" />}
-        foot={`${targetAssessment.gaps.length} gap${targetAssessment.gaps.length === 1 ? '' : 's'} remaining`} href={`/careers-and-jobs/roles/${target.id}`} cta="Role detail" />
+      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Current target" title={occupation?.title ?? target.title} testId="target"
+        value={overlap ? <MatchScore metric="onet" value={overlap.score} matched={overlap.matched} considered={overlap.total} variant="pill" testId="stat-target-overlap" />
+          : <MatchScore metric="coverage" value={targetAssessment.readiness} variant="pill" testId="stat-target-coverage" />}
+        foot={overlap ? `${overlap.total - overlap.matched} documented skills not in profile` : `${targetAssessment.gaps.length} gap${targetAssessment.gaps.length === 1 ? '' : 's'} remaining`} href={`/careers-and-jobs/roles/${occupation?.id ?? target.id}`} cta="Role detail" />
     </section>
     <section className="summary-grid">
       <SummaryCard icon={<UserRound size={15} />} eyebrow="My profile" title={`${profile.skills.length} skill${profile.skills.length === 1 ? '' : 's'} saved`} testId="profile"

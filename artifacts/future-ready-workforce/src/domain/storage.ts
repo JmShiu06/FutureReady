@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { blankProfile, demoRoles } from './demo-data';
 import type { Audience, DemoProfile, RoadmapBaseline, SkillConfirmation, WorkspaceState } from './types';
+import { officialPlanId } from './official-roadmap';
 
 export const STORAGE_KEY = 'frw-demo-workspace-v1';
 export const audiences = ['adult', 'graduate', 'hr', 'education'] as const;
@@ -19,7 +20,18 @@ export const profileSchema = z.object({
   goals: z.string().trim().max(500),
 });
 const isoText = z.string().min(10).max(40);
-const baselineSchema = z.object({ skills: z.array(skillSchema).max(50), startedAt: isoText });
+const occupationSchema = z.object({
+  id: z.string().min(1).max(60), title: z.string().min(1).max(200), edition: boundedText,
+  masco4: z.string().regex(/^\d{4}$/), onetCode: boundedText, onetTitle: z.string().max(200),
+  sourceUrl: z.string().url().refine(url => url.startsWith('https://www.onetonline.org/')),
+  release: boundedText, selectionRule: z.string().max(3000), mappingLimitations: z.string().max(3000),
+  documentedSkills: z.array(z.object({
+    elementId: z.string().min(1).max(30), name: z.string().min(1).max(60),
+    importance: z.number().min(0).max(5), level: z.number().min(0).max(7), levelLowPrecision: z.boolean(),
+  })).min(1).max(100).refine(skills => new Set(skills.map(s => s.elementId)).size === skills.length
+    && new Set(skills.map(s => s.name.toLowerCase())).size === skills.length),
+});
+const baselineSchema = z.object({ skills: z.array(skillSchema).max(50), startedAt: isoText, occupation: occupationSchema.optional() });
 const confirmationSchema = z.object({
   id: z.string().min(1).max(200), audience: z.enum(audiences), roleId: z.string().min(1).max(80),
   milestoneId: z.string().min(1).max(200), skill: z.string().min(1).max(60),
@@ -48,7 +60,6 @@ export function parseWorkspace(raw: string | null): { state: WorkspaceState; war
       else recovered = true;
       const targets = saved.targets as Record<string, unknown> | undefined;
       if (validRole(targets?.[audience])) fallback.targets[audience] = targets![audience] as string;
-      else recovered = true;
     }
     if (saved.completion && typeof saved.completion === 'object' && !Array.isArray(saved.completion)) {
       for (const [key, value] of Object.entries(saved.completion).slice(0, 2000)) {
@@ -61,9 +72,20 @@ export function parseWorkspace(raw: string | null): { state: WorkspaceState; war
       for (const [key, raw] of Object.entries(saved.baselines).slice(0, 100)) {
         const [audience, ...rest] = key.split(':');
         const parsed = baselineSchema.safeParse(raw);
-        if (parsed.success && audiences.includes(audience as Audience) && validRole(rest.join(':'))) fallback.baselines[key] = parsed.data as RoadmapBaseline;
+        const roleId = rest.join(':');
+        if (parsed.success && audiences.includes(audience as Audience)
+          && (parsed.data.occupation ? roleId === officialPlanId(parsed.data.occupation.id) : validRole(roleId))) fallback.baselines[key] = parsed.data as RoadmapBaseline;
         else recovered = true;
       }
+    }
+    // Official targets require a valid saved evidence snapshot. Legacy sample IDs stay unchanged.
+    const savedTargets = saved.targets as Record<string, unknown> | undefined;
+    const validSavedPlan = (audience: Audience, roleId: string) =>
+      validRole(roleId) || !!fallback.baselines[`${audience}:${roleId}`]?.occupation;
+    for (const audience of audiences) {
+      const target = savedTargets?.[audience];
+      if (typeof target === 'string' && validSavedPlan(audience, target)) fallback.targets[audience] = target;
+      else recovered = true;
     }
     if (isPlain(saved.completedAt)) {
       for (const [key, value] of Object.entries(saved.completedAt).slice(0, 2000)) {
@@ -75,7 +97,7 @@ export function parseWorkspace(raw: string | null): { state: WorkspaceState; war
       const seen = new Set<string>();
       for (const raw of saved.confirmations.slice(0, 500)) {
         const parsed = confirmationSchema.safeParse(raw);
-        if (parsed.success && validRole(parsed.data.roleId) && !seen.has(parsed.data.id)) { seen.add(parsed.data.id); fallback.confirmations.push(parsed.data as SkillConfirmation); }
+        if (parsed.success && validSavedPlan(parsed.data.audience, parsed.data.roleId) && !seen.has(parsed.data.id)) { seen.add(parsed.data.id); fallback.confirmations.push(parsed.data as SkillConfirmation); }
         else recovered = true;
       }
     }

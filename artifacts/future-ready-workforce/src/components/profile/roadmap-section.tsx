@@ -7,6 +7,8 @@ import { completionKey } from '@/domain/services';
 import { activeBaseline, roadmapMilestones } from '@/domain/learning';
 import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, PriorityTag, SectionTitle } from '@/components/workspace/ui';
+import { BuildRoadmapButton } from '@/components/build-roadmap-button';
+import { learningResourceCatalog } from '@workspace/workforce-evidence';
 
 export function RoadmapSection({ onReview }: { onReview: () => void }) {
   const { state, profile, targetRoleId, saveProfile, setMilestoneComplete } = useWorkspace();
@@ -18,15 +20,19 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
     setHours(profile.learningHours === null ? '' : String(profile.learningHours));
     setBudget(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
   }, [profile.learningHours, profile.budgetMYR]);
-  const role = demoRoles.find(r => r.id === targetRoleId) ?? demoRoles[0];
+  const baseline = activeBaseline(state);
+  const occupation = baseline?.occupation;
+  const role = demoRoles.find(r => r.id === targetRoleId);
+  const savedPlans = Object.entries(state.baselines).filter(([key]) => key.startsWith(`${state.audience}:`));
   const built = !!activeBaseline(state);
   const milestones = useMemo(() => roadmapMilestones(state), [state]);
-  const shown = milestones.filter(m => costFilter === 'all' || (costFilter === 'free' ? m.costMYR === 0 : m.costMYR <= 100));
+  const shown = milestones.filter(m => costFilter === 'all' || (m.costMYR !== null && (costFilter === 'free' ? m.costMYR === 0 : m.costMYR <= 100)));
   const done = milestones.filter(m => state.completion[completionKey(state.audience, m.id)]).length;
-  const totalCost = milestones.reduce((t, m) => t + m.costMYR, 0);
+  const totalCost = milestones.reduce((t, m) => t + (m.costMYR ?? 0), 0);
+  const unknownCosts = milestones.filter(m => m.costMYR === null).length;
   let week = 1;
-  const schedule = profile.learningHours === null ? [] : milestones.map(m => {
-    const weeks = Math.max(1, Math.ceil(m.durationHours / profile.learningHours!));
+  const schedule = profile.learningHours === null ? [] : milestones.filter(m => m.durationHours !== null).map(m => {
+    const weeks = Math.max(1, Math.ceil(m.durationHours! / profile.learningHours!));
     const s = { m, start: week, end: week + weeks - 1 };
     week += weeks;
     return s;
@@ -46,14 +52,27 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
     <div className="panel panel-pad" style={{ marginBottom: 18 }} data-testid="panel-roadmap-target">
       <SectionTitle title="Roadmap target" note={built ? 'BUILT FROM CAREERS & JOBS' : 'NOT BUILT YET'} />
       {built
-        ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{role.title}</strong> <span className="muted">· Only “Build my learning roadmap” in <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Careers & jobs</Link> changes this target.</span></p>
+        ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{occupation?.title ?? role?.title}</strong> <span className="muted">· Only an explicit Build or Resume action changes this target. Browsing <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Careers & jobs</Link> never does.</span></p>
         : <p className="muted" style={{ margin: 0 }}>No roadmap yet. Explore a role in <Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-roadmap-careers">Careers & jobs</Link> and choose “Build my learning roadmap”.</p>}
+      {occupation && <div className="stack" style={{ marginTop: 12 }} data-testid="text-official-roadmap-evidence">
+        <span className="small">{occupation.edition} · MASCO {occupation.masco4} → O*NET {occupation.onetCode} {occupation.onetTitle} · release {occupation.release}</span>
+        <p className="muted small">Plan saved from documented skills absent by name at build time, ordered by O*NET importance. O*NET levels (0–7) are not proficiency targets (1–5). Existing skills are not assessed for mastery. Milestones remain fixed after profile edits.</p>
+        <span className="muted small">{occupation.selectionRule} {occupation.mappingLimitations}</span>
+        <a href={occupation.sourceUrl} target="_blank" rel="noreferrer" className="text-link" data-testid="link-roadmap-onet">O*NET skill evidence (CC BY 4.0)</a>
+        <span className="muted small">Learning catalogue reviewed {learningResourceCatalog.reviewed_at}. Only exact reviewed skill coverage is used; a Programming requirement does not establish a Python course match.</span>
+      </div>}
+      {savedPlans.length > 0 && <details style={{ marginTop: 12 }} data-testid="details-saved-roadmaps"><summary>Saved roadmaps for this audience</summary>
+        <div className="stack" style={{ marginTop: 10 }}>{savedPlans.map(([key, saved]) => {
+          const id = key.slice(state.audience.length + 1);
+          return <div className="spread" key={key}><span>{saved.occupation?.title ?? demoRoles.find(r => r.id === id)?.title}</span>
+            <BuildRoadmapButton roleId={id} testId={`button-resume-${id}`} /></div>;
+        })}</div></details>}
     </div>
     <div className="dashboard-grid">
       <div className="panel panel-pad">
         <SectionTitle title="Progress" note={`${done} OF ${milestones.length} MILESTONES`} />
         <ChiliProgressBar value={milestones.length ? 100 * done / milestones.length : 0} label="Roadmap completion" valueText={`${done} of ${milestones.length} milestones complete`} testId="progress-roadmap" />
-        <p className="muted" style={{ marginTop: 10 }} data-testid="text-plan-cost">Total sample cost MYR {totalCost} · {budgetSummary}</p>
+        <p className="muted" style={{ marginTop: 10 }} data-testid="text-plan-cost">{occupation ? 'Known resource cost' : 'Total sample cost'} MYR {totalCost} · {unknownCosts ? `${unknownCosts} activities have unknown cost; a full budget comparison is unavailable.` : budgetSummary}</p>
         <p className="muted small">Priority skills: {milestones.map(m => m.skill).join(', ') || 'none'}</p>
         <p className="muted small" data-testid="text-roadmap-rule">Completing a milestone tracks progress only; it never changes skill levels. Review and confirm a level change in <button className="record-btn" onClick={onReview} data-testid="button-open-twin">Digital Twin &amp; Progress</button>.</p>
       </div>
@@ -71,22 +90,23 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
       {(['all', 'free', 'low'] as const).map(f => <button key={f} className={`btn btn-small ${costFilter === f ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCostFilter(f)} aria-pressed={costFilter === f} data-testid={`button-cost-${f}`}>{f === 'all' ? 'All' : f === 'free' ? 'Free' : 'Low cost (MYR 100 or less)'}</button>)}
     </div>
     {!built ? <EmptyBlock title="Your roadmap will appear here.">Milestones are created from the gaps of the role you choose in Careers & jobs.</EmptyBlock>
-      : milestones.length === 0 ? <EmptyBlock title="No gaps for this target.">You met every sample requirement when you started. <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Choose another career</Link></EmptyBlock>
+      : milestones.length === 0 ? <EmptyBlock title="No gaps for this target.">{occupation ? 'Every selected documented skill was in your starting profile by name. This is not a proficiency assessment.' : 'You met every sample requirement when you started.'} <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Choose another career</Link></EmptyBlock>
       : shown.length === 0 ? <EmptyBlock title="No milestones match this cost filter." />
       : <div className="dashboard-grid">
         <div className="stack">{shown.map(m => { const key = completionKey(state.audience, m.id); const isDone = !!state.completion[key]; return <div key={m.id} className={`milestone${isDone ? ' done' : ''}`} data-testid={`card-milestone-${m.order}`}>
           <input type="checkbox" checked={isDone} onChange={e => setMilestoneComplete(key, e.target.checked)} aria-label={`Mark ${m.title} complete`} data-testid={`checkbox-milestone-${m.order}`} />
           <div className="stack" style={{ gap: 6 }}>
-            <div className="spread"><h3>{m.order}. {m.title}</h3><PriorityTag priority={m.priority} /></div>
-            <span className="small">{m.provider} · {m.durationHours} hrs · {m.costMYR === 0 ? 'Free' : `MYR ${m.costMYR}`}{m.synthetic ? ' · synthetic' : ''}</span>
-            <span className="small">{m.verifiedUrl ? <a href={m.verifiedUrl} target="_blank" rel="noreferrer" className="text-link">{m.verifiedUrl}</a> : 'No verified URL — fictional example'}</span>
+            <div className="spread"><h3>{m.order}. {m.title}</h3>{!occupation && <PriorityTag priority={m.priority} />}</div>
+            {occupation && <span className="small muted">{m.skill} · O*NET importance {occupation.documentedSkills.find(s => s.name === m.skill)?.importance.toFixed(2)} / 5 · no self-rating target</span>}
+            <span className="small">{m.provider} · {m.durationHours === null ? 'Duration unknown' : `${m.durationHours.toFixed(2).replace(/\.00$/, '')} hrs`} · {m.costMYR === null ? 'Cost unknown' : m.costMYR === 0 ? 'Free' : `MYR ${m.costMYR}`}{m.synthetic ? ' · synthetic' : ''}</span>
+            <span className="small">{m.verifiedUrl ? <a href={m.verifiedUrl} target="_blank" rel="noreferrer" className="text-link" data-testid={`link-resource-${m.order}`}>{m.verifiedUrl}</a> : occupation ? 'No verified resource in the current catalogue. This is a planning activity, not a course recommendation.' : 'No verified URL — fictional example'}</span>
             <span className="small muted">Prerequisites: {m.prerequisites.join('; ')}</span>
           </div></div>; })}</div>
         <div className="panel panel-pad"><SectionTitle title="Weekly schedule" note={profile.learningHours === null ? 'SET HOURS IN REPLAN' : `AT ${profile.learningHours} HRS / WEEK`} />
           {profile.learningHours === null
             ? <p className="muted">Set weekly learning hours in Replan to calculate a schedule.</p>
             : schedule.map(s => <div key={s.m.id} className="week-row"><span className="mono">Wk {s.start}{s.end > s.start ? `–${s.end}` : ''}</span><span>{s.m.skill}</span></div>)}
-          <div className="disclaimer"><Info size={14} /><span>Weeks = duration hours ÷ weekly learning hours, rounded up, in milestone order.</span></div></div>
+          <div className="disclaimer"><Info size={14} /><span>Weeks = known duration hours ÷ weekly learning hours, rounded up. {milestones.some(m => m.durationHours === null) ? 'Activities with unknown duration are unscheduled; this is not a complete timeline.' : 'Shown in milestone order.'}</span></div></div>
       </div>}
   </>;
 }

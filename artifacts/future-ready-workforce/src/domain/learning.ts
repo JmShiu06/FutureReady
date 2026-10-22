@@ -1,6 +1,7 @@
 import { demoRoles } from './demo-data';
 import { assessRole, buildRoadmap, completionKey, normalizeSkill } from './services';
-import type { Audience, CareerAssessment, CareerRole, LearningMilestone, Proficiency, RoadmapBaseline, SkillConfirmation, WorkspaceState } from './types';
+import { officialMilestones, officialPlanId } from './official-roadmap';
+import type { Audience, CareerAssessment, CareerRole, LearningMilestone, OfficialRoadmapOccupation, Proficiency, RoadmapBaseline, SkillConfirmation, WorkspaceState } from './types';
 
 /**
  * Pure state transitions for the learning roadmap, completion history and confirmed skill updates.
@@ -17,18 +18,20 @@ export function activeBaseline(state: WorkspaceState): RoadmapBaseline | null {
 export function roadmapMilestones(state: WorkspaceState): LearningMilestone[] {
   const baseline = activeBaseline(state);
   if (!baseline) return [];
+  if (baseline.occupation) return officialMilestones(baseline);
   return buildRoadmap({ ...state.profiles[state.audience], skills: baseline.skills }, state.targets[state.audience]);
 }
 
 /** Explicit "Build my learning roadmap": makes the role the target and keeps any earlier snapshot and progress. */
-export function startRoadmap(state: WorkspaceState, roleId: string, now = new Date()): WorkspaceState {
-  if (!roleOf(roleId)) throw new Error('Choose an available demo career.');
+export function startRoadmap(state: WorkspaceState, roleId: string, now = new Date(), occupation?: OfficialRoadmapOccupation): WorkspaceState {
+  const saved = state.baselines[planKey(state.audience, roleId)]?.occupation;
+  if (!roleOf(roleId) && !(occupation && roleId === officialPlanId(occupation.id)) && !saved) throw new Error('Choose an available career with reviewed skills.');
   const key = planKey(state.audience, roleId);
   return {
     ...state,
     targets: { ...state.targets, [state.audience]: roleId },
     baselines: state.baselines[key] ? state.baselines
-      : { ...state.baselines, [key]: { skills: state.profiles[state.audience].skills.map(s => ({ ...s })), startedAt: now.toISOString() } },
+      : { ...state.baselines, [key]: { skills: state.profiles[state.audience].skills.map(s => ({ ...s })), startedAt: now.toISOString(), ...(occupation ? { occupation } : {}) } },
   };
 }
 

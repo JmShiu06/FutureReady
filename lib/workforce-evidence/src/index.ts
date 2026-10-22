@@ -7,6 +7,8 @@ export interface SdgMapping {
 }
 
 export { mycolSdgMappings } from './mycol-sdg';
+export { learningResources, learningResourceCatalog } from './learning-resources';
+export type { CatalogSkill, VerifiedLearningResource } from './learning-resources';
 export type { MycolSdgMapping, SdgCitation } from './mycol-sdg';
 
 export const sdgMappings: SdgMapping[] = [

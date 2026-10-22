@@ -9,6 +9,8 @@ import { useState } from 'react';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
 import { AiExplainButton } from '@/components/ai-drawer';
+import { BuildRoadmapButton } from '@/components/build-roadmap-button';
+import { officialPlanId, occupationSnapshot } from '@/domain/official-roadmap';
 
 /**
  * Official occupation evidence (TalentCorp MyCOL + O*NET), shown alongside but
@@ -81,6 +83,9 @@ export function OfficialOccupationsPanel({ query }: { query: OccupationEvidenceQ
           {o.overlap!.missingSkills.slice(0, 4).map(s => <span key={s} className="chip gap">{s}</span>)}
         </div>
         <p className="muted small" style={{ margin: 0 }} data-testid={`text-occupation-why-${o.id}`}>{o.explanation}</p>
+        {o.mapping.status === 'verified' && o.documentedSkills.length > 0
+          ? <BuildRoadmapButton roleId={officialPlanId(o.id)} occupation={occupationSnapshot(o, query.data!)} testId={`button-build-roadmap-${o.id}`} />
+          : <span className="small muted">Roadmap unavailable: no reviewed documented skill requirements.</span>}
         <Link href={`/careers-and-jobs/roles/${o.id}`} className="text-link" data-testid={`link-occupation-${o.id}`}>Occupation evidence & sources <ArrowRight size={12} /></Link>
       </article>)}</div>
       {excluded.length > 0 && <div style={{ marginTop: 16 }} data-testid="list-occupations-excluded">
@@ -191,6 +196,9 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
       <p className="muted" style={{ maxWidth: 690 }}>Classified as a critical occupation by TalentCorp in {o.mycol.edition}. This is a TalentCorp classification, not a hiring probability or a vacancy count.</p>
       <div className="role-meta"><span><BookOpen size={14} />O*NET {o.onet.code} · {o.onet.title}</span><span><ShieldCheck size={14} />{relationLabel[o.mapping.relation]} · {o.mapping.status === 'verified' ? 'reviewed mapping' : 'unverified mapping'}</span></div>
       <div className="row" style={{ marginTop: 16 }}>
+        {o.recommendationStatus === 'eligible' && o.mapping.status === 'verified' && o.documentedSkills.length > 0
+          ? <BuildRoadmapButton roleId={officialPlanId(o.id)} occupation={occupationSnapshot(o, data)} testId="button-build-occupation-roadmap" />
+          : <span className="small muted" data-testid="text-roadmap-unavailable">Roadmap unavailable: no reviewed documented skill requirements.</span>}
         <Link href="/learning-roadmap" className="btn btn-primary btn-small" data-testid="link-occupation-roadmap"><Workflow size={12} /> Continue to my roadmap</Link>
         <Link href="/my-profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> Update my skills</Link>
         <AiExplainButton request={{ feature: 'career-explorer' }} label="Explain career match with AI" small />
@@ -216,7 +224,7 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
           <SectionTitle title="Why this occupation appears" note="EXPLANATION" />
           <p className="muted">{o.explanation}</p>
           <dl className="evidence"><dt>Mapping rationale</dt><dd>{o.mapping.rationale}</dd><dt>Mapping limitations</dt><dd>{o.mapping.limitations}</dd><dt>Scoring</dt><dd>{data.scoring}</dd></dl>
-          <p className="muted small">Your roadmap continues to use your current target role. O*NET skills are not turned into roadmap proficiency targets.</p>
+          <p className="muted small">Browsing never changes your roadmap. Choose “Build my learning roadmap” to use this occupation’s documented skills. O*NET ratings are not converted into 1–5 proficiency targets.</p>
         </div>
       </div>
       <div className="stack">

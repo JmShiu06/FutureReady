@@ -28,3 +28,16 @@ Uploaded course references must remain distinct from the independently checked l
 **Why:** The supplied archive is reference material, not a provider verification process; existing verified resources have a stronger trust claim.
 
 **How to apply:** Label dataset limitations and planning assumptions. Do not replace verified resources with unverified catalog matches or save request analysis just because a caller supplies a user identifier.
+
+## Official occupation roadmaps
+Do not convert O*NET's 0–7 occupational Level ratings into learners' 1–5 self-ratings. Official occupation plans address documented skills absent by name, not validated proficiency gaps.
+
+**Why:** These scales measure different things. The roadmap request explicitly preserves the established matching formulas and requires documented requirements rather than invented targets.
+
+**How to apply:** Keep official name overlap separate from sample-role proficiency coverage, including dashboard and progress summaries. Preserve the evidence and starting-skills snapshot when a plan is resumed, even if newer occupation evidence becomes available.
+
+A general O*NET skill such as Programming does not establish that a Python-specific course is a reviewed recommendation for that skill.
+
+**Why:** The independently reviewed catalogue currently verifies narrow technical skill coverage, not broad occupational capability. Expanding coverage requires additional review, not a silent alias.
+
+**How to apply:** Use direct reviewed skill coverage only. If none exists, show an unavailable resource with unknown cost and duration, rather than generating course details or substituting fictional sample courses.

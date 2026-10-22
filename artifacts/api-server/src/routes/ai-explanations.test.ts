@@ -90,8 +90,8 @@ it("deduplicates identical in-flight requests rather than calling the GPU twice"
   let calls = 0;
   let release!: () => void;
   let notify!: () => void;
-  const gate = new Promise<void>(r => { release = r; });
-  const started = new Promise<void>(r => { notify = r; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const started = new Promise<void>(resolve => { notify = resolve; });
   await testServer(async input => { calls++; notify(); await gate; return mockReply(input); }, async post => {
     const input = { feature: "cv-analysis", cvDetectedSkill: "python" };
     const first = post(input);
@@ -109,14 +109,15 @@ it("deduplicates identical in-flight requests rather than calling the GPU twice"
 it("handles Pod failures safely without mutating state or exposing provider internals", async () => {
   for (const error of [new RunpodConfigurationError("Runpod is not configured."), new RunpodRequestError("completion"), new RunpodRequestError("completion", 401)]) {
     await testServer(async () => { throw error; }, async post => {
-      const response = await post({ feature: "career-explorer", sampleId: "data-starter" });
-      assert.ok([502, 503].includes(response.status));
-      const body = await response.json() as { error?: unknown };
+      const response = await post({ feature: "cv-analysis", cvDetectedSkill: "python" });
+      assert.equal(response.status, error instanceof RunpodConfigurationError ? 503 : 502);
+      assert.equal(response.headers.get("cache-control"), "no-store");
+      const body = await response.json() as { error: unknown };
       assert.equal(typeof body.error, "string");
     });
   }
   await testServer(async () => ({ explanation: "A fabricated 99% chance. https://invented.invalid" }), async post => {
-    const response = await post({ feature: "career-explorer", sampleId: "data-starter" });
+    const response = await post({ feature: "cv-analysis", cvDetectedSkill: "python" });
     assert.equal(response.status, 502);
     assert.equal(JSON.stringify(await response.json()).includes("invented.invalid"), false);
   });
@@ -124,7 +125,7 @@ it("handles Pod failures safely without mutating state or exposing provider inte
 
 it("connects every existing feature to its prompt and validates the unchanged response envelope", async () => {
   for (const feature of Object.keys(FEATURE_PROMPTS) as PromptFeature[]) await testServer(async input => {
-    assert.equal(input.context.synthetic, feature === "cv-analysis" ? undefined : true);
+    if (feature !== "cv-analysis") assert.equal(input.context.synthetic, true);
     assert.equal("profile" in input.context, false);
     if (feature === "cv-analysis") assert.deepEqual(input.context, { detectedSkill: "python" });
     else assert.equal(input.context.task, feature);
