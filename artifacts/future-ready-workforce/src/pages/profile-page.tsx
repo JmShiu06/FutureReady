@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowRight, Check, Plus, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
+import { CandidateNameLabel } from '@/components/candidate-name-label';
 import { useCvSession } from '@/domain/cv-session';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -77,6 +78,7 @@ export default function ProfilePage() {
   if (sectionParam === 'roadmap') return <Redirect to="/learning-roadmap" replace />;
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : 'See how far you have come.'} subtitle="Your skills, CV import and progress. Each audience keeps its own profile." />
+    <CandidateNameLabel testId="text-candidate-profile" />
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}

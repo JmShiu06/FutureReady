@@ -5,6 +5,7 @@ import { ArrowUpRight, Sparkles } from "lucide-react";
 import { useMatchCvCareers, type CareerMatchResult } from "@workspace/api-client-react";
 import { useWorkspace } from "@/domain/workspace-context";
 import { EmptyBlock, ErrorBlock, LoadingBlock } from "@/components/workspace/ui";
+import { CandidateNameLabel } from "@/components/candidate-name-label";
 
 /** CV recommendations use uploaded career titles, with existing pooled skill evidence. */
 export function MatchedRolesTab() {
@@ -60,6 +61,7 @@ export function MatchedRolesTab() {
   return (
     <>
       <div className="tab-intro">
+        <CandidateNameLabel testId="text-candidate-job-matching" />
         <p className="muted small" data-testid="text-recommendation-scope">
           Career names from your uploaded AI Job Market Dataset, ranked by <b>exact / related skill overlap</b> with the skills saved in your profile.
         Related matches are labeled. These are role recommendations, not live vacancies or a hiring probability.

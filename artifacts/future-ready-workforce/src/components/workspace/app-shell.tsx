@@ -42,10 +42,10 @@ function AudienceSelect() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { state, profile, storageWarning } = useWorkspace();
-  const { candidateName } = useCvSession();
+  const { candidateName, phase } = useCvSession();
   const crumbs = pageTitle(location);
   const current = activeKey(location);
-  const displayName = candidateName || profile.occupation || 'Your profile';
+  const displayName = profile.occupation || 'Your profile';
   const initials = displayName.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
   return <AiDrawerProvider><div className="app-shell">
     <aside className="sidebar">
@@ -78,5 +78,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
     </div>
+    {phase === 'ready' && <aside className="candidate-badge" role="status" aria-atomic="true" data-testid="text-candidate-badge">
+      <span>Candidate:</span>{' '}<strong>{candidateName || 'Unknown'}</strong>
+    </aside>}
   </div></AiDrawerProvider>;
 }

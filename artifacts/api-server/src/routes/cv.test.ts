@@ -64,9 +64,16 @@ async function upload(buffer: Buffer, name: string) {
 
 describe("deterministic CV skill detection", () => {
   it("extracts only a short CV header name without returning surrounding text", () => {
-    assert.equal(detectCvName("Chew Wen\nKuala Lumpur, Malaysia\nSkills: Python"), "Chew Wen");
-    assert.equal(detectCvName("Name: ChewWen\nEmail: private@example.test"), "ChewWen");
+    assert.equal(detectCvName("Aisha Rahman\nKuala Lumpur, Malaysia\nSkills: Python"), "Aisha Rahman");
+    assert.equal(detectCvName("Name: Nur Aisyah Tan\nEmail: private@example.test"), "Nur Aisyah Tan");
     assert.equal(detectCvName("Curriculum Vitae\nProfessional Summary\nSkills: Python\nOperations Manager"), undefined);
+  });
+  it("prefers parsed names, uses local PERSON entities as a fallback and rejects placeholders", () => {
+    assert.equal(detectCvName("Aisha Rahman\nExperience\nWorked with Marina Lee", "Nur Aisyah Tan"), "Nur Aisyah Tan");
+    assert.equal(detectCvName("Professional Experience\nWorked closely with Aisha Rahman on service design."), "Aisha Rahman");
+    for (const name of ["John Doe", "Jane Doe", "Sample Candidate", "Demo User"]) {
+      assert.equal(detectCvName(`Name: ${name}\nSkills: Python`), undefined);
+    }
   });
   it("preserves punctuation, normalizes case/space and deduplicates without substring matches", () => {
     const catalogue = ["ai", "ai/ml", "node.js", "react.js", "next.js", "ci/cd", "c++", "c#", "data analysis", "python"];
@@ -127,7 +134,7 @@ describe("deterministic CV skill detection", () => {
 
 describe("CV extraction and upload API", () => {
   it("extracts real dataset skills from UTF-8 TXT, selectable PDF and DOCX", async () => {
-    const text = "Jane Doe\nSkills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
+    const text = "Mina Tan\nSkills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
     const fixtures: [Buffer, string][] = [[Buffer.from(text), "synthetic.txt"], [await pdf(text), "synthetic.pdf"], [await docx(text), "synthetic.docx"]];
     for (const [buffer, name] of fixtures) {
       const response = await upload(buffer, name);
@@ -138,7 +145,7 @@ describe("CV extraction and upload API", () => {
       assert.ok(response.json.skills?.includes("ci/cd"));
        assert.equal(response.json.profileSuggestions?.occupation, "Operations coordinator");
        assert.equal(response.json.profileSuggestions?.experienceYears, 5);
-       assert.equal(response.json.detectedName, "Jane Doe");
+        assert.equal(response.json.detectedName, "Mina Tan");
       assert.equal(response.headers.get("cache-control"), "no-store");
     }
   });

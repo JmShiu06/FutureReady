@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { Link } from 'wouter';
 import { AlertTriangle, BookOpen, Check, ChevronDown, ExternalLink, Languages, Lightbulb, Loader2, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react';
 import { useCvSession, type CvDraft, type DraftItem } from '@/domain/cv-session';
+import { CandidateNameLabel } from '@/components/candidate-name-label';
 import { MatchScore } from '@/components/shared/match-score';
 import { cvExplanationSectionInView, type CvExplanationView } from '@/domain/cv-explanation-sections';
 import './cv-career-explanation.css';
@@ -127,6 +128,7 @@ export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink
       <div>
         <h2 id="cvx-title">AI Career Explanation</h2>
         <p>Skill analysis, career matches, gaps and discussion areas based only on selected skill names and languages. Learning guidance is on Learning roadmap.</p>
+        <CandidateNameLabel testId="text-candidate-explanation" />
       </div>
     </div>
     {phase === 'extracting' && <div className="cvx-skeleton" role="status"><span className="sr-only">Reading your CV.</span><i style={{ width: '80%' }} /><i style={{ width: '60%' }} /></div>}

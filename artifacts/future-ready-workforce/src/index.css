@@ -99,6 +99,11 @@ a { color: inherit; text-decoration: none; }
 .avatar { width: 32px; height:32px; border-radius:50%; display:grid; place-items:center; color:#31554a; background:#e4a77c; font:700 11px var(--mono-font); }
 .profile-chip strong { font-size: 11px; display:block; }
 .profile-chip span { font-size: 10px; color:#9cb5a6; }
+.candidate-name-context { display:flex; flex-wrap:wrap; align-items:baseline; gap:5px; margin:0 0 16px; color:hsl(var(--muted-foreground)); font-size:13px; }
+.candidate-name-context strong { color:hsl(var(--foreground)); font-weight:700; }
+.candidate-badge { position:fixed; left:20px; bottom:20px; z-index:1000; display:flex; align-items:baseline; gap:6px; max-width:min(320px,calc(100vw - 40px)); padding:8px 14px; border:1px solid hsl(var(--border) / .88); border-radius:12px; background:hsl(var(--card) / .95); color:hsl(var(--foreground)); box-shadow:0 4px 12px rgb(20 38 55 / .14); backdrop-filter:blur(14px); }
+.candidate-badge span { color:hsl(var(--muted-foreground)); font-size:11px; }
+.candidate-badge strong { min-width:0; overflow-wrap:anywhere; font-size:13px; font-weight:700; }
 .main-wrap { min-width: 0; flex: 1; }
 .topbar { height: 70px; display:flex; align-items:center; justify-content:space-between; padding: 0 40px; border-bottom:1px solid #e5e0d5; background:rgba(248,246,239,.78); }
 .crumb { display:flex; align-items:center; gap:9px; color:#76827a; font-size:11px; }
@@ -367,6 +372,7 @@ tr:last-child td { border-bottom:0; }
   .welcome-card h1 { font-size:27px; }
   .team-stat-grid { grid-template-columns:repeat(2,1fr); }
   .page-head { align-items:flex-start; flex-direction:column; }
+  .candidate-badge { left:12px; bottom:calc(84px + env(safe-area-inset-bottom)); max-width:calc(100vw - 24px); }
 }
 @media (max-width:480px) {
   .brand-name { display:none; }

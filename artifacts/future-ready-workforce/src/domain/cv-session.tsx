@@ -88,7 +88,7 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
       if (uploadRef.current?.id !== id || id !== uploadId.current) return false;
       uploadRef.current = null;
       const data = result.careerData;
-      setCandidateName(result.detectedName ?? '');
+      setCandidateName(result.detectedName?.trim() || 'Unknown');
       const categories: Record<string, string> = {};
       for (const c of result.categorizedSkills ?? []) categories[c.name.trim().toLowerCase()] = c.category;
       setDraft({

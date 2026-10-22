@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import nlp from "compromise";
 import { buildCvCareerData, categorizeCvSkill, CV_EXTRACTION_LIMITATION } from "./cvCareerData";
 import type { CvCareerData } from "@workspace/api-zod";
 import { dirname, join } from "node:path";
@@ -23,6 +24,7 @@ const MAX_TEXT_LENGTH = 1_000_000;
 const MAX_OCR_PDF_PAGES = 3;
 const MAX_IMAGE_PIXELS = 12_000_000;
 const MAX_RENDER_EDGE = 2_000;
+const CV_NER_SCAN_LIMIT = 160_000;
 export const CV_PROCESSING_TIMEOUT_MS = 35_000;
 const require = createRequire(import.meta.url);
 const OCR_LANG_PATH = join(dirname(require.resolve("@tesseract.js-data/eng")), "4.0.0_best_int");
@@ -118,15 +120,22 @@ export function detectSkills(text: string, catalogue = careerDataset.allSkills):
 
 const CV_NAME_LABEL = /^\s*(?:full\s+name|candidate\s+name|name)\s*[:：]\s*(.*?)\s*$/i;
 const CV_HEADER_LABELS = new Set([
-  "about me", "career objective", "certifications", "contact", "contact details",
-  "curriculum vitae", "education", "experience", "languages", "objective",
-  "personal profile", "professional profile", "professional summary", "profile",
-  "projects", "references", "resume", "skills", "summary", "vitae",
+  "about me", "career objective", "career profile", "career summary", "certifications",
+  "contact", "contact details", "contact information", "core competencies",
+  "curriculum vitae", "education", "employment history", "experience", "key skills",
+  "languages", "objective", "personal information", "personal profile",
+  "professional experience", "professional profile", "professional summary", "profile",
+  "profile summary", "projects", "references", "resume", "skills", "summary",
+  "vitae", "work experience", "work history",
 ]);
 const CV_ROLE_WORDS = new Set([
-  "administrator", "analyst", "architect", "assistant", "coordinator", "designer",
-  "developer", "director", "engineer", "executive", "manager", "officer",
-  "professor", "specialist", "student", "teacher", "technician",
+  "administrator", "analyst", "architect", "assistant", "chief", "consultant",
+  "coordinator", "designer", "developer", "director", "engineer", "executive",
+  "head", "lead", "manager", "officer", "principal", "professor", "senior",
+  "specialist", "student", "teacher", "technician",
+]);
+const PLACEHOLDER_CANDIDATE_NAMES = new Set([
+  "john doe", "jane doe", "sample candidate", "demo user",
 ]);
 const isNameText = (value: string, allowSingleWord: boolean) => {
   if (value.length < 2 || value.length > 80) return false;
@@ -135,25 +144,69 @@ const isNameText = (value: string, allowSingleWord: boolean) => {
   return parts.every((part) => /^\p{L}[\p{L}\p{M}'’.-]*$/u.test(part));
 };
 
-/** Returns only a short header name; never retains or returns the surrounding CV text. */
-export function detectCvName(text: string): string | undefined {
+function cleanCandidateName(raw: string, allowSingleWord = false): string | undefined {
+  let candidate = safeProfileValue(raw, 80);
+  if (!candidate) return undefined;
+  candidate = candidate
+    .replace(/^(?:(?:mr|mrs|ms|miss|dr|prof)\.?\s+)/i, "")
+    .replace(/[,;|]+$/, "")
+    .trim();
+  const normalized = candidate.toLowerCase().replace(/[.,]/g, "").replace(/\s+/g, " ").trim();
+  if (
+    !isNameText(candidate, allowSingleWord)
+    || PLACEHOLDER_CANDIDATE_NAMES.has(normalized)
+    || CV_HEADER_LABELS.has(normalized)
+    || candidate.split(/\s+/).some((part) => CV_ROLE_WORDS.has(part.toLowerCase().replace(/[.]$/, "")))
+  ) return undefined;
+  return candidate;
+}
+
+type NameCandidate = { name: string; sourcePriority: number; confidence: number };
+
+/** Selects a short name only; local PERSON recognition never retains CV text. */
+export function detectCvName(text: string, parsedName?: string): string | undefined {
   const lines = text.normalize("NFKC").split(/\r?\n/);
+  const candidates: NameCandidate[] = [];
+  const addCandidate = (raw: string, sourcePriority: number, confidence: number, allowSingleWord = false) => {
+    const name = cleanCandidateName(raw, allowSingleWord);
+    if (name) candidates.push({ name, sourcePriority, confidence });
+  };
+
+  if (parsedName) addCandidate(parsedName, 3, 1, true);
   for (const line of lines.slice(0, 40)) {
     const labelled = line.match(CV_NAME_LABEL);
     if (!labelled) continue;
-    const value = safeProfileValue(labelled[1], 80);
-    if (value && isNameText(value, true)) return value;
+    addCandidate(labelled[1], 3, 1, true);
   }
 
-  for (const line of lines.slice(0, 12)) {
-    const candidate = line.replace(/^\s*[•*·–—-]\s*/, "").trim().replace(/\s+/g, " ");
-    if (!candidate || /[:：|@,]/.test(candidate) || !isNameText(candidate, false)) continue;
-    const normalized = candidate.toLowerCase();
-    const parts = normalized.split(/\s+/);
-    if (CV_HEADER_LABELS.has(normalized) || parts.some((part) => CV_ROLE_WORDS.has(part))) continue;
-    return candidate;
+  lines.slice(0, 12).forEach((line, index) => {
+    const candidate = line
+      .replace(/^\s*[•*·–—-]\s*/, "")
+      .split(/[|;•]/, 1)[0]
+      .replace(/\s+(?:[-–—])\s+.*$/, "")
+      .trim()
+      .replace(/\s+/g, " ");
+    if (!candidate || /[:：@]/.test(candidate)) return;
+    addCandidate(candidate, 2, Math.max(0.8, 0.94 - index * 0.012));
+  });
+
+  // compromise runs locally in the API process; only selected name strings
+  // leave this function, never the CV text or PERSON entity context.
+  const nerText = text.normalize("NFKC").slice(0, CV_NER_SCAN_LIMIT);
+  const personEntities = nlp(nerText).people().out("array");
+  for (const entity of personEntities) {
+    const name = cleanCandidateName(entity);
+    if (!name) continue;
+    const index = nerText.toLowerCase().indexOf(name.toLowerCase());
+    const lineNumber = index < 0 ? 40 : nerText.slice(0, index).split("\n").length - 1;
+    const nearby = nerText.slice(Math.max(0, index - 100), index + name.length + 180);
+    const nearContact = /@|(?:\+?\d[\d ()-]{6,}\d)/.test(nearby);
+    const confidence = Math.max(0.45, 0.72 - Math.min(lineNumber, 40) * 0.006 + (nearContact ? 0.08 : 0));
+    addCandidate(name, 1, confidence);
   }
-  return undefined;
+
+  candidates.sort((a, b) => b.sourcePriority - a.sourcePriority || b.confidence - a.confidence);
+  return candidates[0]?.name;
 }
 
 const PROFILE_LABELS: Record<string, keyof CvProfileSuggestions> = {
