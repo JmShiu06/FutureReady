@@ -2,20 +2,20 @@
   display: inline-grid;
   flex: 0 0 auto;
   place-items: center;
-  color: #42596d;
+  color: #6b513c;
   vertical-align: middle;
 }
 .raccoon-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .raccoon-loader-regular { width: 36px; height: 36px; }
 .raccoon-loader-small { width: 20px; height: 20px; }
-.raccoon-head { fill: #8794a1; stroke: #526476; stroke-width: 1.25; }
-.raccoon-ear { fill: #526476; stroke: #526476; stroke-width: 1.1; stroke-linejoin: round; }
-.raccoon-tail-fill { fill: #8794a1; stroke: #526476; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
-.raccoon-tail-band { fill: #344657; }
-.raccoon-mask { fill: #344657; }
-.raccoon-muzzle { fill: #e9e6dc; }
-.raccoon-eye, .raccoon-nose { fill: #263a4a; }
-.raccoon-smile, .raccoon-brow { fill: none; stroke: #344657; stroke-width: 1.15; stroke-linecap: round; }
+.raccoon-head { fill: #b6a18a; stroke: #755b43; stroke-width: 1.25; }
+.raccoon-ear { fill: #755b43; stroke: #755b43; stroke-width: 1.1; stroke-linejoin: round; }
+.raccoon-tail-fill { fill: #b6a18a; stroke: #755b43; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.raccoon-tail-band { fill: #59402e; }
+.raccoon-mask { fill: #59402e; }
+.raccoon-muzzle { fill: #f4ecdf; }
+.raccoon-eye, .raccoon-nose { fill: #39291f; }
+.raccoon-smile, .raccoon-brow { fill: none; stroke: #59402e; stroke-width: 1.15; stroke-linecap: round; }
 .raccoon-head { transform-box: fill-box; transform-origin: center 90%; animation: raccoon-nod 1.45s ease-in-out infinite; }
 .raccoon-ear { transform-box: fill-box; transform-origin: center; animation: raccoon-ear-flick 2.8s ease-in-out infinite; }
 .raccoon-eye { transform-box: fill-box; transform-origin: center; animation: raccoon-blink 3.3s ease-in-out infinite; }

@@ -1,50 +1,50 @@
-.cvx { margin-bottom:18px; border-color:#dce4ed; background:linear-gradient(160deg,#fbfdff,#f3f8fe); }
+.cvx { margin-bottom:18px; border-color:#e1d5c6; background:linear-gradient(160deg,#fcf9f2,#f5eee4); }
 .cvx-head { display:flex; gap:11px; align-items:flex-start; margin-bottom:14px; }
-.cvx-head h2 { margin:1px 0 3px; color:#2c4058; font:700 17px var(--display-font); }
-.cvx-head p { margin:0; color:#5f748c; font-size:11px; line-height:1.5; }
-.cvx-head-icon { width:36px; height:36px; display:grid; place-items:center; flex:none; border-radius:11px; color:#fff; background:linear-gradient(135deg,#3989d5,#1674d1); }
-.cvx-start { display:grid; gap:6px; justify-items:start; padding:16px; border:1px dashed #b9d5ef; border-radius:12px; background:#fbfdff; }
-.cvx-start strong { color:#344860; font-size:12.5px; } .cvx-start p { margin:0; color:#657a92; font-size:11px; }
-.cvx-preview { display:grid; gap:14px; padding:16px; border:1px solid #dce7f2; border-radius:14px; background:#fff8; }
+.cvx-head h2 { margin:1px 0 3px; color:#493628; font:700 17px var(--display-font); }
+.cvx-head p { margin:0; color:#66513f; font-size:11px; line-height:1.5; }
+.cvx-head-icon { width:36px; height:36px; display:grid; place-items:center; flex:none; border-radius:11px; color:#fff9f0; background:linear-gradient(135deg,#927255,#73513b); }
+.cvx-start { display:grid; gap:6px; justify-items:start; padding:16px; border:1px dashed #d5c1aa; border-radius:12px; background:#faf5ed; }
+.cvx-start strong { color:#493628; font-size:12.5px; } .cvx-start p { margin:0; color:#6c5744; font-size:11px; }
+.cvx-preview { display:grid; gap:14px; padding:16px; border:1px solid #e3d7c8; border-radius:14px; background:rgba(255,252,246,.88); }
 .cvx-preview-head { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start; }
-.cvx-preview-head h3, .cvx-result h3 { margin:0 0 4px; color:#2c4058; font:700 14px var(--display-font); }
-.cvx-preview-head p { margin:0; max-width:560px; color:#5f748c; font-size:10.5px; line-height:1.5; }
-.cvx-preview-head svg { vertical-align:-2px; color:#1674d1; }
+.cvx-preview-head h3, .cvx-result h3 { margin:0 0 4px; color:#493628; font:700 14px var(--display-font); }
+.cvx-preview-head p { margin:0; max-width:560px; color:#66513f; font-size:10.5px; line-height:1.5; }
+.cvx-preview-head svg { vertical-align:-2px; color:#73513b; }
 .cvx-limited { display:flex; gap:7px; align-items:flex-start; margin:0; padding:9px 12px; border-left:3px solid #d9822b; border-radius:0 8px 8px 0; background:#fff4e8; color:#8a4a10; font-size:11px; }
 .cvx-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
 .cvx-field { display:grid; gap:7px; align-content:start; }
-.cvx-field h4 { display:flex; align-items:center; gap:6px; margin:0; color:#344860; font:700 11.5px var(--display-font); }
-.cvx-field h4 span { margin-left:auto; color:#7a8ca1; font:500 9.5px var(--body-font, inherit); }
-.cvx-cat { display:grid; gap:5px; } .cvx-cat-label { color:#1674d1; font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.cvx-field h4 { display:flex; align-items:center; gap:6px; margin:0; color:#493628; font:700 11.5px var(--display-font); }
+.cvx-field h4 span { margin-left:auto; color:#725d49; font:500 9.5px var(--body-font, inherit); }
+.cvx-cat { display:grid; gap:5px; } .cvx-cat-label { color:#73513b; font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
 .cvx-skill-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:6px; }
 .cvx-item { display:flex; gap:7px; align-items:flex-start; }
-.cvx-item input[type=checkbox] { margin-top:9px; width:16px; height:16px; accent-color:#1674d1; flex:none; }
-.cvx-item textarea, .cvx-item .fr-input { width:100%; min-height:34px; padding:7px 9px; border:1px solid #d6e2ee; border-radius:8px; background:#fff; color:#344860; font:inherit; font-size:11px; resize:vertical; }
+.cvx-item input[type=checkbox] { margin-top:9px; width:16px; height:16px; accent-color:#73513b; flex:none; }
+.cvx-item textarea, .cvx-item .fr-input { width:100%; min-height:34px; padding:7px 9px; border:1px solid #dfd1c0; border-radius:8px; background:#fcf9f2; color:#493628; font:inherit; font-size:11px; resize:vertical; }
 .cvx-item.is-off textarea, .cvx-item.is-off .fr-input { opacity:.55; text-decoration:line-through; }
-.cvx-empty { margin:0; color:#72849a; font-size:10.5px; font-style:italic; }
-.cvx-consent { display:grid; gap:10px; padding:12px; border-radius:12px; background:#eaf3fd; }
-.cvx-consent label { display:flex; gap:8px; align-items:flex-start; color:#344860; font-size:11px; line-height:1.5; }
-.cvx-consent input { margin-top:2px; width:16px; height:16px; accent-color:#1674d1; flex:none; }
+.cvx-empty { margin:0; color:#66513f; font-size:10.5px; font-style:italic; }
+.cvx-consent { display:grid; gap:10px; padding:12px; border-radius:12px; background:#efe4d6; }
+.cvx-consent label { display:flex; gap:8px; align-items:flex-start; color:#493628; font-size:11px; line-height:1.5; }
+.cvx-consent input { margin-top:2px; width:16px; height:16px; accent-color:#73513b; flex:none; }
 .cvx-consent .btn { justify-self:start; display:inline-flex; gap:6px; align-items:center; }
-.cvx-skeleton { display:grid; gap:9px; margin-top:14px; } .cvx-skeleton i { display:block; height:12px; border-radius:6px; background:linear-gradient(90deg,#e5eef8,#f3f8fd,#e5eef8); background-size:200% 100%; animation:cvx-shimmer 1.4s ease-in-out infinite; }
+.cvx-skeleton { display:grid; gap:9px; margin-top:14px; } .cvx-skeleton i { display:block; height:12px; border-radius:6px; background:linear-gradient(90deg,#eee5d9,#faf5ed,#eee5d9); background-size:200% 100%; animation:cvx-shimmer 1.4s ease-in-out infinite; }
 @keyframes cvx-shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
 .cvx-error { display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap; margin:12px 0 0; padding:10px 12px; border-radius:10px; background:#fdf0ee; color:#a33220; font-size:11px; } .cvx-error p { margin:0; }
 .cvx-result { margin-top:16px; }
 .cvx-warnings { margin:6px 0 10px; padding:9px 12px 9px 26px; border-left:3px solid #d9822b; background:#fff4e8; color:#8a4a10; font-size:10.5px; }
 .cvx-sections { display:grid; gap:8px; }
-.cvx-card { border:1px solid #dce7f2; border-radius:12px; background:#fff; overflow:hidden; }
-.cvx-card summary { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; list-style:none; color:#2c4058; font-size:12.5px; }
+.cvx-card { border:1px solid #e2d6c7; border-radius:12px; background:#fffdf8; overflow:hidden; }
+.cvx-card summary { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; list-style:none; color:#493628; font-size:12.5px; }
 .cvx-card summary::-webkit-details-marker { display:none; }
-.cvx-card summary:focus-visible { outline:2px solid #3989d5; outline-offset:-2px; }
-.cvx-card-icon { width:26px; height:26px; display:grid; place-items:center; border-radius:8px; background:#eaf3fd; color:#1674d1; }
-.cvx-chevron { margin-left:auto; color:#7a8ca1; transition:transform .2s; } .cvx-card[open] .cvx-chevron { transform:rotate(180deg); }
-.cvx-card-body { padding:0 16px 14px 50px; color:#425870; font-size:11.5px; line-height:1.65; } .cvx-card-body p { margin:0 0 8px; white-space:pre-line; }
+.cvx-card summary:focus-visible { outline:2px solid #73513b; outline-offset:-2px; }
+.cvx-card-icon { width:26px; height:26px; display:grid; place-items:center; border-radius:8px; background:#efe4d6; color:#73513b; }
+.cvx-chevron { margin-left:auto; color:#725d49; transition:transform .2s; } .cvx-card[open] .cvx-chevron { transform:rotate(180deg); }
+.cvx-card-body { padding:0 16px 14px 50px; color:#594533; font-size:11.5px; line-height:1.65; } .cvx-card-body p { margin:0 0 8px; white-space:pre-line; }
 .cvx-matches { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-top:8px; }
-.cvx-match { display:grid; gap:8px; padding:12px; border:1px solid #e1e8f0; border-radius:10px; background:#fbfdff; } .cvx-match h5 { margin:0; color:#2c4058; font-size:12px; }
-.cvx-chip-row { display:flex; flex-wrap:wrap; gap:5px; align-items:center; } .cvx-chip-label { width:100%; color:#72849a; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.cvx-match { display:grid; gap:8px; padding:12px; border:1px solid #e5d9ca; border-radius:10px; background:#fcf9f2; } .cvx-match h5 { margin:0; color:#493628; font-size:12px; }
+.cvx-chip-row { display:flex; flex-wrap:wrap; gap:5px; align-items:center; } .cvx-chip-label { width:100%; color:#66513f; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .cvx-chip { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:999px; font-size:10.5px; font-weight:600; }
 .cvx-chip.ok { background:#e5f5ea; color:#1f6b37; border:1px solid #b9e2c6; } .cvx-chip.gap { background:#fff0e0; color:#9a4a07; border:1px solid #f5c999; }
-.cvx-resources { display:grid; gap:7px; margin:8px 0 0; padding:0; list-style:none; } .cvx-resources li { display:grid; gap:2px; } .cvx-resources a { color:#1674d1; font-weight:600; } .cvx-resources span { color:#72849a; font-size:10px; }
+.cvx-resources { display:grid; gap:7px; margin:8px 0 0; padding:0; list-style:none; } .cvx-resources li { display:grid; gap:2px; } .cvx-resources a { color:#73513b; font-weight:600; } .cvx-resources span { color:#66513f; font-size:10px; }
 @media (max-width:640px) { .cvx-card-body { padding-left:14px; } }
 @media (prefers-reduced-motion:reduce) { .cvx-skeleton i { animation:none; } .cvx-chevron { transition:none; } }
-.cvx-skill-label { flex:1; padding:7px 9px; border:1px solid #d6e2ee; border-radius:8px; background:#fff; color:#344860; font-size:11px; cursor:pointer; } .cvx-item.is-off .cvx-skill-label { opacity:.55; text-decoration:line-through; }
+.cvx-skill-label { flex:1; padding:7px 9px; border:1px solid #dfd1c0; border-radius:8px; background:#fcf9f2; color:#493628; font-size:11px; cursor:pointer; } .cvx-item.is-off .cvx-skill-label { opacity:.55; text-decoration:line-through; }

@@ -289,7 +289,7 @@ export function DosmDataPanels() {
                   >
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={displayedRows}>
-                        <CartesianGrid stroke="#e4ebf4" />
+                        <CartesianGrid stroke="#e5d9ca" />
                         <XAxis
                           dataKey="date"
                           tick={{ fontSize: 10 }}
@@ -304,7 +304,7 @@ export function DosmDataPanels() {
                         <Line
                           dataKey={metric}
                           name={selectedMetricLabel}
-                          stroke="#3478d4"
+                          stroke="#73513b"
                           strokeWidth={2}
                           dot={false}
                           activeDot={{ r: 4 }}

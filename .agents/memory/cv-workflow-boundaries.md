@@ -3,9 +3,9 @@ name: CV workflow boundaries
 description: User-defined privacy and scope constraints for FutureReady CV work and separate canvas experiments.
 ---
 
-The CV workflow belongs in the existing FutureReady website and retains its original warm orange-and-cream branding. FPS-style canvas frames are separate design references, not approval to replace the live website theme.
+The CV workflow belongs in the existing FutureReady website and follows the current soft brown-and-cream site palette (see frontend-product-boundaries.md). FPS-style canvas frames are separate design references, not approval to replace the live website theme.
 
-**Why:** Collaborative canvas experiments and requests for the original theme occurred alongside a repeated attachment explicitly targeting the existing warm-themed website.
+**Why:** The user explicitly requested soft brown and cream for the site after earlier palette changes. Collaborative canvas experiments are not blanket approval to restyle the application.
 
 **How to apply:** Keep canvas-only explorations separate unless the user explicitly asks to integrate one. Prioritize the current user's request rather than continuing an older collaborator's design experiment.
 
