@@ -4,6 +4,7 @@ import {
   Activity, AlertTriangle, BarChart3, BriefcaseBusiness, ChevronRight, Compass, Route as RouteIcon, ShieldCheck, UserRound,
 } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
+import { useCvSession } from '@/domain/cv-session';
 import { audienceLabels } from '@/domain/demo-data';
 import { selectableAudiences } from '@/domain/storage';
 import type { Audience } from '@/domain/types';
@@ -41,9 +42,11 @@ function AudienceSelect() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { state, profile, storageWarning } = useWorkspace();
+  const { candidateName } = useCvSession();
   const crumbs = pageTitle(location);
   const current = activeKey(location);
-  const initials = profile.occupation.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
+  const displayName = candidateName || profile.occupation || 'Your profile';
+  const initials = displayName.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
   return <AiDrawerProvider><div className="app-shell">
     <aside className="sidebar">
       <Link href="/dashboard" className="brand" data-testid="link-brand">
@@ -61,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         })}
       </nav>
       <div className="sidebar-bottom">
-        <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-occupation">{profile.occupation || 'Your profile'}</strong><span>{audienceLabels[state.audience]}</span></div></div>
+        <div className="profile-chip"><span className="avatar">{initials || 'FR'}</span><div><strong data-testid="text-shell-name">{displayName}</strong><span>{audienceLabels[state.audience]}</span></div></div>
       </div>
     </aside>
     <div className="main-wrap">

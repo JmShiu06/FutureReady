@@ -175,6 +175,8 @@ export interface CvCareerData {
 }
 
 export interface CvSkillExtraction {
+  /** @maxLength 80 */
+  detectedName?: string;
   skills: string[];
   warnings: string[];
   profileSuggestions: CvProfileSuggestions;

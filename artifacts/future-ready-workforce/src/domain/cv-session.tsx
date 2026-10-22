@@ -8,18 +8,19 @@ export { buildPayload };
  * Transient CV session. Lives only in memory: never written to localStorage.
  * Cleared on every new upload, on audience switch and on explicit discard.
  */
-export type CvListField = 'languages';
+export type CvListField = 'languages' | 'certifications';
 export interface DraftItem { id: number; text: string; include: boolean }
 export interface CvDraft {
   skills: DraftItem[];
   languages: DraftItem[];
+  certifications: DraftItem[];
   extractionLimited: boolean;
   categories: Record<string, string>;
 }
 type Phase = 'idle' | 'extracting' | 'ready' | 'error';
 type ExplainPhase = 'idle' | 'loading' | 'done' | 'error';
 interface CvSessionValue {
-  phase: Phase; uploadError: string; draft: CvDraft | null; warnings: string[];
+  phase: Phase; uploadError: string; draft: CvDraft | null; warnings: string[]; candidateName: string;
   explainPhase: ExplainPhase; explanation: CvCareerExplanation | null; explainError: string; consent: boolean;
   beginUpload(): { signal: AbortSignal; id: number };
   completeUpload(id: number, result: CvSkillExtraction): boolean;
@@ -45,6 +46,7 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [uploadError, setUploadError] = useState('');
   const [draft, setDraft] = useState<CvDraft | null>(null);
+  const [candidateName, setCandidateName] = useState('');
   const [warnings, setWarnings] = useState<string[]>([]);
   const [explainPhase, setExplainPhase] = useState<ExplainPhase>('idle');
   const [explanation, setExplanation] = useState<CvCareerExplanation | null>(null);
@@ -58,7 +60,7 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
     uploadRef.current?.controller.abort(); uploadRef.current = null;
     explainRef.current?.abort(); explainRef.current = null;
     uploadId.current += 1;
-    setPhase('idle'); setUploadError(''); setDraft(null); setWarnings([]);
+    setPhase('idle'); setUploadError(''); setDraft(null); setCandidateName(''); setWarnings([]);
     setExplainPhase('idle'); setExplanation(null); setExplainError(''); setConsentState(false);
   }, []);
 
@@ -72,7 +74,7 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
   };
 
   const value: CvSessionValue = {
-    phase, uploadError, draft, warnings, explainPhase, explanation, explainError, consent,
+    phase, uploadError, draft, warnings, candidateName, explainPhase, explanation, explainError, consent,
     payload: useMemo(() => draft ? buildPayload(draft) : null, [draft]),
     beginUpload: () => {
       resetAll();
@@ -86,11 +88,13 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
       if (uploadRef.current?.id !== id || id !== uploadId.current) return false;
       uploadRef.current = null;
       const data = result.careerData;
+      setCandidateName(result.detectedName ?? '');
       const categories: Record<string, string> = {};
       for (const c of result.categorizedSkills ?? []) categories[c.name.trim().toLowerCase()] = c.category;
       setDraft({
         skills: toItems(data?.skills ?? result.skills),
         languages: toItems(recognizeCvLanguageNames(data?.languages ?? [])),
+        certifications: toItems(data?.certifications ?? []),
         extractionLimited: data?.extractionLimited ?? true, categories,
       });
       setWarnings(result.warnings);
@@ -100,7 +104,7 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
     failUpload: (id, message) => {
       if (id !== uploadId.current) return;
       uploadRef.current = null;
-      setDraft(null); setWarnings([]);
+      setDraft(null); setCandidateName(''); setWarnings([]);
       setUploadError(message); setPhase('error');
     },
     updateItem: (field, id, patch) => {

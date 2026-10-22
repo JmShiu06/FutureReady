@@ -10,6 +10,8 @@ import type { CvProfileSuggestions } from './cvProfileSuggestions';
 import type { CvSkillExtractionCategorizedSkillsItem } from './cvSkillExtractionCategorizedSkillsItem';
 
 export interface CvSkillExtraction {
+  /** @maxLength 80 */
+  detectedName?: string;
   skills: string[];
   warnings: string[];
   profileSuggestions: CvProfileSuggestions;

@@ -15,6 +15,12 @@ CV files and full extracted document text must remain transient and must not be 
 
 **How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it. The user later approved transient, reviewed structured CV details for RunPod career explanations after explicit consent; see frontend-product-boundaries.md for that exception.
 
+A detected CV name may be shown temporarily in the lower-left profile area, but must stay in the in-memory CV session: do not save it to the profile or include it in AI requests.
+
+**Why:** The user requested the name display while the existing CV workflow keeps identifying document details transient.
+
+**How to apply:** Clear the displayed name with the CV session (new upload, discard, audience change, or reload) and keep extraction responses limited to the detected name rather than surrounding document text.
+
 The job-recommendation page uses the user's saved profile skills as input; it does not upload or re-read a CV. Show role matches and the specific saved skills that contribute to each recommendation, without presenting overlap as a hiring probability.
 
 **Why:** The user clarified that CV information should flow from the profile and that this page should focus on recommended roles and how profile skills relate to them.

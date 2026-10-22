@@ -7,7 +7,7 @@ import { createCanvas } from "@napi-rs/canvas";
 import JSZip from "jszip";
 import type { CvProfileSuggestions } from "@workspace/api-zod";
 import app from "../app";
-import { CvError, detectProfileSuggestions, detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
+import { CvError, detectCvName, detectProfileSuggestions, detectSkills, extractCvSkills, MAX_CV_BYTES } from "../lib/cvSkillExtractor";
 import { watermarkedCvPdf } from "../test-fixtures/watermarkedCv";
 
 let server: Server;
@@ -59,10 +59,15 @@ async function upload(buffer: Buffer, name: string) {
   const body = new FormData();
   body.append("file", new Blob([new Uint8Array(buffer)]), name);
   const res = await fetch(`${base}/career/cv-skills`, { method: "POST", body });
-  return { status: res.status, json: await res.json() as { skills?: string[]; warnings?: string[]; profileSuggestions?: CvProfileSuggestions; error?: string }, headers: res.headers };
+  return { status: res.status, json: await res.json() as { skills?: string[]; warnings?: string[]; detectedName?: string; profileSuggestions?: CvProfileSuggestions; error?: string }, headers: res.headers };
 }
 
 describe("deterministic CV skill detection", () => {
+  it("extracts only a short CV header name without returning surrounding text", () => {
+    assert.equal(detectCvName("Chew Wen\nKuala Lumpur, Malaysia\nSkills: Python"), "Chew Wen");
+    assert.equal(detectCvName("Name: ChewWen\nEmail: private@example.test"), "ChewWen");
+    assert.equal(detectCvName("Curriculum Vitae\nProfessional Summary\nSkills: Python\nOperations Manager"), undefined);
+  });
   it("preserves punctuation, normalizes case/space and deduplicates without substring matches", () => {
     const catalogue = ["ai", "ai/ml", "node.js", "react.js", "next.js", "ci/cd", "c++", "c#", "data analysis", "python"];
     assert.deepEqual(detectSkills("Mail contains AI/ML; NODE.JS, REACT.JS, NEXT.JS, CI/CD, C++, C#. Data   analysis. Python PYTHON.", catalogue),
@@ -122,7 +127,7 @@ describe("deterministic CV skill detection", () => {
 
 describe("CV extraction and upload API", () => {
   it("extracts real dataset skills from UTF-8 TXT, selectable PDF and DOCX", async () => {
-    const text = "Skills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
+    const text = "Jane Doe\nSkills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
     const fixtures: [Buffer, string][] = [[Buffer.from(text), "synthetic.txt"], [await pdf(text), "synthetic.pdf"], [await docx(text), "synthetic.docx"]];
     for (const [buffer, name] of fixtures) {
       const response = await upload(buffer, name);
@@ -133,6 +138,7 @@ describe("CV extraction and upload API", () => {
       assert.ok(response.json.skills?.includes("ci/cd"));
        assert.equal(response.json.profileSuggestions?.occupation, "Operations coordinator");
        assert.equal(response.json.profileSuggestions?.experienceYears, 5);
+       assert.equal(response.json.detectedName, "Jane Doe");
       assert.equal(response.headers.get("cache-control"), "no-store");
     }
   });

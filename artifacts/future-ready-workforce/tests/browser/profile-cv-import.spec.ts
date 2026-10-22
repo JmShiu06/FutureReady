@@ -22,7 +22,12 @@ test('CV review adds confirmed skills without exposing or changing About You det
     body: JSON.stringify({
       skills: [skillName],
       warnings: [],
+      detectedName: 'Alex Sample',
       profileSuggestions: { occupation: 'Must not be displayed or applied', education: 'Private field' },
+      careerData: {
+        skills: [skillName], education: [], workExperience: [], certifications: ['Sample certification'],
+        projects: [], languages: [], extractionLimited: false,
+      },
     }),
   }));
   await page.route('**/api/ai/explanations', async route => {
@@ -51,9 +56,11 @@ test('CV review adds confirmed skills without exposing or changing About You det
     mimeType: 'text/plain',
     buffer: Buffer.from('Synthetic test document; no personal data.'),
   });
+  await expect(page.getByTestId('text-shell-name')).toHaveText('Alex Sample');
   const review = page.getByTestId('dialog-cv-review');
   await expect(review).toBeVisible();
   await expect(review).toContainText(skillName);
+  await expect(review).toContainText('Sample certification');
   await expect(review).not.toContainText(/About You|Must not be displayed|Private field/i);
   await review.getByTestId('button-ai-explain-cv-skill-0').click();
   await expect(review).not.toBeVisible();
@@ -75,6 +82,7 @@ test('CV review adds confirmed skills without exposing or changing About You det
   await expect.poll(async () => (await storedAdultProfile(page))?.skills?.find(skill => skill.name === skillName))
     .toMatchObject({ name: skillName, level: 1 });
   await page.reload();
+  await expect(page.getByTestId('text-shell-name')).toHaveText('Your profile');
   await expect(page.getByTestId('input-occupation')).toHaveCount(0);
   await expect.poll(() => page.locator('[data-testid^="input-skill-name-"]').evaluateAll(
     (inputs, name) => inputs.some(input => (input as HTMLInputElement).value === name),

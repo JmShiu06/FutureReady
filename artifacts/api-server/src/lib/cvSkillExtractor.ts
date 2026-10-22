@@ -116,6 +116,46 @@ export function detectSkills(text: string, catalogue = careerDataset.allSkills):
   ])];
 }
 
+const CV_NAME_LABEL = /^\s*(?:full\s+name|candidate\s+name|name)\s*[:：]\s*(.*?)\s*$/i;
+const CV_HEADER_LABELS = new Set([
+  "about me", "career objective", "certifications", "contact", "contact details",
+  "curriculum vitae", "education", "experience", "languages", "objective",
+  "personal profile", "professional profile", "professional summary", "profile",
+  "projects", "references", "resume", "skills", "summary", "vitae",
+]);
+const CV_ROLE_WORDS = new Set([
+  "administrator", "analyst", "architect", "assistant", "coordinator", "designer",
+  "developer", "director", "engineer", "executive", "manager", "officer",
+  "professor", "specialist", "student", "teacher", "technician",
+]);
+const isNameText = (value: string, allowSingleWord: boolean) => {
+  if (value.length < 2 || value.length > 80) return false;
+  const parts = value.split(/\s+/);
+  if (parts.length > 5 || (!allowSingleWord && parts.length < 2)) return false;
+  return parts.every((part) => /^\p{L}[\p{L}\p{M}'’.-]*$/u.test(part));
+};
+
+/** Returns only a short header name; never retains or returns the surrounding CV text. */
+export function detectCvName(text: string): string | undefined {
+  const lines = text.normalize("NFKC").split(/\r?\n/);
+  for (const line of lines.slice(0, 40)) {
+    const labelled = line.match(CV_NAME_LABEL);
+    if (!labelled) continue;
+    const value = safeProfileValue(labelled[1], 80);
+    if (value && isNameText(value, true)) return value;
+  }
+
+  for (const line of lines.slice(0, 12)) {
+    const candidate = line.replace(/^\s*[•*·–—-]\s*/, "").trim().replace(/\s+/g, " ");
+    if (!candidate || /[:：|@,]/.test(candidate) || !isNameText(candidate, false)) continue;
+    const normalized = candidate.toLowerCase();
+    const parts = normalized.split(/\s+/);
+    if (CV_HEADER_LABELS.has(normalized) || parts.some((part) => CV_ROLE_WORDS.has(part))) continue;
+    return candidate;
+  }
+  return undefined;
+}
+
 const PROFILE_LABELS: Record<string, keyof CvProfileSuggestions> = {
   "occupation": "occupation",
   "current occupation": "occupation",
@@ -448,7 +488,7 @@ export async function extractCvSkills(
   buffer: Buffer,
   filename: string,
   requestSignal?: AbortSignal,
-): Promise<{ skills: string[]; warnings: string[]; profileSuggestions: CvProfileSuggestions; careerData: CvCareerData; categorizedSkills: { name: string; category: ReturnType<typeof categorizeCvSkill> }[] }> {
+): Promise<{ skills: string[]; warnings: string[]; detectedName?: string; profileSuggestions: CvProfileSuggestions; careerData: CvCareerData; categorizedSkills: { name: string; category: ReturnType<typeof categorizeCvSkill> }[] }> {
   const signal = requestSignal ?? AbortSignal.timeout(CV_PROCESSING_TIMEOUT_MS);
   checkProcessing(signal);
   if (!buffer.length) throw new CvError(400, "The file is empty. Choose a readable PDF, DOCX, TXT, JPG, JPEG or PNG.");
@@ -510,9 +550,11 @@ export async function extractCvSkills(
     ...exactSkills,
     ...relatedMappings.map((mapping) => mapping.datasetSkill),
   ])];
+  const detectedName = detectCvName(text);
   const profileSuggestions = detectProfileSuggestions(text);
   return {
     skills,
+    ...(detectedName ? { detectedName } : {}),
     profileSuggestions,
     careerData: buildCvCareerData(text, skills),
     categorizedSkills: skills.map(name => ({ name, category: categorizeCvSkill(name) })),

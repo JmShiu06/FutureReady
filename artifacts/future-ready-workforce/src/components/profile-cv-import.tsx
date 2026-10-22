@@ -232,7 +232,7 @@ export function ProfileCvImport({
       />
     </div>
 
-    <p className="profile-cv-privacy"><Info size={14} /> Your CV and extracted text are processed by this app and are not saved. Other CV details (education, work, projects) stay in this tab only and are cleared by the next upload. Only skills you review, apply and save are kept in your browser profile.</p>
+    <p className="profile-cv-privacy"><Info size={14} /> Your CV and extracted text are processed by this app and are not saved. A detected name appears temporarily in the lower-left profile area. Other CV details (education, work, projects) stay in this tab only and are cleared by the next upload. Only skills you review, apply and save are kept in your browser profile.</p>
 
     {phase === 'error' && <p className="profile-cv-error" role="alert" data-testid="error-profile-cv">{error}</p>}
     {phase === 'extracting' && <p className="profile-cv-status" role="status">Extracting recognizable skills. This can take a short while for scanned documents.</p>}

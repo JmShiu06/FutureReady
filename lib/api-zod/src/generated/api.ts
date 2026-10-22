@@ -27,12 +27,14 @@ export const ListCareerSkillsResponse = zod.object({
 
 
 /**
- * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. Exact skill names and reviewed related phrases are suggested for review; profile details are returned only when explicitly labelled in the CV. No file or raw text is retained or sent to external services.
- * @summary Extract dataset skills and labelled profile details from an in-memory CV
+ * PDF, DOCX, UTF-8 TXT, JPG, JPEG or PNG, at most 5 MB. Scanned PDFs and image uploads use local offline OCR. Exact skill names and reviewed related phrases are suggested for review; a short name is detected from an explicitly labelled name or likely header line, and other profile details are returned only when explicitly labelled in the CV. No file or raw text is retained or sent to external services.
+ * @summary Extract dataset skills, a likely CV name, and labelled profile details from an in-memory CV
  */
 export const ExtractCvSkillsBody = zod.object({
   "file": zod.instanceof(Blob)
 })
+
+export const extractCvSkillsResponseDetectedNameMax = 80;
 
 export const extractCvSkillsResponseProfileSuggestionsOccupationMax = 120;
 
@@ -85,6 +87,7 @@ export const extractCvSkillsResponseCareerDataLanguagesMax = 12;
 
 
 export const ExtractCvSkillsResponse = zod.object({
+  "detectedName": zod.string().max(extractCvSkillsResponseDetectedNameMax).optional(),
   "skills": zod.array(zod.string()),
   "warnings": zod.array(zod.string()),
   "profileSuggestions": zod.object({
