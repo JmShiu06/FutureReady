@@ -16,6 +16,14 @@ A skills intelligence demo for exploring career matches, learning paths, workfor
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Database tooling requires `DATABASE_URL` — Postgres connection string (not needed for the current web demo).
 
+### Imported project setup
+
+- The existing artifact definitions register the managed workflows above. Run both the web and API workflows for the application; the optional Canvas preview server is not needed.
+- Verified the dashboard renders at `/` and `/api/healthz` and `/api/jobs` return HTTP 200.
+- The imported code has existing CV-related TypeScript errors in both web and API packages. API tests currently report 132 passing and 5 failing; these failures concern CV catalogue/explanation contracts, not server startup.
+- Optional AI explanations require `RUNPOD_LLM_API_KEY` in Secrets and `RUNPOD_LLM_BASE_URL` set to the user's HTTPS OpenAI-compatible RunPod endpoint. The required API-key secret is not configured; core demo features can run without it. Do not reuse credential-like values from committed configuration.
+- A credential-like value was found in plain-text imported configuration. Rotate it with the provider and remove it from tracked configuration/history as a separate security follow-up; never copy it into documentation or logs.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
