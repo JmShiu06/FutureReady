@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { AiExplainButton } from '@/components/ai-drawer';
 import { Link, Redirect, useLocation, useSearch } from 'wouter';
 import { TwinSection } from '@/components/profile/twin-section';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -7,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowRight, Check, Plus, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
-import { CvCareerExplanation } from '@/components/cv-career-explanation';
+import { useCvSession } from '@/domain/cv-session';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useWorkspace } from '@/domain/workspace-context';
@@ -29,6 +28,7 @@ const normaliseSkillName = (value: string) => value.normalize('NFKC').trim().rep
 
 export default function ProfilePage() {
   const { state, profile, saveProfile } = useWorkspace();
+  const { phase: cvPhase } = useCvSession();
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
   const skills = useFieldArray({ control: form.control, name: 'skills' });
   const profileSkills = form.watch('skills') ?? [];
@@ -76,8 +76,7 @@ export default function ProfilePage() {
 
   if (sectionParam === 'roadmap') return <Redirect to="/learning-roadmap" replace />;
   return <>
-    <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : 'See how far you have come.'} subtitle="Your skills, CV import and progress. Each audience keeps its own profile."
-      action={section === 'twin' ? <AiExplainButton request={{ feature: 'digital-twin' }} /> : undefined} />
+    <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : 'See how far you have come.'} subtitle="Your skills, CV import and progress. Each audience keeps its own profile." />
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}
@@ -88,7 +87,7 @@ export default function ProfilePage() {
     </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    <CvCareerExplanation />
+    {cvPhase === 'ready' && <p className="muted small"><Link href="/market-and-ai-impact?tab=ai-impact" className="text-link" data-testid="link-profile-cv-review">Review extracted CV details in AI Explanation</Link></p>}
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
         <div className="panel panel-pad">

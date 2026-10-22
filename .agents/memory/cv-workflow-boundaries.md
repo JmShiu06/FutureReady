@@ -50,3 +50,9 @@ Do not persist CV upload history just to drive recommendations. Use reviewed `cv
 **Why:** CV files are intentionally transient; the profile only retains skill evidence the user reviewed and applied.
 
 **How to apply:** If a page needs to invite CV setup, show the profile link when no CV-derived skills are saved and keep the message accurate even if a past upload produced no saved skills.
+
+CV upload and skill review belong on My profile, but the AI Career Explanation panel does not. Reviewed-data consent and the career sections belong on the AI Explanation page. Improvement Suggestions and Areas for Growth belong on Learning roadmap, not duplicated in the career explanation.
+
+**Why:** The user explicitly requested removing AI Career Explanation from My profile and moving those two cards to Learning roadmap.
+
+**How to apply:** Reuse the same transient, consented explanation across navigation without another AI call or persistent storage. Preserve existing roadmap milestones and profile skill review, and provide links between upload, explanation and learning guidance.

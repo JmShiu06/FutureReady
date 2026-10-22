@@ -5,6 +5,7 @@ import { audienceLabels } from '@/domain/demo-data';
 import { PageHead } from '@/components/workspace/ui';
 import { RoadmapSection } from '@/components/profile/roadmap-section';
 import { AiExplainButton } from '@/components/ai-drawer';
+import { CvLearningGuidance } from '@/components/cv-career-explanation';
 
 export default function LearningRoadmapPage() {
   const { state } = useWorkspace();
@@ -16,6 +17,7 @@ export default function LearningRoadmapPage() {
         <AiExplainButton request={{ feature: 'learning-roadmap' }} label="Explain my learning plan with AI" />
         <button type="button" className="btn btn-quiet" onClick={() => navigate('/my-profile?section=twin')} data-testid="button-roadmap-open-twin"><FlaskConical size={14} /> Digital twin & progress</button>
       </div>} />
+    <CvLearningGuidance />
     <div data-testid="panel-profile-roadmap"><RoadmapSection onReview={() => navigate('/my-profile?section=twin')} /></div>
   </>;
 }

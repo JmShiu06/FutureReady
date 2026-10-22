@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { AlertTriangle, BookOpen, Briefcase, Check, ChevronDown, ExternalLink, GraduationCap, Languages, Lightbulb, Loader2, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, UserRound, X } from 'lucide-react';
 import { useCvSession, type CvDraft, type DraftItem } from '@/domain/cv-session';
 import { MatchScore } from '@/components/shared/match-score';
+import { cvExplanationSectionInView, type CvExplanationView } from '@/domain/cv-explanation-sections';
 import './cv-career-explanation.css';
 
 export const NO_SKILLS_MESSAGE = 'No skills detected from CV.';
@@ -95,7 +96,7 @@ function CvPreview() {
   </section>;
 }
 
-function ExplanationResult() {
+function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
   const { explanation, explainPhase, explainError, requestExplanation, consent } = useCvSession();
   if (explainPhase === 'loading') return <div className="cvx-skeleton" role="status" aria-live="polite" data-testid="status-cvx-loading">
     <span className="sr-only">Generating your AI career explanation.</span>
@@ -107,12 +108,15 @@ function ExplanationResult() {
   </div>;
   if (!explanation) return null;
   const { sections, matches, resources, warnings } = explanation;
-  return <section className="cvx-result" aria-labelledby="cvx-result-title" data-testid="panel-cvx-result">
-    <h3 id="cvx-result-title">Your AI career explanation</h3>
-    <p className="muted small">Your summary, career alignment, strength evidence and learning links come directly from reviewed CV details and dataset records. AI explains skill meanings, gaps and growth opportunities; it does not verify proficiency or job requirements.</p>
+  const titleId = view === 'learning' ? 'cvx-learning-result-title' : 'cvx-result-title';
+  return <section className="cvx-result" aria-labelledby={titleId} data-testid={view === 'learning' ? 'panel-cvx-learning-result' : 'panel-cvx-result'}>
+    <h3 id={titleId}>{view === 'learning' ? 'Your CV learning guidance' : 'Your AI career explanation'}</h3>
+    <p className="muted small">{view === 'learning'
+      ? 'Improvement options use reviewed CV details and verified learning records. AI explains growth opportunities; suggestions do not verify qualifications or exam readiness.'
+      : 'Your summary, career alignment and strength evidence come directly from reviewed CV details and dataset records. AI explains skill meanings and gaps; it does not verify proficiency or job requirements.'}</p>
     {warnings.length > 0 && <ul className="cvx-warnings" data-testid="list-cvx-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
     <div className="cvx-sections">
-      {sectionDefs.map(({ key, title, icon: Icon }, i) => <details className="cvx-card" key={key} open={i === 0} data-testid={`card-cvx-${key}`}>
+      {sectionDefs.filter(({ key }) => cvExplanationSectionInView(key, view)).map(({ key, title, icon: Icon }, i) => <details className="cvx-card" key={key} open={i === 0} data-testid={`card-cvx-${key}`}>
         <summary><span className="cvx-card-icon"><Icon size={14} aria-hidden="true" /></span><strong>{title}</strong><ChevronDown size={15} className="cvx-chevron" aria-hidden="true" /></summary>
         <div className="cvx-card-body">
           <Paragraphs text={sections[key]} />
@@ -132,10 +136,11 @@ function ExplanationResult() {
         </div>
       </details>)}
     </div>
+    {view === 'career' && <Link href="/learning-roadmap" className="text-link" data-testid="link-cvx-learning-roadmap">View improvement suggestions and areas for growth in Learning roadmap</Link>}
   </section>;
 }
 
-/** Main AI Career Explanation surface, shared by My profile and AI Explanation tab. */
+/** Main explanation and consent surface on the AI Explanation tab, not My profile. */
 export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink?: boolean }) {
   const { phase, uploadError, draft } = useCvSession();
   return <section className="panel panel-pad cvx" aria-labelledby="cvx-title" data-testid="section-ai-career-explanation">
@@ -143,7 +148,7 @@ export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink
       <span className="cvx-head-icon"><Sparkles size={18} aria-hidden="true" /></span>
       <div>
         <h2 id="cvx-title">AI Career Explanation</h2>
-        <p>A summary, skill analysis, career matches, gaps and next steps built only from the CV details you confirm.</p>
+        <p>A summary, skill analysis, career matches, gaps and strengths built only from the CV details you confirm. Learning guidance is on Learning roadmap.</p>
       </div>
     </div>
     {phase === 'extracting' && <div className="cvx-skeleton" role="status"><span className="sr-only">Reading your CV.</span><i style={{ width: '80%' }} /><i style={{ width: '60%' }} /></div>}
@@ -154,5 +159,27 @@ export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink
       {showUploadLink && <Link href="/my-profile" className="btn btn-primary btn-small" data-testid="link-cvx-upload">Upload CV in My profile</Link>}
     </div>}
     {phase === 'ready' && <><CvPreview /><ExplanationResult /></>}
+  </section>;
+}
+
+/** Read-only learning cards from the same transient, explicitly consented CV result. */
+export function CvLearningGuidance() {
+  const { phase, draft, explanation, explainPhase } = useCvSession();
+  const hasResultState = Boolean(explanation) || explainPhase === 'loading' || explainPhase === 'error';
+  return <section className="panel panel-pad cvx" aria-labelledby="cvx-learning-title" data-testid="section-cv-learning-guidance">
+    <div className="cvx-head">
+      <span className="cvx-head-icon"><BookOpen size={18} aria-hidden="true" /></span>
+      <div>
+        <h2 id="cvx-learning-title">CV-based learning guidance</h2>
+        <p>Improvement suggestions and areas for growth from the CV details you reviewed.</p>
+      </div>
+    </div>
+    {hasResultState ? <ExplanationResult view="learning" /> : <div className="cvx-start" data-testid="state-cvx-learning-empty">
+      <strong>{phase === 'extracting' ? 'Reading your CV…' : 'No CV learning guidance yet.'}</strong>
+      <p>Upload a CV in My profile, then review and generate its explanation in AI Explanation. Guidance stays in this tab only and clears on a new upload, audience change or reload. Your saved roadmap milestones are separate.</p>
+    </div>}
+    <Link href={draft ? '/market-and-ai-impact?tab=ai-impact' : '/my-profile'} className="text-link" data-testid="link-cvx-learning-review">
+      {draft ? 'Review CV details or generate guidance in AI Explanation' : 'Upload CV in My profile'}
+    </Link>
   </section>;
 }
