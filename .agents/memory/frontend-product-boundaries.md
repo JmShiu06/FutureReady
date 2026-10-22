@@ -41,6 +41,12 @@ Runpod explanations use server-owned synthetic profiles for general features, re
 
 **How to apply:** Build synthetic demonstration context on the server and reject arbitrary profile/text fields at the API boundary. For the CV exception, accept only an exact canonical skill from the existing detector catalogue and build a context containing that name alone. Preserve matching algorithms, official datasets, team features and Replit configuration. Do not let model prose become scores, forecasts, evidence or state updates.
 
+A model can interpret a CV-detected skill label as proof of proficiency even when told not to. Treat generated CV explanations as untrusted on this point, not just the input.
+
+**Why:** A live Qwen response made an unsupported proficiency claim despite an explicit prohibition in its prompt.
+
+**How to apply:** Check CV explanation text on the server for claims of personal proficiency, experience or qualifications before showing it. A detected label alone does not verify them.
+
 AI profile suggestions are the only approved addition workflow: users must explicitly confirm each skill, self-rate its proficiency and then separately save the profile. An AI suggestion cannot overwrite an existing skill or its level.
 
 **Why:** The expanded integration request requires human confirmation and prohibits automatic profile changes, even though suggestions originate from fictional background examples.

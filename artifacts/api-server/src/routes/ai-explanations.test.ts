@@ -78,7 +78,7 @@ it("uses validated structured output for profile suggestions and refuses unsuppo
       { feature: "profile-skills", sampleId: "data-starter" },
     ]) {
       const response = await post(body);
-      assert.equal(response.status, 200, `${feature}: ${JSON.stringify(await response.clone().json())}`);
+      assert.equal(response.status, 200, `${body.feature}: ${JSON.stringify(await response.clone().json())}`);
       const result = CreateAiExplanationResponse.parse(await response.json());
       assert.ok(result.evidence?.length);
       if (body.feature === "profile-skills") assert.equal(result.suggestions?.length, 1);
@@ -124,7 +124,7 @@ it("handles Pod failures safely without mutating state or exposing provider inte
 
 it("connects every existing feature to its prompt and validates the unchanged response envelope", async () => {
   for (const feature of Object.keys(FEATURE_PROMPTS) as PromptFeature[]) await testServer(async input => {
-    assert.equal(input.context.synthetic, feature !== "cv-analysis");
+    assert.equal(input.context.synthetic, feature === "cv-analysis" ? undefined : true);
     assert.equal("profile" in input.context, false);
     if (feature === "cv-analysis") assert.deepEqual(input.context, { detectedSkill: "python" });
     else assert.equal(input.context.task, feature);

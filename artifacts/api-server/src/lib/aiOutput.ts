@@ -51,5 +51,17 @@ export function parseFeatureAnswer(text: string, context: PreparedContext): {
     explanation = prose.parse(text);
   }
   validateQualitativeAnswer(explanation);
+  if (context.synthetic === false) {
+    const unsupportedClaim = /\b(?:indicates?|demonstrates?|shows?|proves?|confirms?|establishes?)\s+(?:(?:actual|a|an|the|professional|technical|strong)\s+){0,3}(?:proficiency|expertise|experience|qualification)\b/gi;
+    for (const match of explanation.matchAll(unsupportedClaim)) {
+      const prefix = explanation.slice(Math.max(0, (match.index ?? 0) - 35), match.index);
+      if (!/\b(?:not|never|cannot|doesn.t)\s+(?:\w+\s+){0,3}$/i.test(prefix)) {
+        throw new Error("A detected skill label does not establish proficiency or experience.");
+      }
+    }
+    if (/\b(?:you|your CV|the (?:user|candidate|applicant))\b[^.!?]{0,55}\b(?:are|is|has|have)\s+(?:proficient|experienced|qualified)\b/i.test(explanation)) {
+      throw new Error("The model cannot verify personal proficiency from a skill label.");
+    }
+  }
   return { explanation, suggestions, contextSummary: [...context.contextSummary, ...extra], evidence };
 }
