@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import { Link } from 'wouter';
 import { useWorkspace } from '@/domain/workspace-context';
 import { PageHead, slug } from '@/components/workspace/ui';
+import { AiExplanationPanel } from '@/components/ai-explanation-panel';
 
 type TaskTrait = 'repeatable' | 'digital' | 'judgement' | 'people' | 'physical';
 
@@ -76,10 +77,13 @@ export default function ScenariosPage() {
         <strong>Assess the tasks, not the person.</strong>
         <p className="muted">
           A skill is not replaced as a whole. Your result is based only on the task characteristics you select here;
-          this page does not use an AI model or a validated exposure dataset. Your selections are not saved to your profile.
+          the task-check label is a deterministic self-check, not a validated exposure dataset.
+          Your selections stay local and are not saved to your profile. The optional Qwen3 explanation below uses
+          separate fictional samples only, never your skills or CV.
         </p>
       </div>
     </aside>
+    <AiExplanationPanel feature="task-exposure" />
 
     {profile.skills.length === 0 ? (
       <div className="state-box" data-testid="state-no-ai-skills">

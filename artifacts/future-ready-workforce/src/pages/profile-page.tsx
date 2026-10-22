@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AiExplanationPanel } from '@/components/ai-explanation-panel';
 import { useLocation, useSearch } from 'wouter';
 import { RoadmapSection } from '@/components/profile/roadmap-section';
 import { TwinSection } from '@/components/profile/twin-section';
@@ -74,6 +75,7 @@ export default function ProfilePage() {
 
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : section === 'roadmap' ? 'One practical step at a time.' : 'See how far you have come.'} subtitle="Skills, learning roadmap and progress in one place. Each audience keeps its own profile." />
+    <AiExplanationPanel key={section} feature={section === 'skills' ? 'cv-analysis' : section === 'roadmap' ? 'learning-roadmap' : 'digital-twin'} />
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}

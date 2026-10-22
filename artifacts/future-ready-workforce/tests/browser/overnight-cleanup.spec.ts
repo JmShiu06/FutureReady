@@ -146,7 +146,16 @@ test('recommended role skill details stay collapsed until requested', async ({ p
   await page.goto('/cv-analysis');
   const skillDetails = page.getByTestId('details-recommendation-skills-0');
   const matchedSkill = page.getByTestId('skill-reason-0-python');
+  const matchedSkillsCard = page.getByTestId('card-matched-skills-0');
+  const aiSkillCheckLink = page.getByTestId('link-ai-skill-check-0');
+  const recommendationGrid = page.getByTestId('list-job-recommendations');
   await expect(page.getByTestId('card-job-recommendation-0')).toBeVisible();
+  await expect(recommendationGrid).toHaveClass(/recommendation-grid/);
+  await expect(recommendationGrid).toHaveCSS('display', 'grid');
+  const desktopColumnCount = await recommendationGrid.evaluate(
+    (element) => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length,
+  );
+  expect(desktopColumnCount).toBe(2);
   await expect(skillDetails).not.toHaveAttribute('open', '');
   await expect(skillDetails.locator('.recommendation-skills-closed')).toBeVisible();
   await expect(skillDetails.locator('.recommendation-skills-open')).toBeHidden();
@@ -156,10 +165,26 @@ test('recommended role skill details stay collapsed until requested', async ({ p
   await expect(skillDetails).toHaveAttribute('open', '');
   await expect(skillDetails.locator('.recommendation-skills-closed')).toBeHidden();
   await expect(skillDetails.locator('.recommendation-skills-open')).toBeVisible();
+  await expect(matchedSkillsCard).toBeVisible();
+  await expect(aiSkillCheckLink).toBeVisible();
+  await expect(aiSkillCheckLink).toHaveAttribute('href', '/scenarios');
   await expect(matchedSkill).toBeVisible();
   await expect(page.getByTestId('skill-reason-0-data-analysis')).toBeVisible();
 
   await skillDetails.locator('summary').click();
   await expect(skillDetails).not.toHaveAttribute('open', '');
   await expect(matchedSkill).toBeHidden();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileColumnCount = await recommendationGrid.evaluate(
+    (element) => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length,
+  );
+  expect(mobileColumnCount).toBe(1);
+  await expect(aiSkillCheckLink).toBeHidden();
+
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await skillDetails.locator('summary').click();
+  await aiSkillCheckLink.click();
+  await expect(page).toHaveURL(/\/scenarios$/);
+  await expect(page.getByRole('heading', { name: 'Could AI easily replace your skills?' })).toBeVisible();
 });

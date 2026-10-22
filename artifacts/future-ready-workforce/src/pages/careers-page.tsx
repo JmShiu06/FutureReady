@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { AiExplanationPanel } from '@/components/ai-explanation-panel';
 import { ArrowRight } from 'lucide-react';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { planKey } from '@/domain/learning';
@@ -24,6 +25,7 @@ export default function CareersPage() {
   const recommendationCards = list.filter(x => !hiddenRecommendationRoleIds.has(x.role.id));
   return <>
     <PageHead eyebrow="Career explorer · occupation evidence" title="Where your skills could travel." subtitle="Explore Malaysian critical occupations and choose two to compare. The comparison stays blank until you select an occupation." />
+    <AiExplanationPanel feature="career-explorer" />
     {result.status === 'loading' && !result.data && <LoadingBlock rows={4} />}
     {result.status === 'error' && <ErrorBlock message={result.error ?? 'Could not rank careers.'} onRetry={result.retry} />}
     {result.status !== 'error' && result.data && recommendationCards.length > 0 && <div className="grid-2">{recommendationCards.map((x, i) => <article key={x.role.id} className={`role-card${roadmapTarget(x.role.id) ? ' selected' : ''}`} data-testid={`card-career-${x.role.id}`}>

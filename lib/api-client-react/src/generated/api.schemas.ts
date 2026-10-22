@@ -137,6 +137,42 @@ export interface CareerSkillsInput {
   skills: string[];
 }
 
+export type AiExplanationInputFeature = typeof AiExplanationInputFeature[keyof typeof AiExplanationInputFeature];
+
+
+export const AiExplanationInputFeature = {
+  'career-explorer': 'career-explorer',
+  'cv-analysis': 'cv-analysis',
+  'learning-roadmap': 'learning-roadmap',
+  'digital-twin': 'digital-twin',
+  'task-exposure': 'task-exposure',
+} as const;
+
+export type AiExplanationInputSampleId = typeof AiExplanationInputSampleId[keyof typeof AiExplanationInputSampleId];
+
+
+export const AiExplanationInputSampleId = {
+  'data-starter': 'data-starter',
+  'operations-starter': 'operations-starter',
+} as const;
+
+export interface AiExplanationInput {
+  feature: AiExplanationInputFeature;
+  sampleId: AiExplanationInputSampleId;
+}
+
+export interface AiExplanation {
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  explanation: string;
+  sampleLabel: string;
+  contextSummary: string[];
+  synthetic: true;
+  finalAnswerOnly: true;
+}
+
 export interface ResumeTextInput {
   /**
      * @minLength 1

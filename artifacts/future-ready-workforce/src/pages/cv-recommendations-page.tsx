@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AiExplanationPanel } from "@/components/ai-explanation-panel";
 import { Link } from "wouter";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { useMatchCareers, type CareerMatchResult } from "@workspace/api-client-react";
 import { useWorkspace } from "@/domain/workspace-context";
 import { EmptyBlock, ErrorBlock, LoadingBlock, PageHead } from "@/components/workspace/ui";
@@ -61,6 +63,7 @@ export default function CvRecommendationsPage() {
         title="Your job recommendations"
         subtitle="Recommendations use the skills saved in your profile. Each role shows the exact or related skill matches that contributed."
       />
+      <AiExplanationPanel feature="cv-analysis" />
       <p className="muted small" style={{ margin: "-8px 0 18px" }} data-testid="text-recommendation-scope">
         Related matches are labeled. These are role recommendations, not live vacancies or a hiring probability.
       </p>
@@ -109,10 +112,10 @@ export default function CvRecommendationsPage() {
           </Link>
         </EmptyBlock>
       ) : (
-        <section className="stack" aria-label="Recommended job roles" data-testid="list-job-recommendations">
+        <section className="grid-2 recommendation-grid" aria-label="Recommended job roles" data-testid="list-job-recommendations">
           {recommendations.map((recommendation, index) => (
             <article
-              className="panel panel-pad"
+              className="panel panel-pad job-recommendation-card"
               key={recommendation.roleFamily}
               data-testid={`card-job-recommendation-${index}`}
             >
@@ -143,31 +146,54 @@ export default function CvRecommendationsPage() {
                     <span className="recommendation-skills-open">Hide matched skills</span>
                     {' '}<span className="muted small">({recommendation.matchedSkills.length})</span>
                   </summary>
-                  <div className="stack" aria-label={`How your skills relate to ${recommendation.roleFamily}`}>
-                    {recommendation.matchedSkills.map((skill) => {
-                      const mapping = skillMappings.find((item) => item.datasetSkill === skill);
-                      return (
-                        <div
-                          className="panel"
-                          key={skill}
-                          style={{ padding: "11px 13px", background: "var(--surface, #fff)" }}
-                          data-testid={`skill-reason-${index}-${skill.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                        >
-                          <strong>{mapping?.profileSkill ?? skill}</strong>
-                          {mapping?.matchType === "related" && (
-                            <div className="muted small" style={{ marginTop: 4 }}>
-                              Related dataset skill: {mapping.datasetSkill}
-                            </div>
-                          )}
-                          <p className="muted small" style={{ margin: "4px 0 0" }}>
-                            {mapping?.matchType === "related"
-                              ? `The engine linked this profile wording to “${mapping.datasetSkill}”, a skill listed for this role.`
-                              : "This profile skill is also listed for this role in the dataset."}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <section
+                    className="matched-skills-card"
+                    aria-label={`Matched skills for ${recommendation.roleFamily}`}
+                    data-testid={`card-matched-skills-${index}`}
+                  >
+                    <div className="matched-skills-header">
+                      <div>
+                        <h3 className="matched-skills-title">Matched skills</h3>
+                        <p className="muted small" style={{ margin: "3px 0 0" }}>
+                          Skills from your profile that contributed to this match.
+                        </p>
+                      </div>
+                      <Link
+                        href="/scenarios"
+                        className="ai-skill-check-bar"
+                        aria-label={`Open AI Skill Check for ${recommendation.roleFamily}`}
+                        data-testid={`link-ai-skill-check-${index}`}
+                      >
+                        <Sparkles size={14} aria-hidden="true" />
+                        <span>AI Skill Check</span>
+                        <ArrowUpRight size={14} aria-hidden="true" />
+                      </Link>
+                    </div>
+                    <div className="matched-skill-list">
+                      {recommendation.matchedSkills.map((skill) => {
+                        const mapping = skillMappings.find((item) => item.datasetSkill === skill);
+                        return (
+                          <div
+                            className="matched-skill-item"
+                            key={skill}
+                            data-testid={`skill-reason-${index}-${skill.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                          >
+                            <strong>{mapping?.profileSkill ?? skill}</strong>
+                            {mapping?.matchType === "related" && (
+                              <div className="muted small" style={{ marginTop: 4 }}>
+                                Related dataset skill: {mapping.datasetSkill}
+                              </div>
+                            )}
+                            <p className="muted small" style={{ margin: "4px 0 0" }}>
+                              {mapping?.matchType === "related"
+                                ? `The engine linked this profile wording to “${mapping.datasetSkill}”, a skill listed for this role.`
+                                : "This profile skill is also listed for this role in the dataset."}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
                 </details>
               )}
             </article>

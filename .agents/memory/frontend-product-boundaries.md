@@ -34,6 +34,13 @@ AI exposure must be assessed at the task level from user-selected work character
 
 **How to apply:** Describe possible task automation or assistance only from the user's own task details. A sourced exposure model or saved assessment history requires separate evidence and explicit scope.
 
+## Runpod AI skill explanations
+Runpod explanations use server-owned synthetic profiles only, requested explicitly by a feature name and fixed sample ID. This applies to Career Explorer, CV Analysis, Learning Roadmap, Digital Twin and AI task support. Real saved profile data, skill selections, CV files and extracted CV text must not be sent. Deterministic labels and calculations stay separate from model explanations; explanations never change progress, skill levels or team data.
+
+**Why:** The user expanded the shared Qwen3 integration but explicitly required synthetic profiles only, superseding the earlier permission to send selected real skill names and task traits.
+
+**How to apply:** Build demonstration context on the server; reject arbitrary profile/text fields at the API boundary. Preserve matching algorithms, official datasets, team features and Replit configuration. Do not let model prose become scores, forecasts, evidence or state updates.
+
 ## Roadmap and confirmation rules (My Profile)
 - Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.
 - Roadmap milestones derive from a baseline snapshot taken at build time, so confirmed level changes never shrink the roadmap or lose progress.

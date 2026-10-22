@@ -65,6 +65,17 @@
 .recommendation-skills[open] .recommendation-skills-closed { display:none; }
 .recommendation-skills[open] .recommendation-skills-open { display:inline; }
 .recommendation-skills[open] summary { margin-bottom:10px; }
+.recommendation-grid { align-items:start; }
+.job-recommendation-card { min-width:0; }
+.matched-skills-card { margin-top:6px; padding:14px; border:1px solid #d9e7f5; border-radius:12px; background:#f7fbff; }
+.matched-skills-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:11px; }
+.matched-skills-title { margin:0; color:#30445c; font-size:13px; }
+.ai-skill-check-bar { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:40px; padding:7px 11px; border:1px solid #d5e5f5; border-radius:9px; background:#edf6ff; color:#2869a5; font-size:11px; font-weight:700; text-decoration:none; white-space:nowrap; }
+.ai-skill-check-bar:hover { border-color:#b9d5ef; background:#e3f1ff; }
+.ai-skill-check-bar:focus-visible { outline:2px solid #3989d5; outline-offset:2px; }
+.matched-skill-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr)); gap:8px; }
+.matched-skill-item { min-width:0; padding:10px 11px; border:1px solid #e2ebf4; border-radius:9px; background:#fff; overflow-wrap:anywhere; }
+.matched-skill-item strong { color:#344860; font-size:12px; }
 .ai-exposure-intro { display:flex; align-items:flex-start; gap:12px; margin-bottom:18px; background:#f4f8fc; }
 .ai-exposure-intro > svg { flex:none; margin-top:2px; color:#357db9; }
 .ai-exposure-intro p { margin:5px 0 0; }
@@ -81,6 +92,20 @@
 .ai-skill-details summary { display:flex; align-items:center; width:fit-content; min-height:44px; padding:0 4px; color:#276ca8; font-size:11px; font-weight:700; cursor:pointer; }
 .ai-skill-details summary:focus-visible,.ai-task-trait:focus-within { outline:2px solid #3989d5; outline-offset:2px; border-radius:5px; }
 .ai-skill-details[open] summary { margin-bottom:8px; }
+.ai-explanation-button { display:inline-flex; align-items:center; gap:7px; margin-top:10px; }
+.ai-demo-panel { margin:0 0 18px; }
+.ai-demo-title { display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:16px; color:#294d70; }
+.ai-demo-controls { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.ai-demo-controls label { font-size:12px; font-weight:600; }
+.ai-demo-controls select { max-width:100%; min-width:0; min-height:44px; padding:8px 12px; border:1px solid #cbdbea; border-radius:8px; background:white; color:#30445c; }
+.ai-demo-controls button { min-height:44px; }
+.ai-demo-controls :focus-visible { outline:2px solid #3989d5; outline-offset:3px; }
+.ai-generated-explanation details summary { cursor:pointer; min-height:30px; }
+.ai-generated-explanation { display:grid; gap:5px; margin-top:12px; padding:12px 14px; border:1px solid #d8e7f3; border-radius:10px; background:#f5f9fd; color:#415a72; font-size:12px; line-height:1.55; }
+.ai-generated-explanation p { margin:0; }
+.ai-generated-explanation strong { color:#294d70; }
+.ai-generated-explanation span,.ai-generated-error { color:#71839a; font-size:10px; }
+.ai-generated-error { margin:10px 0 0; color:#a34646; }
 .ai-task-traits { display:grid; gap:3px; margin:0; padding:0; border:0; }
 .ai-task-traits legend { margin-bottom:8px; color:#536980; font-size:11px; font-weight:700; }
 .ai-task-trait { display:flex; align-items:center; gap:10px; min-height:44px; padding:5px 9px; border-radius:8px; color:#425a75; font-size:11px; cursor:pointer; }

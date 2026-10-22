@@ -16,6 +16,8 @@ tags:
     description: Official DOSM labour-force and Job Market Insights data
   - name: occupations
     description: Reviewed MyCOL occupations and O*NET skill evidence
+  - name: ai
+    description: Optional Runpod vLLM explanations for user-requested task exposure
 paths:
   /healthz:
     get:
@@ -112,6 +114,53 @@ paths:
                 $ref: "#/components/schemas/CareerMatchResult"
         "400":
           description: Invalid skills input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ai/explanations:
+    post:
+      operationId: createAiExplanation
+      tags: [ai]
+      summary: Explain a server-owned synthetic career example
+      description: >
+        Accepts only a feature and a fixed synthetic sample ID. Context is built
+        on the server using fictional profiles and the unchanged dataset matcher.
+        No real profile, CV text, or uploaded document is accepted. Qwen thinking
+        mode is disabled and responses with reasoning traces are rejected.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiExplanationInput"
+      responses:
+        "200":
+          description: Qualitative model explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiExplanation"
+        "400":
+          description: Invalid skill or task traits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: AI explanation rate limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Runpod did not return a usable explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Runpod is not configured or temporarily busy
           content:
             application/json:
               schema:
@@ -746,6 +795,37 @@ components:
             maxLength: 60
       required:
         - skills
+    AiExplanationInput:
+      type: object
+      additionalProperties: false
+      required: [feature, sampleId]
+      properties:
+        feature:
+          type: string
+          enum: [career-explorer, cv-analysis, learning-roadmap, digital-twin, task-exposure]
+        sampleId:
+          type: string
+          enum: [data-starter, operations-starter]
+    AiExplanation:
+      type: object
+      required: [explanation, sampleLabel, contextSummary, synthetic, finalAnswerOnly]
+      properties:
+        explanation:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        sampleLabel:
+          type: string
+        contextSummary:
+          type: array
+          items:
+            type: string
+        synthetic:
+          type: boolean
+          enum: [true]
+        finalAnswerOnly:
+          type: boolean
+          enum: [true]
     ResumeTextInput:
       type: object
       properties:

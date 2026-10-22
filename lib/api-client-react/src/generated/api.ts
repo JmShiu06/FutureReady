@@ -21,6 +21,8 @@ import type {
 
 import type {
   AiAnnouncementsResponse,
+  AiExplanation,
+  AiExplanationInput,
   CareerMatchResult,
   CareerPathAnalysisReport,
   CareerSkillList,
@@ -397,6 +399,95 @@ export const useMatchCareers = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getMatchCareersMutationOptions(options));
+    }
+
+export const getCreateAiExplanationUrl = () => {
+
+
+
+
+  return `/api/ai/explanations`
+}
+
+/**
+ * Accepts only a feature and a fixed synthetic sample ID. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
+ * @summary Explain a server-owned synthetic career example
+ */
+export const createAiExplanation = async (aiExplanationInput: AiExplanationInput, options?: Parameters<typeof customFetch>[1]): Promise<AiExplanation> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AiExplanation>(getCreateAiExplanationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(aiExplanationInput)
+  }
+);}
+
+
+
+
+
+export const getCreateAiExplanationMutationKey = () => ['createAiExplanation'] as const;
+
+export const getCreateAiExplanationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAiExplanation>>, TError,CreateAiExplanationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAiExplanation>>, TError,CreateAiExplanationMutationVariables, TContext> => {
+
+const mutationKey = getCreateAiExplanationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAiExplanation>>, CreateAiExplanationMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAiExplanation(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAiExplanationMutationResult = NonNullable<Awaited<ReturnType<typeof createAiExplanation>>>
+    export type CreateAiExplanationMutationBody = BodyType<AiExplanationInput>
+    export type CreateAiExplanationMutationError = ErrorType<ErrorResponse>
+    export type CreateAiExplanationMutationVariables = {data: BodyType<AiExplanationInput>}
+
+    /**
+ * @summary Explain a server-owned synthetic career example
+ */
+export const useCreateAiExplanation = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAiExplanation>>, TError,CreateAiExplanationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAiExplanation>>,
+        TError,
+        CreateAiExplanationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateAiExplanationMutationOptions(options));
     }
 
 export const getAnalyzeResumeUrl = () => {

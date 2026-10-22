@@ -128,6 +128,28 @@ export const MatchCareersResponse = zod.object({
 
 
 /**
+ * Accepts only a feature and a fixed synthetic sample ID. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
+ * @summary Explain a server-owned synthetic career example
+ */
+export const CreateAiExplanationBody = zod.object({
+  "feature": zod.enum(['career-explorer', 'cv-analysis', 'learning-roadmap', 'digital-twin', 'task-exposure']),
+  "sampleId": zod.enum(['data-starter', 'operations-starter'])
+})
+
+export const createAiExplanationResponseExplanationMax = 4000;
+
+
+
+export const CreateAiExplanationResponse = zod.object({
+  "explanation": zod.string().min(1).max(createAiExplanationResponseExplanationMax),
+  "sampleLabel": zod.string(),
+  "contextSummary": zod.array(zod.string()),
+  "synthetic": zod.literal(true),
+  "finalAnswerOnly": zod.literal(true)
+})
+
+
+/**
  * Uses exact skill names and a small reviewed set of related phrase mappings with the bundled role-skill dataset. Resume text is processed in memory and is not retained or sent to external services. This endpoint does not run an ML model or generate a validated readiness score.
  * @summary Analyze resume text using local deterministic skill detection
  */
