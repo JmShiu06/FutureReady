@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { Link, useParams } from 'wouter';
 import { ArrowLeft, ArrowUpRight, BriefcaseBusiness, Clock3, MapPin, Wifi } from 'lucide-react';
 import { getGetJobQueryKey, useCalculateJobMatchScores, useGetJob } from '@workspace/api-client-react';
-import { AiExplanationPanel } from '@/components/ai-explanation-panel';
+import { AiExplainButton } from '@/components/ai-drawer';
+import { MatchScore } from '@/components/shared/match-score';
 
 type Props = { profileSkills: string[] };
 
@@ -37,12 +38,12 @@ export function JobDetailsPage({ profileSkills }: Props) {
 
   if (query.isLoading) return <div className="jobs-page" data-testid="page-job-details"><div className="jobs-details-skeleton panel"><i /><i /><i /><i /><i /></div></div>;
   if (query.isError || !job) return <div className="jobs-page" data-testid="page-job-details">
-    <Link href="/jobs" className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to job search</Link>
+    <Link href="/careers-and-jobs?tab=listings" className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link>
     <div className="jobs-state panel jobs-error" role="alert" data-testid="status-job-detail-error"><span className="jobs-state-icon">!</span><h3>{query.isError ? 'This listing could not be loaded.' : 'This sample listing is not available.'}</h3><p>Try returning to the search results and opening another role.</p><button className="btn btn-primary" onClick={() => query.refetch()} data-testid="button-retry-job-detail">Try again</button></div>
   </div>;
 
   return <div className="jobs-page" data-testid="page-job-details">
-    <div className="job-detail-topline"><Link href="/jobs" className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to job search</Link><span className="jobs-demo-flag">SAMPLE LISTING · DEMO DATA</span></div>
+    <div className="job-detail-topline"><Link href="/careers-and-jobs?tab=listings" className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link></div>
     <section className="job-detail-hero">
       <div className="job-detail-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>
       <div className="job-detail-heading">
@@ -59,7 +60,7 @@ export function JobDetailsPage({ profileSkills }: Props) {
       <div className="job-detail-salary">{formatSalary(job.salaryMin, job.salaryMax)}<small>Sample range, if provided</small></div>
     </section>
 
-    <AiExplanationPanel feature="job-fit" jobId={job.id} />
+    <div className="tab-intro"><p className="muted small">Job fit explanations use a fictional learner and this listing only, never your profile.</p><AiExplainButton request={{ feature: 'job-fit', jobId: job.id }} label="Explain job fit with AI" testId="button-ai-job-fit-detail" /></div>
     <div className="job-detail-columns">
       <div className="job-detail-content">
         <section className="panel panel-pad" data-testid="section-job-description"><div className="section-head"><div><h2>About this role</h2><div className="section-kicker">SAMPLE LISTING DESCRIPTION</div></div></div><div className="job-description-text">{job.description.split(/\n+/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></section>
@@ -69,7 +70,7 @@ export function JobDetailsPage({ profileSkills }: Props) {
         <section className="panel panel-pad job-skills-panel">
           <div className="section-head"><div><h2>Skills for this role</h2><div className="section-kicker">REQUIRED SKILL OVERLAP</div></div></div>
           {profileSkills.length ? <>
-            {match && <div className="detail-match-summary" data-testid="text-detail-match-score"><strong>{match.score}%</strong><span>exact skill overlap<br />{match.matchedSkills.length} of {match.skillsConsidered} considered</span></div>}
+            {match && <MatchScore metric="exact" value={match.score} matched={match.matchedSkills.length} considered={match.skillsConsidered} variant="panel" testId="text-detail-match-score" />}
             <div className="jobs-skill-label">In your profile</div>
             <div className="jobs-skill-list">{matchedSkills.map(skill => <span className="skill-status matched" key={skill} data-testid={`skill-matched-${skill.toLowerCase().replaceAll(' ', '-')}`}>{skill}<b>Matched</b></span>)}
               {!matchedSkills.length && <div className="skill-empty">No exact matches in your profile yet.</div>}</div>

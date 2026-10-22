@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Info } from 'lucide-react';
 import { Link } from 'wouter';
 import { useWorkspace } from '@/domain/workspace-context';
-import { PageHead, slug } from '@/components/workspace/ui';
-import { AiExplanationPanel } from '@/components/ai-explanation-panel';
+import { slug } from '@/components/workspace/ui';
+import { AiExplainButton } from '@/components/ai-drawer';
 
 type TaskTrait = 'repeatable' | 'digital' | 'judgement' | 'people' | 'physical';
 
@@ -48,7 +48,8 @@ function assessTasks(selected: TaskTrait[]) {
   };
 }
 
-export default function ScenariosPage() {
+/** AI impact tab: local task-level self-check over saved profile skills. */
+export function AiImpactTab() {
   const { profile } = useWorkspace();
   const [traitsBySkill, setTraitsBySkill] = useState<Record<string, TaskTrait[]>>({});
 
@@ -65,12 +66,6 @@ export default function ScenariosPage() {
   };
 
   return <>
-    <PageHead
-      eyebrow="AI skill check · task-level reflection"
-      title="Could AI easily replace your skills?"
-      subtitle="Review the tasks behind your saved skills. AI may automate parts of work or assist a person; this is a qualitative self-check, not a forecast."
-    />
-
     <aside className="panel panel-pad ai-exposure-intro" data-testid="panel-ai-exposure-boundary">
       <Info size={17} aria-hidden="true" />
       <div>
@@ -78,18 +73,19 @@ export default function ScenariosPage() {
         <p className="muted">
           A skill is not replaced as a whole. Your result is based only on the task characteristics you select here;
           the task-check label is a deterministic self-check, not a validated exposure dataset.
-          Your selections stay local and are not saved to your profile. The optional Qwen3 explanation below uses
+          Your selections stay local and are not saved to your profile. The optional Explain with AI drawer uses
           separate fictional samples only, never your skills or CV.
         </p>
       </div>
     </aside>
-    <AiExplanationPanel feature="task-exposure" />
+    <div className="tab-intro"><p className="muted small">Could AI easily replace your skills? Review the tasks behind each saved skill. This is a qualitative self-check, not a forecast.</p>
+      <AiExplainButton request={{ feature: 'task-exposure' }} label="Explain task support with AI" /></div>
 
     {profile.skills.length === 0 ? (
       <div className="state-box" data-testid="state-no-ai-skills">
         <strong>Add skills before reviewing their task exposure.</strong>
         <p className="muted">Your saved profile skills will appear here for a task-by-task self-check.</p>
-        <Link href="/profile" className="btn btn-primary" data-testid="link-ai-check-profile">Go to My profile</Link>
+        <Link href="/my-profile" className="btn btn-primary" data-testid="link-ai-check-profile">Go to My profile</Link>
       </div>
     ) : (
       <section className="ai-skill-list" aria-label="AI task exposure self-check" data-testid="list-ai-skill-checks">

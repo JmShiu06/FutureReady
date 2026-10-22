@@ -8,7 +8,8 @@ import {
   getListJobsQueryKey, useCalculateJobMatchScores, useListJobs,
 } from '@workspace/api-client-react';
 import type { ListJobsParams } from '@workspace/api-client-react';
-import { AiExplanationPanel } from '@/components/ai-explanation-panel';
+import { AiExplainButton } from '@/components/ai-drawer';
+import { MatchScore } from '@/components/shared/match-score';
 import { DosmOccupationSearch } from '@/components/dosm-occupation-search';
 
 type Props = { profileSkills: string[] };
@@ -103,19 +104,6 @@ export function JobSearchPage({ profileSkills }: Props) {
   };
 
   return <div className="jobs-page" data-testid="page-job-search">
-    <div className="page-head jobs-page-head">
-      <div>
-        <div className="eyebrow">Career workspace / Role search</div>
-        <h1>Explore Malaysian occupations.</h1>
-        <p className="page-subtitle">Search DOSM occupation-group employment figures alongside the latest Malaysia-wide labour-force context. Sample listings remain separate.</p>
-      </div>
-    </div>
-
-    <div className="jobs-intro">
-      <div className="jobs-intro-mark"><BriefcaseBusiness size={19} /></div>
-      <div><strong>About the sample listings below</strong><p>They are illustrative examples, not live vacancies. Match scores show exact skill overlap—not a hiring probability.</p></div>
-    </div>
-
     <DosmOccupationSearch />
 
     <section className="jobs-search-panel panel" aria-label="Search and filter jobs">
@@ -146,9 +134,9 @@ export function JobSearchPage({ profileSkills }: Props) {
     </section>
 
     <div className="jobs-results-heading">
-      <div><div className="eyebrow">Sample listings · Demo data</div><h2 data-testid="text-job-results-count">{jobsQuery.isLoading ? 'Finding roles…' : `${total.toLocaleString()} sample ${total === 1 ? 'role' : 'roles'}`}</h2><span className="jobs-demo-flag" data-testid="status-jobs-demo">SAMPLE LISTINGS · DEMO DATA</span></div>
+      <div><div className="eyebrow">Sample listings</div><h2 data-testid="text-job-results-count">{jobsQuery.isLoading ? 'Finding roles…' : `${total.toLocaleString()} sample ${total === 1 ? 'role' : 'roles'}`}</h2></div>
       {profileSkills.length > 0
-        ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from your saved device profile · review or update them on the dashboard</span>
+        ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from your saved device profile · review or update them in My profile</span>
         : <span className="jobs-profile-note">Add skills to your profile to see overlap</span>}
     </div>
 
@@ -168,11 +156,11 @@ export function JobSearchPage({ profileSkills }: Props) {
           <div className="job-card-main">
             <div className="job-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>
             <div className="job-card-copy">
-              <div className="job-title-line"><Link href={`/jobs/${encodeURIComponent(job.id)}`} className="job-title-link" data-testid={`link-job-title-${job.id}`}>{job.title}</Link>{job.demo && <span className="job-demo-chip">DEMO</span>}</div>
+              <div className="job-title-line"><Link href={`/careers-and-jobs/listings/${encodeURIComponent(job.id)}`} className="job-title-link" data-testid={`link-job-title-${job.id}`}>{job.title}</Link></div>
               <div className="job-company">{job.company}</div>
               <p className="job-short-description">{job.shortDescription}</p>
             </div>
-            {score && <div className="job-match-badge" data-testid={`text-match-score-${job.id}`}><strong>{score.score}%</strong><span>skill overlap</span></div>}
+            {score && <MatchScore metric="exact" value={score.score} matched={score.matchedSkills.length} considered={score.skillsConsidered} testId={`text-match-score-${job.id}`} />}
           </div>
           <div className="job-card-footer">
             <div className="job-meta">
@@ -181,12 +169,9 @@ export function JobSearchPage({ profileSkills }: Props) {
               <span><BriefcaseBusiness size={13} />{job.employmentType.replace('-', ' ')}</span>
               <span><Clock3 size={13} />{postedLabel(job.datePosted)}</span>
             </div>
-            <div className="job-card-actions"><Link className="job-details-link" href={`/jobs/${encodeURIComponent(job.id)}`} data-testid={`link-job-details-${job.id}`}>View details <ArrowRight size={13} /></Link>{applyAction}</div>
+            <div className="job-card-actions"><Link className="job-details-link" href={`/careers-and-jobs/listings/${encodeURIComponent(job.id)}`} data-testid={`link-job-details-${job.id}`}>View details <ArrowRight size={13} /></Link>{applyAction}</div>
           </div>
-          <details className="job-ai-details">
-            <summary>Explain Job Fit with AI</summary>
-            <AiExplanationPanel feature="job-fit" jobId={job.id} />
-          </details>
+          <div className="job-ai-row"><AiExplainButton request={{ feature: 'job-fit', jobId: job.id }} label="Explain job fit with AI" small quiet testId={`button-ai-job-fit-${job.id}`} /></div>
         </article>;
       })}
     </div>}
@@ -196,7 +181,6 @@ export function JobSearchPage({ profileSkills }: Props) {
       <div><button className="btn btn-secondary btn-small" onClick={() => setPage(value => Math.max(1, value - 1))} disabled={page <= 1} data-testid="button-jobs-previous"><ChevronLeft size={14} /> Previous</button><button className="btn btn-secondary btn-small" onClick={() => setPage(value => Math.min(pages, value + 1))} disabled={page >= pages} data-testid="button-jobs-next">Next <ChevronRight size={14} /></button></div>
     </div>}
 
-    <div className="jobs-footnote"><span className="jobs-footnote-mark">i</span><span>Demo listings are for exploration only. Availability, compensation and details have not been independently verified.</span></div>
   </div>;
 }
 

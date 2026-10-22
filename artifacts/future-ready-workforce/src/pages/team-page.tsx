@@ -46,7 +46,7 @@ function HrView() {
         <div className="panel panel-pad"><SectionTitle title="Readiness distribution" note={`${records.length} RECORDS`} /><Distribution records={records} /></div>
         <div className="panel panel-pad"><SectionTitle title="Priorities & shortages" note="RECORDS BELOW TARGET" />
           <div className="gap-list">{gaps.slice(0, 5).map(([s, n]) => <div key={s} className="gap-row"><span><strong>{s}</strong><small>{n} of {records.length} records below target</small></span><span className="gap-tag">{Math.round(100 * n / records.length)}%</span></div>)}</div>
-          <Link href="/scenarios" className="btn btn-secondary" style={{ marginTop: 14, width: '100%' }} data-testid="link-team-scenarios">Review AI task exposure</Link></div>
+          <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary" style={{ marginTop: 14, width: '100%' }} data-testid="link-team-scenarios">Review AI task exposure</Link></div>
       </div>
     </>}
   </>;
@@ -81,6 +81,6 @@ export default function TeamPage() {
   if (state.audience !== 'hr' && state.audience !== 'education') return <Redirect to="/" />;
   return <>
     {state.audience === 'education' ? <EducationView /> : <HrView />}
-    <div className="disclaimer"><ShieldCheck size={14} /><span>All records are fictional. Use real data only with consent, governance and safeguards.</span></div>
+    <div className="disclaimer"><ShieldCheck size={14} /><span>Use real data only with consent, governance and safeguards.</span></div>
   </>;
 }

@@ -25,7 +25,7 @@ test('CV review adds confirmed skills without exposing or changing About You det
     }),
   }));
 
-  await page.goto('/profile');
+  await page.goto('/my-profile');
   await expect(page.getByTestId('input-occupation')).toHaveCount(0);
   await expect(page.getByTestId('input-education')).toHaveCount(0);
   await expect(page.getByTestId('button-save-profile')).toBeVisible();

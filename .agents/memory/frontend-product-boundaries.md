@@ -63,6 +63,11 @@ An opt-in fictional explanation beside a deterministic feature does not make its
 - Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.
 - Roadmap milestones derive from a baseline snapshot taken at build time, so confirmed level changes never shrink the roadmap or lose progress.
 - Milestone completion never changes skill levels; levels change only via a separate user-confirmed update (one per milestone).
-- Roadmap/twin live under `/profile?section=…`; old `/roadmap` and `/twin` redirect there.
-- Known pre-existing failing Playwright check: dashboard spec expecting "illustrative associations, not verified evidence" text.
 **Why:** user spec required progress to be tracked without silently inflating readiness.
+
+## Consolidated workspace boundaries
+Do not reintroduce separate duplicate CV-analysis, job-recommendation, SDG-explorer or AI-panel workspaces when extending the app. Keep CV upload and analysis on My profile, career workflows together, SDG relevance on career cards, and explanations in one shared drawer. The Dashboard is a summary with onward links, not a second copy of detailed tools.
+
+**Why:** The user explicitly requested five primary destinations to reduce repetition and navigation complexity while preserving existing capabilities.
+
+**How to apply:** Keep the demo disclaimer in the shared top banner rather than repeating it on every card or page; retain source-specific evidence caveats and CV privacy instructions. A single audience selector controls the shared workspace. Learning roadmap has its own primary destination, while Digital Twin progress remains profile-related. Route reorganizations must preserve old links and saved profile/roadmap state without changing the API contract or CV privacy boundary.

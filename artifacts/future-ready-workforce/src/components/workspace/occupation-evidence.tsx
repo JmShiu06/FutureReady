@@ -6,6 +6,9 @@ import type { OccupationEvidence, OccupationEvidenceResult } from '@workspace/ap
 import { useWorkspace } from '@/domain/workspace-context';
 import { EmptyBlock, ErrorBlock, LoadingBlock, SectionTitle } from '@/components/workspace/ui';
 import { useState } from 'react';
+import { MatchScore } from '@/components/shared/match-score';
+import { SdgTags } from '@/components/shared/sdg-tags';
+import { AiExplainButton } from '@/components/ai-drawer';
 
 /**
  * Official occupation evidence (TalentCorp MyCOL + O*NET), shown alongside but
@@ -61,7 +64,7 @@ export function OfficialOccupationsPanel({ query }: { query: OccupationEvidenceQ
       info="MyCOL status is TalentCorp's classification. O*NET is United States occupational reference data. Neither is a hiring probability or a measure of local demand." />
     <p className="muted" style={{ marginTop: 0 }}>
       Separate from the illustrative coverage above. Each occupation is on TalentCorp's MyCOL 2024/2025 list and mapped by review to an O*NET occupation.
-      The count shows how many skills O*NET documents for that occupation appear by name in your profile. DOSM statistics on the Skills radar are not used here.
+      The count shows how many skills O*NET documents for that occupation appear by name in your profile. DOSM statistics in Market & AI impact are not used here.
     </p>
     {query.isPending && <LoadingBlock rows={2} />}
     {query.isError && <ErrorBlock message="Official occupation evidence could not be loaded. Check that the API server is running." onRetry={query.retry} />}
@@ -70,14 +73,14 @@ export function OfficialOccupationsPanel({ query }: { query: OccupationEvidenceQ
       <div className="grid-2">{eligible.map(o => <article key={o.id} className="role-card" data-testid={`card-occupation-${o.id}`}>
         <div className="spread"><strong>{o.mycol.title}</strong><span className="match-pill">{o.mycol.edition}</span></div>
         <span className="muted small">MASCO {o.mycol.masco4} → O*NET {o.onet.code} {o.onet.title} · {relationLabel[o.mapping.relation]}</span>
-        <div className="spread small"><span>O*NET documented skills in your profile</span>
-          <b className="mono" data-testid={`text-occupation-overlap-${o.id}`}>{o.overlap!.matchedSkills.length} of {o.overlap!.skillsConsidered}</b></div>
+        <SdgTags roleId={o.id} compact />
+        <MatchScore metric="onet" variant="bar" value={o.overlap!.score} matched={o.overlap!.matchedSkills.length} considered={o.overlap!.skillsConsidered} testId={`text-occupation-overlap-${o.id}`} />
         <div className="row">
           {o.overlap!.matchedSkills.map(s => <span key={s} className="chip">{s}</span>)}
           {o.overlap!.missingSkills.slice(0, 4).map(s => <span key={s} className="chip gap">{s}</span>)}
         </div>
         <p className="muted small" style={{ margin: 0 }} data-testid={`text-occupation-why-${o.id}`}>{o.explanation}</p>
-        <Link href={`/roles/${o.id}`} className="text-link" data-testid={`link-occupation-${o.id}`}>Occupation evidence & sources <ArrowRight size={12} /></Link>
+        <Link href={`/careers-and-jobs/roles/${o.id}`} className="text-link" data-testid={`link-occupation-${o.id}`}>Occupation evidence & sources <ArrowRight size={12} /></Link>
       </article>)}</div>
       {excluded.length > 0 && <div style={{ marginTop: 16 }} data-testid="list-occupations-excluded">
         <div className="section-kicker">Not used for recommendations</div>
@@ -106,10 +109,7 @@ function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOc
         {occupation.exclusionReason ?? 'A skill comparison is not available for this occupation.'}
       </div>
       : <>
-        <div className="spread small" style={{ marginTop: 12 }}>
-          <span>O*NET documented skills in your profile</span>
-          <b className="mono">{overlap.matchedSkills.length} of {overlap.skillsConsidered}</b>
-        </div>
+        <MatchScore metric="onet" variant="bar" className="ms-spaced" value={overlap.score} matched={overlap.matchedSkills.length} considered={overlap.skillsConsidered} />
         <div className="row" style={{ marginTop: 8 }}>
           {overlap.matchedSkills.map(skill => <span key={skill} className="chip">{skill}</span>)}
           {overlap.missingSkills.slice(0, 4).map(skill => <span key={skill} className="chip gap">{skill}</span>)}
@@ -179,18 +179,19 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
   if (query.isPending || !query.data) return <LoadingBlock rows={4} />;
   const data = query.data;
   const o = data.occupations.find(x => x.id === id);
-  if (!o) return <EmptyBlock title="That occupation is not in the reviewed MyCOL evidence."><Link href="/careers" className="btn btn-primary btn-small" data-testid="link-back-careers">Back to careers</Link></EmptyBlock>;
+  if (!o) return <EmptyBlock title="That occupation is not in the reviewed MyCOL evidence."><Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary btn-small" data-testid="link-back-careers">Back to career paths</Link></EmptyBlock>;
   const { mycol, onet } = data.sources;
   return <>
-    <div className="row" style={{ marginBottom: 14 }}><Link href="/careers" className="text-link" data-testid="link-back-careers"><ArrowLeft size={12} /> Career explorer</Link></div>
+    <div className="row" style={{ marginBottom: 14 }}><Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-back-careers"><ArrowLeft size={12} /> Career paths</Link></div>
     <div className="role-hero">
       <div className="eyebrow">{o.mycol.edition} critical occupation · MASCO {o.mycol.masco4}</div>
       <h1 data-testid="text-occupation-title">{o.mycol.title}</h1>
       <p className="muted" style={{ maxWidth: 690 }}>Classified as a critical occupation by TalentCorp in {o.mycol.edition}. This is a TalentCorp classification, not a hiring probability or a vacancy count.</p>
       <div className="role-meta"><span><BookOpen size={14} />O*NET {o.onet.code} · {o.onet.title}</span><span><ShieldCheck size={14} />{relationLabel[o.mapping.relation]} · {o.mapping.status === 'verified' ? 'reviewed mapping' : 'unverified mapping'}</span></div>
       <div className="row" style={{ marginTop: 16 }}>
-        <Link href="/roadmap" className="btn btn-primary btn-small" data-testid="link-occupation-roadmap"><Workflow size={12} /> Continue to my roadmap</Link>
-        <Link href="/profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> Update my skills</Link>
+        <Link href="/learning-roadmap" className="btn btn-primary btn-small" data-testid="link-occupation-roadmap"><Workflow size={12} /> Continue to my roadmap</Link>
+        <Link href="/my-profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> Update my skills</Link>
+        <AiExplainButton request={{ feature: 'career-explorer' }} label="Explain career match with AI" small />
       </div>
     </div>
     <div className="detail-layout">
@@ -200,7 +201,8 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
           {o.exclusionReason
             ? <div className="state-box" data-testid="text-occupation-excluded">{o.exclusionReason}</div>
             : <>
-              <p className="small" data-testid="text-occupation-overlap"><b>{o.overlap!.matchedSkills.length} of {o.overlap!.skillsConsidered}</b> documented skills appear in your profile by name.</p>
+              <MatchScore metric="onet" variant="panel" value={o.overlap!.score} matched={o.overlap!.matchedSkills.length} considered={o.overlap!.skillsConsidered} testId="text-occupation-overlap" />
+              <p className="small">{o.overlap!.matchedSkills.length} of {o.overlap!.skillsConsidered} documented skills appear in your profile by name.</p>
               <div className="gap-list">{o.documentedSkills.map(s => <div className="gap-row" key={s.elementId} data-testid={`row-onet-skill-${s.elementId}`}>
                 <span><strong>{s.name}</strong><small>{s.domain} skill · Importance {s.importance.toFixed(2)} of 5 · Level {s.level.toFixed(2)} of 7{s.levelLowPrecision ? ' (low precision)' : ''}</small></span>
                 <span className={`tag ${s.inProfile ? 'tag-ok' : 'tag-miss'}`}>{s.inProfile ? 'In your profile' : 'Not in profile'}</span>

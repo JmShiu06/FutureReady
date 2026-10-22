@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AiExplanationPanel } from "@/components/ai-explanation-panel";
+import { AiExplainButton } from "@/components/ai-drawer";
+import { MatchScore } from "@/components/shared/match-score";
 import { Link } from "wouter";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { useMatchCareers, type CareerMatchResult } from "@workspace/api-client-react";
 import { useWorkspace } from "@/domain/workspace-context";
-import { EmptyBlock, ErrorBlock, LoadingBlock, PageHead } from "@/components/workspace/ui";
+import { EmptyBlock, ErrorBlock, LoadingBlock } from "@/components/workspace/ui";
 
-export default function CvRecommendationsPage() {
+/** Matched roles tab: dataset role families ranked from saved profile skills. CV upload lives only in My profile. */
+export function MatchedRolesTab() {
   const { profile } = useWorkspace();
   const hasCvSkills = profile.skills.some(
     (skill) => skill.cvDetected || skill.category === "CV detected",
@@ -58,15 +60,13 @@ export default function CvRecommendationsPage() {
 
   return (
     <>
-      <PageHead
-        eyebrow="Job recommendations · saved profile"
-        title="Your job recommendations"
-        subtitle="Recommendations use the skills saved in your profile. Each role shows the exact or related skill matches that contributed."
-      />
-      <AiExplanationPanel feature="cv-analysis" />
-      <p className="muted small" style={{ margin: "-8px 0 18px" }} data-testid="text-recommendation-scope">
+      <div className="tab-intro">
+        <p className="muted small" data-testid="text-recommendation-scope">
+          Role families ranked by <b>exact / related skill overlap</b> with the skills saved in your profile.
         Related matches are labeled. These are role recommendations, not live vacancies or a hiring probability.
-      </p>
+        </p>
+        <AiExplainButton request={{ feature: "cv-analysis" }} label="Explain matched roles with AI" />
+      </div>
 
       {!hasCvSkills && (
         <aside
@@ -83,7 +83,7 @@ export default function CvRecommendationsPage() {
               </p>
             </div>
             <Link
-              href="/profile"
+              href="/my-profile"
               className="btn btn-primary"
               data-testid="button-go-to-profile-upload-cv"
             >
@@ -107,7 +107,7 @@ export default function CvRecommendationsPage() {
       ) : recommendations.length === 0 ? (
         <EmptyBlock title="No exact role match found for your saved skills.">
           <span>The current role dataset does not list any of your profile skills. Review your profile or use a skill label that appears in the dataset.</span>
-          <Link href="/profile" className="text-link" data-testid="link-review-profile-skills">
+          <Link href="/my-profile" className="text-link" data-testid="link-review-profile-skills">
             Review profile skills
           </Link>
         </EmptyBlock>
@@ -129,9 +129,7 @@ export default function CvRecommendationsPage() {
                     </h2>
                   </div>
                 </div>
-                <span className="match-pill" data-testid={`text-skill-overlap-${index}`}>
-                  {recommendation.score}% skill overlap
-                </span>
+                <MatchScore metric="overlap" value={recommendation.score} matched={recommendation.matchedSkills.length} considered={recommendation.skillsConsidered} testId={`text-skill-overlap-${index}`} />
               </div>
 
               <p className="muted small" style={{ margin: "12px 0" }}>
@@ -159,7 +157,7 @@ export default function CvRecommendationsPage() {
                         </p>
                       </div>
                       <Link
-                        href="/scenarios"
+                        href="/market-and-ai-impact?tab=ai-impact"
                         className="ai-skill-check-bar"
                         aria-label={`Open AI Skill Check for ${recommendation.roleFamily}`}
                         data-testid={`link-ai-skill-check-${index}`}

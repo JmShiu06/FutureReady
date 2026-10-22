@@ -39,7 +39,7 @@ export function TwinSection() {
     <section aria-labelledby="progress-title" data-testid="section-twin-progress">
       <div className="eyebrow">Digital twin · actual progress</div>
       <h2 id="progress-title" style={{ margin: '2px 0 4px' }}>Your progress against {role?.title ?? 'a target role'}</h2>
-      {!report ? <EmptyBlock title="No roadmap to compare yet.">Choose “Build my learning roadmap” in Career explorer to record a starting point.</EmptyBlock> : <>
+      {!report ? <EmptyBlock title="No roadmap to compare yet.">Choose “Build my learning roadmap” in Careers & jobs to record a starting point.</EmptyBlock> : <>
         <div className="dashboard-grid" style={{ margin: '12px 0 18px' }}>
           <div className="panel panel-pad">
             <SectionTitle title="Readiness" note="ILLUSTRATIVE SKILL COVERAGE" />

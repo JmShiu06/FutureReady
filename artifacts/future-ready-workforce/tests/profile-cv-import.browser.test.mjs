@@ -75,7 +75,7 @@ test('CV review adds skills only and leaves About You details untouched', async 
   }));
 
   try {
-    await page.goto(`${baseUrl}/profile`);
+    await page.goto(`${baseUrl}/my-profile`);
     await page.getByTestId('button-save-profile').waitFor();
     const skillRowIndex = await page.locator('[data-testid^="row-skill-"]').count();
     assert.equal(await page.getByTestId('input-occupation').count(), 0);

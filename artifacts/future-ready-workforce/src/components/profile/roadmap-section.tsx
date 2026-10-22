@@ -44,10 +44,10 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
 
   return <>
     <div className="panel panel-pad" style={{ marginBottom: 18 }} data-testid="panel-roadmap-target">
-      <SectionTitle title="Roadmap target" note={built ? 'BUILT FROM CAREER EXPLORER' : 'NOT BUILT YET'} />
+      <SectionTitle title="Roadmap target" note={built ? 'BUILT FROM CAREERS & JOBS' : 'NOT BUILT YET'} />
       {built
-        ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{role.title}</strong> <span className="muted">· Only “Build my learning roadmap” in <Link href="/careers" className="text-link">Career explorer</Link> changes this target.</span></p>
-        : <p className="muted" style={{ margin: 0 }}>No roadmap yet. Explore a role in <Link href="/careers" className="text-link" data-testid="link-roadmap-careers">Career explorer</Link> and choose “Build my learning roadmap”.</p>}
+        ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{role.title}</strong> <span className="muted">· Only “Build my learning roadmap” in <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Careers & jobs</Link> changes this target.</span></p>
+        : <p className="muted" style={{ margin: 0 }}>No roadmap yet. Explore a role in <Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-roadmap-careers">Careers & jobs</Link> and choose “Build my learning roadmap”.</p>}
     </div>
     <div className="dashboard-grid">
       <div className="panel panel-pad">
@@ -70,8 +70,8 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
     <div className="row" style={{ margin: '18px 0 12px' }}>
       {(['all', 'free', 'low'] as const).map(f => <button key={f} className={`btn btn-small ${costFilter === f ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCostFilter(f)} aria-pressed={costFilter === f} data-testid={`button-cost-${f}`}>{f === 'all' ? 'All' : f === 'free' ? 'Free' : 'Low cost (MYR 100 or less)'}</button>)}
     </div>
-    {!built ? <EmptyBlock title="Your roadmap will appear here.">Milestones are created from the gaps of the role you choose in Career explorer.</EmptyBlock>
-      : milestones.length === 0 ? <EmptyBlock title="No gaps for this target.">You met every sample requirement when you started. <Link href="/careers" className="text-link">Choose another career</Link></EmptyBlock>
+    {!built ? <EmptyBlock title="Your roadmap will appear here.">Milestones are created from the gaps of the role you choose in Careers & jobs.</EmptyBlock>
+      : milestones.length === 0 ? <EmptyBlock title="No gaps for this target.">You met every sample requirement when you started. <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Choose another career</Link></EmptyBlock>
       : shown.length === 0 ? <EmptyBlock title="No milestones match this cost filter." />
       : <div className="dashboard-grid">
         <div className="stack">{shown.map(m => { const key = completionKey(state.audience, m.id); const isDone = !!state.completion[key]; return <div key={m.id} className={`milestone${isDone ? ' done' : ''}`} data-testid={`card-milestone-${m.order}`}>

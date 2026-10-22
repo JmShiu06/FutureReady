@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { AiExplanationPanel } from '@/components/ai-explanation-panel';
-import { useLocation, useSearch } from 'wouter';
-import { RoadmapSection } from '@/components/profile/roadmap-section';
+import { AiExplainButton } from '@/components/ai-drawer';
+import { Link, Redirect, useLocation, useSearch } from 'wouter';
 import { TwinSection } from '@/components/profile/twin-section';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Check, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowRight, Check, Plus, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -16,7 +15,7 @@ import { audienceLabels, skillCatalogue } from '@/domain/demo-data';
 import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
 
-type ProfileSection = 'skills' | 'roadmap' | 'twin';
+type ProfileSection = 'skills' | 'twin';
 const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) }).superRefine((v, ctx) => {
   const list = v.interestsText.split(',').map(s => s.trim()).filter(Boolean);
   if (list.length > 10) ctx.addIssue({ code: 'custom', path: ['interestsText'], message: 'Up to 10 interests.' });
@@ -68,10 +67,10 @@ export default function ProfilePage() {
   };
   const [, navigate] = useLocation();
   const sectionParam = new URLSearchParams(useSearch()).get('section');
-  const section: ProfileSection = sectionParam === 'roadmap' || sectionParam === 'twin' ? sectionParam : 'skills';
-  const openSection = (next: ProfileSection) => navigate(next === 'skills' ? '/profile' : `/profile?section=${next}`);
+  const section: ProfileSection = sectionParam === 'twin' ? 'twin' : 'skills';
+  const openSection = (next: ProfileSection) => navigate(next === 'skills' ? '/my-profile' : `/my-profile?section=${next}`);
   const tabs: { key: ProfileSection; label: string }[] = [
-    { key: 'skills', label: 'Skills profile' }, { key: 'roadmap', label: 'Learning roadmap' }, { key: 'twin', label: 'Digital twin & progress' },
+    { key: 'skills', label: 'Skills profile' }, { key: 'twin', label: 'Digital twin & progress' },
   ];
   const onTabKey = (e: React.KeyboardEvent, index: number) => {
     const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
@@ -82,18 +81,26 @@ export default function ProfilePage() {
     requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
   };
 
+  if (sectionParam === 'roadmap') return <Redirect to="/learning-roadmap" replace />;
   return <>
-    <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : section === 'roadmap' ? 'One practical step at a time.' : 'See how far you have come.'} subtitle="Skills, learning roadmap and progress in one place. Each audience keeps its own profile." />
-    <AiExplanationPanel key={section} feature={section === 'skills' ? 'profile-skills' : section === 'roadmap' ? 'learning-roadmap' : 'digital-twin'} onApplySkills={section === 'skills' ? applyAiSkills : undefined} />
+    <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : 'See how far you have come.'} subtitle="Your skills, CV import and progress. Each audience keeps its own profile."
+      action={section === 'skills'
+        ? <AiExplainButton request={{ feature: 'profile-skills', onApplySkills: applyAiSkills }} label="Suggest skills with AI" />
+        : <AiExplainButton request={{ feature: 'digital-twin' }} />} />
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}
     </div>
-    <div id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden={section !== 'roadmap'} data-testid="panel-profile-roadmap">{section === 'roadmap' && <RoadmapSection onReview={() => openSection('twin')} />}</div>
-    <div id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" hidden={section !== 'twin'} data-testid="panel-profile-twin">{section === 'twin' && <TwinSection />}</div>
+    <div id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" hidden={section !== 'twin'} data-testid="panel-profile-twin">{section === 'twin' && <>
+      <TwinSection />
+      <Link href="/learning-roadmap" className="text-link" data-testid="link-twin-roadmap">Open learning roadmap <ArrowRight size={12} /></Link>
+    </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    {section === 'skills' && <AiExplanationPanel feature="cv-analysis" />}
+    <div className="tab-intro">
+      <p className="muted small">CV explanations use a fictional example, never your uploaded document.</p>
+      <AiExplainButton request={{ feature: 'cv-analysis' }} label="Explain CV analysis with AI" />
+    </div>
 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>

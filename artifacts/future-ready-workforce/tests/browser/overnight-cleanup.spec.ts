@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('AI and labour-market trends expose seven real-data date windows without synthetic history', async ({ page }) => {
-  await page.goto('/trends');
+  await page.goto('/market-and-ai-impact?tab=market');
   await expect(page.getByRole('heading', { name: 'AI & Labour Market Trends' })).toBeVisible();
   await expect(page.getByTestId('panel-synthetic-examples')).toHaveCount(0);
   await expect(page.getByTestId('section-synthetic-radar')).toHaveCount(0);
@@ -41,7 +41,7 @@ test('a date range longer than the available source history is labelled honestly
     });
   });
 
-  await page.goto('/trends');
+  await page.goto('/market-and-ai-impact?tab=market');
   const chart = page.getByTestId('chart-dosm-labour-force');
   await expect(chart).toBeVisible();
   await page.getByTestId('button-dosm-range-10y').click();
@@ -51,17 +51,17 @@ test('a date range longer than the available source history is labelled honestly
 });
 
 test('the recommendation label, comparison, and real progress remain while demo UI is gone', async ({ page }) => {
-  await page.goto('/profile');
+  await page.goto('/my-profile');
   await expect(page.getByTestId('card-cv-import')).toBeVisible();
   await expect(page.getByTestId('select-sample-variant')).toHaveCount(0);
   await expect(page.getByTestId('input-skill-name-0')).toBeVisible();
 
-  await page.goto('/profile?section=twin');
+  await page.goto('/my-profile?section=twin');
   await expect(page.getByTestId('section-twin-progress')).toBeVisible();
   await expect(page.getByTestId('section-twin-progress')).toContainText('No roadmap to compare yet');
   await expect(page.getByTestId('section-simulator')).toHaveCount(0);
 
-  await page.goto('/careers');
+  await page.goto('/careers-and-jobs?tab=career-paths');
   const occupationPanel = page.getByTestId('panel-official-occupations');
   const comparisonPanel = page.getByTestId('panel-comparison');
   await expect(occupationPanel).toBeVisible();
@@ -92,11 +92,10 @@ test('the recommendation label, comparison, and real progress remain while demo 
   await secondOccupation.selectOption('mycol-2413');
   await expect(page.getByTestId('text-compare-excluded-1')).toContainText('no skill ratings');
 
-  await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Job Recommendations' })).toBeVisible();
-  await page.getByRole('link', { name: 'Job Recommendations' }).click();
-  await expect(page).toHaveURL(/\/cv-analysis$/);
-  await expect(page.getByRole('heading', { name: 'Your job recommendations' })).toBeVisible();
+  await page.goto('/cv-analysis');
+  await expect(page).toHaveURL(/\/careers-and-jobs\?tab=matched-roles$/);
+  await expect(page.getByTestId('tab-careers-matched-roles')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByTestId('card-cv-import')).toHaveCount(0);
 });
 
 test('recommended role skill details stay collapsed until requested', async ({ page }) => {
@@ -143,7 +142,7 @@ test('recommended role skill details stay collapsed until requested', async ({ p
     }),
   }));
 
-  await page.goto('/cv-analysis');
+  await page.goto('/careers-and-jobs?tab=matched-roles');
   const skillDetails = page.getByTestId('details-recommendation-skills-0');
   const matchedSkill = page.getByTestId('skill-reason-0-python');
   const matchedSkillsCard = page.getByTestId('card-matched-skills-0');
@@ -167,7 +166,7 @@ test('recommended role skill details stay collapsed until requested', async ({ p
   await expect(skillDetails.locator('.recommendation-skills-open')).toBeVisible();
   await expect(matchedSkillsCard).toBeVisible();
   await expect(aiSkillCheckLink).toBeVisible();
-  await expect(aiSkillCheckLink).toHaveAttribute('href', '/scenarios');
+  await expect(aiSkillCheckLink).toHaveAttribute('href', '/market-and-ai-impact?tab=ai-impact');
   await expect(matchedSkill).toBeVisible();
   await expect(page.getByTestId('skill-reason-0-data-analysis')).toBeVisible();
 
@@ -185,6 +184,6 @@ test('recommended role skill details stay collapsed until requested', async ({ p
   await page.setViewportSize({ width: 1280, height: 720 });
   await skillDetails.locator('summary').click();
   await aiSkillCheckLink.click();
-  await expect(page).toHaveURL(/\/scenarios$/);
-  await expect(page.getByRole('heading', { name: 'Could AI easily replace your skills?' })).toBeVisible();
+  await expect(page).toHaveURL(/\/market-and-ai-impact\?tab=ai-impact$/);
+  await expect(page.getByTestId('panel-ai-exposure-boundary')).toBeVisible();
 });

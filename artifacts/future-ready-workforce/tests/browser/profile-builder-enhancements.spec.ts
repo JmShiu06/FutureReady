@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/profile');
+  await page.goto('/my-profile');
   await expect(page.getByTestId('button-save-profile')).toBeVisible();
 });
 

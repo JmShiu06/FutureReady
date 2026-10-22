@@ -9,7 +9,7 @@ export function BuildRoadmapButton({ roleId, testId, size = 'btn-small' }: { rol
   const [, navigate] = useLocation();
   const built = !!state.baselines[planKey(state.audience, roleId)];
   const isTarget = state.targets[state.audience] === roleId && built;
-  const go = () => { if (!isTarget) startRoadmap(roleId); navigate('/profile?section=roadmap'); };
+  const go = () => { if (!isTarget) startRoadmap(roleId); navigate('/learning-roadmap'); };
   return <button className={`btn ${isTarget ? 'btn-secondary' : 'btn-primary'} ${size}`} onClick={go} data-testid={testId}>
     <Workflow size={12} /> {isTarget ? 'Open my roadmap' : built ? 'Resume my learning roadmap' : 'Build my learning roadmap'}</button>;
 }

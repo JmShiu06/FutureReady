@@ -5,7 +5,7 @@ import { AiSkillSuggestions } from './ai-skill-suggestions';
 import type { ProfileSkill } from '@/domain/types';
 
 type Feature = AiExplanationInput['feature'];
-const titles: Record<Feature, string> = {
+export const aiFeatureTitles: Record<Feature, string> = {
   'career-explorer': 'Career Explorer',
   'cv-analysis': 'CV Analysis',
   'learning-roadmap': 'Learning Roadmap',
@@ -16,7 +16,7 @@ const titles: Record<Feature, string> = {
   'sdg-contribution': 'SDG Explorer',
   'profile-skills': 'Profile skill suggestions',
 };
-const actions: Record<Feature, string> = {
+export const aiFeatureActions: Record<Feature, string> = {
   'career-explorer': 'Explain My Career Match with AI',
   'cv-analysis': 'Analyse with AI',
   'learning-roadmap': 'Explain My Learning Plan with AI',
@@ -40,8 +40,8 @@ const contexts: Record<Feature, string> = {
 };
 
 /** Deliberately independent of workspace/profile state: only fixed example IDs leave the browser. */
-export function AiExplanationPanel({ feature, jobId, goal, onApplySkills }: {
-  feature: Feature; jobId?: string; goal?: number;
+export function AiExplanationPanel({ feature, jobId, goal, onApplySkills, embedded = false }: {
+  feature: Feature; jobId?: string; goal?: number; embedded?: boolean;
   onApplySkills?: (skills: ProfileSkill[]) => string | undefined;
 }) {
   const selectId = useId();
@@ -88,8 +88,8 @@ export function AiExplanationPanel({ feature, jobId, goal, onApplySkills }: {
     }
   };
 
-  return <section className="panel panel-pad ai-demo-panel" aria-label={`${titles[feature]} AI explanation`} data-testid={`panel-ai-${feature}`}>
-    <h2 className="ai-demo-title"><Sparkles size={17} aria-hidden="true" /> {titles[feature]} · Qwen3 explanation</h2>
+  return <section className={embedded ? 'ai-demo-panel ai-demo-embedded' : 'panel panel-pad ai-demo-panel'} aria-label={`${aiFeatureTitles[feature]} AI explanation`} data-testid={`panel-ai-${feature}`}>
+    {!embedded && <h2 className="ai-demo-title"><Sparkles size={17} aria-hidden="true" /> {aiFeatureTitles[feature]} · Qwen3 explanation</h2>}
     <p className="muted small">Only server-owned fictional learner data and selected public evidence go to RunPod—not your saved profile or CV. AI cannot change matches, official data, skill levels, roadmap progress, or team records. Profile suggestions require separate confirmation.</p>
     <p className="ai-context-note"><strong>Evidence used:</strong> {contexts[feature]}</p>
     <div className="ai-demo-controls">
@@ -105,7 +105,7 @@ export function AiExplanationPanel({ feature, jobId, goal, onApplySkills }: {
       </select>
       </>}
       <button type="button" className="btn btn-secondary" disabled={loading} onClick={() => void explain()} data-testid={`button-ai-demo-${feature}`}>
-        {loading ? 'Generating explanation…' : actions[feature]}
+        {loading ? 'Generating explanation…' : aiFeatureActions[feature]}
       </button>
     </div>
     <div aria-live="polite" aria-busy={loading}>

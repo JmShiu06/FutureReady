@@ -18,12 +18,12 @@ test('AI skill check asks for profile skills before assessing task exposure', as
       confirmations: [],
     }));
   });
-  await page.goto('/scenarios');
+  await page.goto('/market-and-ai-impact?tab=ai-impact');
 
-  await expect(page.getByRole('heading', { name: 'Could AI easily replace your skills?' })).toBeVisible();
+  await expect(page.getByTestId('tab-market-ai-impact')).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByTestId('panel-ai-exposure-boundary')).toContainText('a validated exposure dataset');
   await expect(page.getByTestId('state-no-ai-skills')).toBeVisible();
-  await expect(page.getByTestId('link-ai-check-profile')).toHaveAttribute('href', '/profile');
+  await expect(page.getByTestId('link-ai-check-profile')).toHaveAttribute('href', '/my-profile');
 });
 
 test('task descriptions change qualitative AI exposure without changing saved profile skills', async ({ page }) => {
@@ -49,7 +49,7 @@ test('task descriptions change qualitative AI exposure without changing saved pr
     }));
   }, skills);
 
-  await page.goto('/scenarios');
+  await page.goto('/market-and-ai-impact?tab=ai-impact');
   await expect(page.getByTestId('text-ai-exposure-0')).toHaveText('Not assessed');
   await expect(page.getByTestId('text-ai-exposure-1')).toHaveText('Not assessed');
 

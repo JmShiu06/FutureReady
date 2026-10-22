@@ -360,7 +360,7 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnab
         <button type="button" className="btn btn-primary" disabled={!isConfirmed || phase === 'matching'} onClick={runMatch} data-testid="button-find-matches">
           {phase === 'matching' ? <><Loader2 size={13} className="spin" /> Matching</> : <>{phase === 'results' ? 'Run again' : 'Find matching careers'} <ArrowRight size={13} /></>}
         </button>
-        {isConfirmed && <Link href="/jobs" className="btn btn-secondary" data-testid="link-continue-jobs">Continue to Job Search <ArrowRight size={13} /></Link>}
+        {isConfirmed && <Link href="/careers-and-jobs?tab=listings" className="btn btn-secondary" data-testid="link-continue-jobs">Continue to Job Search <ArrowRight size={13} /></Link>}
       </div>
       {!isConfirmed && <p className="cm-empty">Confirm your reviewed skills to unlock matching.</p>}
       {phase === 'matching' && <div className="cm-result-skel" aria-hidden="true">{[0, 1, 2].map(i => <i key={i} />)}</div>}
