@@ -58,7 +58,7 @@ test('CV review adds confirmed skills without exposing or changing About You det
     buffer: Buffer.from('Synthetic test document; no personal data.'),
   });
   await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Mina Tan');
-  await expect(page.getByTestId('text-candidate-profile')).toContainText('Candidate: Mina Tan');
+  await expect(page.getByRole('heading', { name: 'Mina Tan' })).toBeVisible();
   const review = page.getByTestId('dialog-cv-review');
   await expect(review).toBeVisible();
   await expect(review).toContainText(skillName);
@@ -105,10 +105,11 @@ test('CV review adds confirmed skills without exposing or changing About You det
     buffer: Buffer.from('Second synthetic CV without personal details.'),
   });
   await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Nura Ismail');
-  await expect(page.getByTestId('text-candidate-profile')).toContainText('Candidate: Nura Ismail');
+  await expect(page.getByRole('heading', { name: 'Nura Ismail' })).toBeVisible();
   await page.reload();
   await expect(page.getByTestId('text-candidate-badge')).toHaveCount(0);
   await expect(page.getByTestId('text-shell-name')).toHaveText('Your profile');
+  await expect(page.getByRole('heading', { name: 'Your starting point.' })).toBeVisible();
   await expect(page.getByTestId('input-occupation')).toHaveCount(0);
   await expect.poll(() => page.locator('[data-testid^="input-skill-name-"]').evaluateAll(
     (inputs, name) => inputs.some(input => (input as HTMLInputElement).value === name),
@@ -136,5 +137,5 @@ test('a successful parse without a detected name displays the explicit unknown f
     buffer: Buffer.from('Professional summary and work experience with details, but no personal name.'),
   });
   await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Unknown');
-  await expect(page.getByTestId('text-candidate-profile')).toContainText('Candidate: Unknown');
+  await expect(page.getByRole('heading', { name: 'Unknown' })).toBeVisible();
 });
