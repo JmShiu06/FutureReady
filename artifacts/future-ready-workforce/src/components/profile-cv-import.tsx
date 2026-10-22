@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import { Check, CloudUpload, FileText, Info, Loader2, Sparkles, X } from 'lucide-react';
+import { Check, CloudUpload, FileText, Info, Sparkles, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { useCvSession } from '@/domain/cv-session';
 import { LIMITED_MESSAGE, NO_SKILLS_MESSAGE } from '@/components/cv-career-explanation';
 import { useAiDrawer } from '@/components/ai-drawer';
+import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 import './profile-cv-import.css';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -210,7 +211,7 @@ export function ProfileCvImport({
       onDrop={onDrop}
       data-testid="drop-cv-profile"
     >
-      {phase === 'extracting' ? <Loader2 size={22} className="profile-cv-spinner" aria-hidden="true" /> : <FileText size={22} aria-hidden="true" />}
+      {phase === 'extracting' ? <RaccoonLoader /> : <FileText size={22} aria-hidden="true" />}
       <strong>{phase === 'extracting' ? 'Reading your CV' : 'Drop your CV here'}</strong>
       <span>PDF, DOCX, TXT, JPG or PNG · up to 5 MB</span>
       <div className="profile-cv-actions">
@@ -240,7 +241,10 @@ export function ProfileCvImport({
 
     {phase === 'review' && <div className="profile-cv-result" role="status" data-testid="status-profile-cv-review">
       <div>
-        <strong>{reviewSkills.length ? 'Skills ready to review' : 'CV review ready'}</strong>
+        <div className="profile-cv-result-title">
+          <strong>{reviewSkills.length ? 'Skills ready to review' : 'CV review ready'}</strong>
+          <RaccoonLoader size="small" className="raccoon-loader-greet" />
+        </div>
         <span>{reviewSkills.length} skill{reviewSkills.length === 1 ? '' : 's'} detected</span>
       </div>
       <button type="button" className="btn btn-secondary btn-small" onClick={() => setReviewDialogOpen(true)} data-testid="button-open-cv-review">

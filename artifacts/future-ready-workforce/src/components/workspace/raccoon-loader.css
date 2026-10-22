@@ -1,0 +1,36 @@
+.raccoon-loader {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #42596d;
+  vertical-align: middle;
+}
+.raccoon-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.raccoon-loader-regular { width: 36px; height: 36px; }
+.raccoon-loader-small { width: 20px; height: 20px; }
+.raccoon-head { fill: #8794a1; stroke: #526476; stroke-width: 1.25; }
+.raccoon-ear { fill: #526476; stroke: #526476; stroke-width: 1.1; stroke-linejoin: round; }
+.raccoon-tail-fill { fill: #8794a1; stroke: #526476; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.raccoon-tail-band { fill: #344657; }
+.raccoon-mask { fill: #344657; }
+.raccoon-muzzle { fill: #e9e6dc; }
+.raccoon-eye, .raccoon-nose { fill: #263a4a; }
+.raccoon-smile, .raccoon-brow { fill: none; stroke: #344657; stroke-width: 1.15; stroke-linecap: round; }
+.raccoon-head { transform-box: fill-box; transform-origin: center 90%; animation: raccoon-nod 1.45s ease-in-out infinite; }
+.raccoon-ear { transform-box: fill-box; transform-origin: center; animation: raccoon-ear-flick 2.8s ease-in-out infinite; }
+.raccoon-eye { transform-box: fill-box; transform-origin: center; animation: raccoon-blink 3.3s ease-in-out infinite; }
+.raccoon-tail-swish { transform-box: fill-box; transform-origin: 18% 62%; animation: raccoon-tail-sway 2.1s ease-in-out infinite; }
+.raccoon-loader-small .raccoon-head { animation-duration: 1.55s; }
+@keyframes raccoon-nod { 0%, 72%, 100% { transform: translateY(0) rotate(0); } 82% { transform: translateY(1px) rotate(-2deg); } 91% { transform: translateY(0) rotate(1deg); } }
+@keyframes raccoon-ear-flick { 0%, 85%, 100% { transform: rotate(0); } 90% { transform: rotate(-5deg); } 95% { transform: rotate(2deg); } }
+@keyframes raccoon-blink { 0%, 42%, 46%, 100% { transform: scaleY(1); } 44% { transform: scaleY(.12); } }
+@keyframes raccoon-tail-sway { 0%, 100% { transform: rotate(0); } 35% { transform: rotate(-8deg); } 68% { transform: rotate(4deg); } }
+.raccoon-loader-greet .raccoon-head { animation: raccoon-greet .38s ease-out both; }
+@keyframes raccoon-greet { 0% { transform: rotate(0); } 55% { transform: rotate(-7deg) translateY(-1px); } 100% { transform: rotate(0); } }
+.loading-block-cue { display: flex; height: 34px; align-items: center; justify-content: center; margin-bottom: -5px; }
+.profile-cv-drop > .raccoon-loader { width: 34px; height: 34px; }
+.cvx-consent .raccoon-loader { width: 14px; height: 14px; }
+.profile-cv-result-title { display:flex; align-items:center; gap:6px; }
+@media (prefers-reduced-motion: reduce) {
+  .raccoon-loader *, .raccoon-loader *::before, .raccoon-loader *::after { animation: none !important; }
+}

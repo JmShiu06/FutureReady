@@ -142,3 +142,39 @@ test('a successful parse without a detected name displays the explicit unknown f
   await expect(page.getByTestId('text-shell-name')).toHaveText('Unknown');
   await expect(page.getByRole('heading', { name: 'Your starting point.' })).toBeVisible();
 });
+
+test('the raccoon loader appears while CV parsing and stops moving for reduced-motion users', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.route('**/api/career/cv-skills', async route => {
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        skills: [],
+        warnings: [],
+        careerData: {
+          skills: [], education: [], workExperience: [], certifications: [],
+          projects: [], languages: [], extractionLimited: true,
+        },
+      }),
+    });
+  });
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/my-profile');
+  await page.getByTestId('input-profile-cv').setInputFiles({
+    name: 'loading-state-resume.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('Synthetic resume for loader testing.'),
+  });
+
+  const loader = page.locator('.profile-cv-drop > .raccoon-loader');
+  await expect(loader).toBeVisible();
+  const head = loader.locator('.raccoon-head');
+  const animationName = await head.evaluate(element => getComputedStyle(element).animationName);
+  expect(animationName).not.toBe('none');
+  await page.screenshot({ path: '/tmp/raccoon-loader-mobile.png' });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect.poll(() => head.evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+  await expect(page.getByTestId('dialog-cv-review')).toBeVisible();
+});

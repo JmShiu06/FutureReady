@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import type { Evidence, RequiredSkill, SkillGap } from '@/domain/types';
 import { evidenceWarnings } from '@/domain/services';
+import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 
 export function SectionTitle({ title, note, action, info }: { title: string; note?: string; action?: ReactNode; info?: string }) {
   return <div className="section-head"><div>
@@ -54,7 +55,10 @@ export function EvidencePanel({ evidence, testId = 'panel-evidence' }: { evidenc
 }
 
 export function LoadingBlock({ rows = 3 }: { rows?: number }) {
-  return <div className="stack" role="status" aria-label="Loading">{Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: 70 }} />)}</div>;
+  return <div className="stack loading-block" role="status" aria-label="Loading">
+    <span className="loading-block-cue"><RaccoonLoader /></span>
+    {Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: 70 }} />)}
+  </div>;
 }
 
 export function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void }) {

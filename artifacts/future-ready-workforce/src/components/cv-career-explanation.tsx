@@ -1,8 +1,9 @@
 import { useId } from 'react';
 import { Link } from 'wouter';
-import { AlertTriangle, BookOpen, Check, ChevronDown, ExternalLink, Languages, Lightbulb, Loader2, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react';
+import { AlertTriangle, BookOpen, Check, ChevronDown, ExternalLink, Languages, Lightbulb, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react';
 import { useCvSession, type CvDraft, type DraftItem } from '@/domain/cv-session';
 import { CandidateNameLabel } from '@/components/candidate-name-label';
+import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 import { MatchScore } from '@/components/shared/match-score';
 import { cvExplanationSectionInView, type CvExplanationView } from '@/domain/cv-explanation-sections';
 import './cv-career-explanation.css';
@@ -67,7 +68,7 @@ function CvPreview() {
         <span>I consent to sending only the selected skill names and language names to RunPod for a one-off explanation. No other CV details are shared. The result is not saved.</span>
       </label>
       <button type="button" className="btn btn-primary" disabled={!consent || !sendable || explainPhase === 'loading'} onClick={requestExplanation} data-testid="button-cvx-generate">
-        {explainPhase === 'loading' ? <Loader2 size={14} className="cvx-spin" aria-hidden="true" /> : <Sparkles size={14} aria-hidden="true" />}
+        {explainPhase === 'loading' ? <RaccoonLoader size="small" /> : <Sparkles size={14} aria-hidden="true" />}
         {explainPhase === 'loading' ? 'Generating explanation' : 'Generate AI career explanation'}
       </button>
       {!sendable && <p className="cvx-empty">Select at least one detail to generate an explanation.</p>}
@@ -79,6 +80,7 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
   const { explanation, explainPhase, explainError, requestExplanation, consent } = useCvSession();
   if (explainPhase === 'loading') return <div className="cvx-skeleton" role="status" aria-live="polite" data-testid="status-cvx-loading">
     <span className="sr-only">Generating your AI career explanation.</span>
+    <RaccoonLoader />
     {Array.from({ length: 4 }, (_, i) => <i key={i} style={{ width: `${92 - i * 14}%` }} />)}
   </div>;
   if (explainPhase === 'error') return <div className="cvx-error" role="alert" data-testid="error-cvx">
@@ -131,7 +133,7 @@ export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink
         <CandidateNameLabel testId="text-candidate-explanation" />
       </div>
     </div>
-    {phase === 'extracting' && <div className="cvx-skeleton" role="status"><span className="sr-only">Reading your CV.</span><i style={{ width: '80%' }} /><i style={{ width: '60%' }} /></div>}
+    {phase === 'extracting' && <div className="cvx-skeleton" role="status"><span className="sr-only">Reading your CV.</span><RaccoonLoader /><i style={{ width: '80%' }} /><i style={{ width: '60%' }} /></div>}
     {phase === 'error' && <p className="cvx-error" role="alert">{uploadError} No earlier CV details are kept.</p>}
     {(phase === 'idle' || (phase === 'error' && !draft)) && <div className="cvx-start" data-testid="state-cvx-empty">
       <strong>Upload a CV to start.</strong>
