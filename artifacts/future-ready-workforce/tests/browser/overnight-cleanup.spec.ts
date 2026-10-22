@@ -74,6 +74,13 @@ test('the recommendation label, comparison, and real progress remain while demo 
   expect(occupationBox!.y + occupationBox!.height).toBeLessThanOrEqual(comparisonBox!.y);
   await expect(page.getByTestId('text-methodology')).toHaveCount(0);
   await expect(page.getByTestId('panel-evidence')).toHaveCount(0);
+  for (const roleId of ['ai-operations', 'service-designer', 'learning-partner', 'workforce-analyst']) {
+    await expect(page.getByTestId(`card-career-${roleId}`)).toHaveCount(0);
+  }
+  await page.getByTestId('select-compare-a').selectOption('ai-operations');
+  await page.getByTestId('select-compare-b').selectOption('workforce-analyst');
+  await expect(page.getByTestId('card-compare-0')).toContainText('Responsible AI operations coordinator');
+  await expect(page.getByTestId('card-compare-1')).toContainText('Workforce insights analyst');
 
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Job Recommendations' })).toBeVisible();

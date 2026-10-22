@@ -2,14 +2,17 @@ import { expect, test } from '@playwright/test';
 
 test('explore does not retarget; build roadmap, complete, confirm, progress and reload persistence', async ({ page }) => {
   await page.goto('/careers');
-  await expect(page.getByTestId('card-career-workforce-analyst')).toBeVisible();
+  await expect(page.getByTestId('card-career-workforce-analyst')).toHaveCount(0);
   await page.goto('/profile?section=roadmap');
   await expect(page.getByTestId('progress-roadmap')).toBeVisible();
   await expect(page.getByTestId('text-plan-cost')).toBeVisible();
   await expect(page.getByTestId('panel-roadmap-target')).toContainText('No roadmap yet');
 
   await page.goto('/careers');
-  await page.getByTestId('button-build-roadmap-workforce-analyst').click();
+  await page.getByTestId('select-compare-a').selectOption('workforce-analyst');
+  await page.getByTestId('select-compare-b').selectOption('service-designer');
+  await expect(page.getByTestId('card-compare-0')).toContainText('Workforce insights analyst');
+  await page.getByTestId('button-build-roadmap-compare-0').click();
   await expect(page).toHaveURL(/section=roadmap/);
   await expect(page.getByTestId('text-roadmap-target')).toContainText('Workforce insights analyst');
   const before = Number(await page.getByTestId('progress-roadmap').getAttribute('aria-valuenow'));
