@@ -42,13 +42,13 @@ function AudienceSelect() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-  const { state, profile, storageWarning } = useWorkspace();
+  const { state, storageWarning } = useWorkspace();
   const { candidateName, phase } = useCvSession();
   const crumbs = pageTitle(location);
   const current = activeKey(location);
-  const displayName = phase === 'ready' ? candidateName || 'Unknown' : profile.occupation || 'Your profile';
+  const displayName = phase === 'ready' ? candidateName || 'Unknown' : 'Your profile';
   const initials = displayName.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('');
-  return <AiDrawerProvider><div className={`app-shell${phase === 'ready' ? ' has-candidate' : ''}`}>
+  return <AiDrawerProvider><div className="app-shell">
     <aside className="sidebar">
       <Link href="/dashboard" className="brand" data-testid="link-brand">
         <RaccoonArt name="logo" size={40} alt="FutureReady raccoon logo" className="brand-logo" testId="img-brand-logo" />
@@ -79,8 +79,5 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
     </div>
-    {phase === 'ready' && <aside className="candidate-badge" role="status" aria-atomic="true" data-testid="text-candidate-badge">
-      <span>Candidate:</span>{' '}<strong>{candidateName || 'Unknown'}</strong>
-    </aside>}
   </div></AiDrawerProvider>;
 }

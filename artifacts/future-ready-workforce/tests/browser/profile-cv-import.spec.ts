@@ -57,8 +57,8 @@ test('CV review adds confirmed skills without exposing or changing About You det
     mimeType: 'text/plain',
     buffer: Buffer.from('Synthetic test document; no personal data.'),
   });
-  await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Mina Tan');
   await expect(page.getByTestId('text-shell-name')).toHaveText('Mina Tan');
+  await expect(page.getByTestId('text-candidate-badge')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Your starting point.' })).toBeVisible();
   const review = page.getByTestId('dialog-cv-review');
   await expect(review).toBeVisible();
@@ -85,31 +85,21 @@ test('CV review adds confirmed skills without exposing or changing About You det
   await expect.poll(() => storedAdultProfile(page)).toMatchObject({ occupation: '', education: '' });
   await expect.poll(async () => (await storedAdultProfile(page))?.skills?.find(skill => skill.name === skillName))
     .toMatchObject({ name: skillName, level: 1 });
-  await page.screenshot({ path: '/tmp/candidate-badge-desktop.png' });
-  await page.setViewportSize({ width: 390, height: 844 });
-  const badgeBox = await page.getByTestId('text-candidate-badge').boundingBox();
-  expect(badgeBox).not.toBeNull();
-  expect(badgeBox!.x).toBeGreaterThanOrEqual(0);
-  expect(badgeBox!.x + badgeBox!.width).toBeLessThanOrEqual(390);
-  await page.screenshot({ path: '/tmp/candidate-badge-mobile.png' });
-  await page.setViewportSize({ width: 1280, height: 900 });
   await page.getByTestId('link-nav-market-and-ai-impact').click();
   await page.getByRole('tab', { name: 'AI Explanation', exact: true }).click();
-  await expect(page.getByTestId('text-candidate-explanation')).toContainText('Candidate: Mina Tan');
+  await expect(page.getByTestId('text-candidate-explanation')).toHaveCount(0);
   await page.getByTestId('link-nav-careers-and-jobs').click();
   await page.getByRole('tab', { name: 'Matched roles', exact: true }).click();
-  await expect(page.getByTestId('text-candidate-job-matching')).toContainText('Candidate: Mina Tan');
+  await expect(page.getByTestId('text-candidate-job-matching')).toHaveCount(0);
   await page.getByTestId('link-nav-my-profile').click();
   await page.getByTestId('input-profile-cv').setInputFiles({
     name: 'replacement-resume.txt',
     mimeType: 'text/plain',
     buffer: Buffer.from('Second synthetic CV without personal details.'),
   });
-  await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Nura Ismail');
   await expect(page.getByTestId('text-shell-name')).toHaveText('Nura Ismail');
   await expect(page.getByRole('heading', { name: 'Your starting point.' })).toBeVisible();
   await page.reload();
-  await expect(page.getByTestId('text-candidate-badge')).toHaveCount(0);
   await expect(page.getByTestId('text-shell-name')).toHaveText('Your profile');
   await expect(page.getByRole('heading', { name: 'Your starting point.' })).toBeVisible();
   await expect(page.getByTestId('input-occupation')).toHaveCount(0);
@@ -138,7 +128,6 @@ test('a successful parse without a detected name displays the explicit unknown f
     mimeType: 'text/plain',
     buffer: Buffer.from('Professional summary and work experience with details, but no personal name.'),
   });
-  await expect(page.getByTestId('text-candidate-badge')).toContainText('Candidate: Unknown');
   await expect(page.getByTestId('text-shell-name')).toHaveText('Unknown');
   await expect(page.getByRole('heading', { name: 'Your starting point.' })).toBeVisible();
 });
