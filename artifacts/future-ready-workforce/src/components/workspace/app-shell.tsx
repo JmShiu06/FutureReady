@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { audienceLabels } from '@/domain/demo-data';
-import { audiences } from '@/domain/storage';
+import { selectableAudiences } from '@/domain/storage';
 import type { Audience } from '@/domain/types';
 import { AiDrawerProvider } from '@/components/ai-drawer';
 
@@ -34,7 +34,7 @@ function AudienceSelect() {
   const { state, setAudience } = useWorkspace();
   return <label className="top-audience-wrap"><span>Viewing as</span>
     <select id="top" className="top-audience" value={state.audience} onChange={e => setAudience(e.target.value as Audience)} aria-label="Switch audience workspace" data-testid="select-audience-top">
-      {audiences.map(a => <option key={a} value={a}>{audienceLabels[a]}</option>)}
+      {selectableAudiences.map(a => <option key={a} value={a}>{audienceLabels[a]}</option>)}
     </select></label>;
 }
 

@@ -72,9 +72,18 @@ test('defensive parsing handles malformed storage, partial profiles and schema v
   assert.equal(recovered.state.profiles.graduate.goals, state.profiles.graduate.goals);
   assert.deepEqual(recovered.state.profiles.adult, blankProfile('adult'));
 });
-test('storage round trip preserves all audience profiles, targets and per-audience completion', () => {
+test('removed audiences fall back to working adults without deleting saved profiles', () => {
   const state = defaultWorkspace();
   state.audience = 'education';
+  state.profiles.hr.budgetMYR = 800;
+  state.profiles.education.goals = 'Keep this saved education profile';
+  const loaded = parseWorkspace(JSON.stringify(state));
+  assert.equal(loaded.state.audience, 'adult');
+  assert.equal(loaded.state.profiles.hr.budgetMYR, 800);
+  assert.equal(loaded.state.profiles.education.goals, 'Keep this saved education profile');
+});
+test('storage round trip preserves all audience profiles, targets and per-audience completion', () => {
+  const state = defaultWorkspace();
   state.profiles.hr.budgetMYR = 800;
   state.completion['adult:service-designer:facilitation'] = true;
   // Legacy progress without a starting snapshot gets one on load (covered in the roadmap tests).

@@ -3,11 +3,11 @@ name: Frontend product and evidence boundaries
 description: FutureReady's Aiversecity scope, audience separation and trust requirements for demonstration features.
 ---
 
-FutureReady Workforce targets the Aiversecity Future-Ready Workforce domain: working adults, graduates/career switchers, HR/L&D managers and University/TVET career centres.
+The visible "Viewing as" audience selector offers working adults and graduates/career switchers only. Legacy HR and University/TVET profiles and progress remain in local storage for compatibility, but are not selectable.
 
-**Why:** The user explicitly identified these four audiences and requires a hackathon frontend before later backend, dataset, AI and database milestones.
+**Why:** The user explicitly asked to remove HR/L&D managers and TVET career centres from the "Viewing as" selector.
 
-**How to apply:** Keep audience demo profiles and learning progress isolated. Preserve the React/TypeScript, Vite and Wouter stack. Do not change the Express backend, schemas or deployment configuration for frontend-only requests.
+**How to apply:** Keep the selector limited to working adults and graduates/career switchers. When loading saved HR or education selection, show Working Adults while retaining all legacy audience profiles and progress. Preserve the React/TypeScript, Vite and Wouter stack. Do not change the Express backend, schemas or deployment configuration for frontend-only requests.
 
 The user explicitly approved a light, macOS-inspired site-wide direction with white and gray surfaces, subtle glass navigation and soft electric-blue accents. This supersedes the previous warm palette for the FutureReady app; FPS canvas references remain separate.
 

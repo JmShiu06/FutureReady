@@ -5,6 +5,7 @@ import { officialPlanId } from './official-roadmap';
 
 export const STORAGE_KEY = 'frw-demo-workspace-v1';
 export const audiences = ['adult', 'graduate', 'hr', 'education'] as const;
+export const selectableAudiences = ['adult', 'graduate'] as const;
 const boundedText = z.string().trim().max(120);
 export const skillSchema = z.object({
   name: z.string().trim().min(1).max(60), level: z.number().int().min(1).max(5), category: boundedText,
@@ -51,8 +52,9 @@ export function parseWorkspace(raw: string | null): { state: WorkspaceState; war
     const saved = value as Record<string, unknown>;
     if (saved.version !== 1) throw new Error();
     let recovered = false;
-    if (audiences.includes(saved.audience as Audience)) fallback.audience = saved.audience as Audience;
-    else recovered = true;
+    if (selectableAudiences.includes(saved.audience as typeof selectableAudiences[number])) {
+      fallback.audience = saved.audience as typeof selectableAudiences[number];
+    } else if (!audiences.includes(saved.audience as Audience)) recovered = true;
     for (const audience of audiences) {
       const profiles = saved.profiles as Record<string, unknown> | undefined;
       const parsed = profileSchema.safeParse(profiles?.[audience]);
