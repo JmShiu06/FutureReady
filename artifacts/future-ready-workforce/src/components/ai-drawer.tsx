@@ -10,7 +10,9 @@ export type AiRequest = {
   feature: AiExplanationInput['feature'];
   jobId?: string;
   goal?: number;
+  cvDetectedSkill?: string;
   onApplySkills?: (skills: ProfileSkill[]) => string | undefined;
+  onClose?: () => void;
 };
 
 type Ctx = { open: (request: AiRequest) => void; close: () => void };
@@ -35,11 +37,15 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
   const { state } = useWorkspace();
 
   const close = useCallback(() => {
+    const closedRequest = request;
     setRequest(null);
     const target = returnFocus.current;
     returnFocus.current = null;
-    if (target && document.contains(target)) requestAnimationFrame(() => target.focus());
-  }, []);
+    requestAnimationFrame(() => {
+      if (target && document.contains(target)) target.focus();
+      closedRequest?.onClose?.();
+    });
+  }, [request]);
   const open = useCallback((next: AiRequest) => {
     if (document.activeElement instanceof HTMLElement) returnFocus.current = document.activeElement;
     setRequest(next);
@@ -81,7 +87,7 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
           <button type="button" className="icon-button" onClick={close} aria-label="Close AI explanation" data-autofocus data-testid="button-close-ai-drawer"><X size={16} /></button>
         </header>
         <div className="ai-drawer-body">
-          <AiExplanationPanel key={nonce} embedded feature={request.feature} jobId={request.jobId} goal={request.goal} onApplySkills={request.onApplySkills} />
+          <AiExplanationPanel key={nonce} embedded feature={request.feature} jobId={request.jobId} goal={request.goal} cvDetectedSkill={request.cvDetectedSkill} onApplySkills={request.onApplySkills} />
         </div>
       </div>
     </div>}

@@ -10,7 +10,14 @@ import type { AiExplanationInputSampleId } from './aiExplanationInputSampleId';
 
 export interface AiExplanationInput {
   feature: AiExplanationInputFeature;
-  sampleId: AiExplanationInputSampleId;
+  /** Required for every feature except CV Analysis. */
+  sampleId?: AiExplanationInputSampleId;
+  /**
+     * One canonical skill detected in a CV and explicitly selected for explanation. Only valid with the cv-analysis feature.
+     * @minLength 1
+     * @maxLength 100
+     */
+  cvDetectedSkill?: string;
   /**
      * @minLength 1
      * @maxLength 100

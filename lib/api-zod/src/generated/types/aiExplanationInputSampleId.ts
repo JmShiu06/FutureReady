@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+/**
+ * Required for every feature except CV Analysis.
+ */
 export type AiExplanationInputSampleId = typeof AiExplanationInputSampleId[keyof typeof AiExplanationInputSampleId];
 
 

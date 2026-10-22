@@ -35,11 +35,11 @@ AI exposure must be assessed at the task level from user-selected work character
 **How to apply:** Describe possible task automation or assistance only from the user's own task details. A sourced exposure model or saved assessment history requires separate evidence and explicit scope.
 
 ## Runpod AI skill explanations
-Runpod explanations use server-owned synthetic profiles only, requested explicitly by a feature name and fixed sample ID, optionally with a public listing ID or SDG selector. This applies across career, CV, roadmap, twin, task support, market, job-fit, SDG and profile-suggestion features. Real saved profile data, skill selections, CV files and extracted CV text must not be sent. Public evidence is selected on the server, never fabricated by the model.
+Runpod explanations use server-owned synthetic profiles for general features, requested explicitly by feature and fixed sample ID, optionally with a public listing ID or SDG selector. The user has also approved one narrow exception for CV analysis: when explicitly invoked from CV review, it may receive one canonical detected skill name only. Never send CV files, extracted text, proficiency ratings, other detected skills, or saved profile data. Public evidence is selected on the server, never fabricated by the model.
 
-**Why:** The user expanded the shared Qwen3 integration but explicitly required synthetic profiles only, superseding the earlier permission to send selected real skill names and task traits.
+**Why:** The user expanded the shared Qwen3 integration but explicitly required synthetic profiles only. They later consented specifically to sending a single CV-detected skill name for a general explanation, and to the necessary API contract change.
 
-**How to apply:** Build demonstration context on the server; reject arbitrary profile/text fields at the API boundary. Preserve matching algorithms, official datasets, team features and Replit configuration. Do not let model prose become scores, forecasts, evidence or state updates.
+**How to apply:** Build synthetic demonstration context on the server and reject arbitrary profile/text fields at the API boundary. For the CV exception, accept only an exact canonical skill from the existing detector catalogue and build a context containing that name alone. Preserve matching algorithms, official datasets, team features and Replit configuration. Do not let model prose become scores, forecasts, evidence or state updates.
 
 AI profile suggestions are the only approved addition workflow: users must explicitly confirm each skill, self-rate its proficiency and then separately save the profile. An AI suggestion cannot overwrite an existing skill or its level.
 
@@ -70,4 +70,4 @@ Do not reintroduce separate duplicate CV-analysis, job-recommendation, SDG-explo
 
 **Why:** The user explicitly requested five primary destinations to reduce repetition and navigation complexity while preserving existing capabilities.
 
-**How to apply:** Keep the demo disclaimer in the shared top banner rather than repeating it on every card or page; retain source-specific evidence caveats and CV privacy instructions. A single audience selector controls the shared workspace. Learning roadmap has its own primary destination, while Digital Twin progress remains profile-related. Route reorganizations must preserve old links and saved profile/roadmap state without changing the API contract or CV privacy boundary.
+**How to apply:** Keep the demo disclaimer in the shared top banner rather than repeating it on every card or page; retain source-specific evidence caveats and CV privacy instructions. A single audience selector controls the shared workspace. Learning roadmap has its own primary destination, while Digital Twin progress remains profile-related. Route reorganizations must preserve old links and saved profile/roadmap state; API changes require explicit approval, and CV privacy boundaries remain in force.

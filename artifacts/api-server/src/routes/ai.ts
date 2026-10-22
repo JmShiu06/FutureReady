@@ -44,13 +44,16 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
   res.setHeader("Cache-Control", "no-store");
   const parsed = CreateAiExplanationBody.strict().safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "Choose a supported AI feature and synthetic sample. Profile data and CV text are not accepted." });
+    res.status(400).json({ error: "Choose a supported feature. CV Analysis accepts one detected skill name only; other features require a fictional sample." });
     return;
   }
   const input = parsed.data;
-  if ((input.feature === "job-fit" ? !input.jobId : input.jobId !== undefined) ||
+  if ((input.feature === "cv-analysis"
+      ? input.sampleId !== undefined || input.cvDetectedSkill === undefined
+      : input.sampleId === undefined || input.cvDetectedSkill !== undefined) ||
+      (input.feature === "job-fit" ? !input.jobId : input.jobId !== undefined) ||
       (input.feature === "sdg-contribution" ? input.goal === undefined : input.goal !== undefined)) {
-    res.status(400).json({ error: "Choose a listing ID only for Job Fit, or a goal only for SDG Contribution." });
+    res.status(400).json({ error: "CV Analysis needs only a detected skill name. Other features need a fictional sample; choose a listing only for Job Fit or a goal only for SDG Contribution." });
     return;
   }
 
@@ -60,7 +63,7 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
     res.status(429).json({ error: "Too many AI explanation requests. Please wait a minute and try again." });
     return;
   }
-  const key = JSON.stringify([input.feature, input.sampleId, input.jobId ?? null, input.goal ?? null]);
+  const key = JSON.stringify([input.feature, input.sampleId ?? null, input.jobId ?? null, input.goal ?? null, input.cvDetectedSkill ?? null]);
   let pending = inFlight.get(key);
   if (!pending && activeRequests >= MAX_ACTIVE_REQUESTS) {
     res.setHeader("Retry-After", "5");
@@ -78,7 +81,7 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
         explanation: parsed.explanation,
         ...(parsed.suggestions ? { suggestions: parsed.suggestions } : {}),
         sampleLabel: example.sampleLabel, contextSummary: parsed.contextSummary,
-        evidence: parsed.evidence, synthetic: true, finalAnswerOnly: true,
+        evidence: parsed.evidence, synthetic: example.synthetic, finalAnswerOnly: true,
       });
     }).finally(() => {
       activeRequests -= 1;

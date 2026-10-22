@@ -152,6 +152,9 @@ export const AiExplanationInputFeature = {
   'profile-skills': 'profile-skills',
 } as const;
 
+/**
+ * Required for every feature except CV Analysis.
+ */
 export type AiExplanationInputSampleId = typeof AiExplanationInputSampleId[keyof typeof AiExplanationInputSampleId];
 
 
@@ -162,7 +165,14 @@ export const AiExplanationInputSampleId = {
 
 export interface AiExplanationInput {
   feature: AiExplanationInputFeature;
-  sampleId: AiExplanationInputSampleId;
+  /** Required for every feature except CV Analysis. */
+  sampleId?: AiExplanationInputSampleId;
+  /**
+     * One canonical skill detected in a CV and explicitly selected for explanation. Only valid with the cv-analysis feature.
+     * @minLength 1
+     * @maxLength 100
+     */
+  cvDetectedSkill?: string;
   /**
      * @minLength 1
      * @maxLength 100
@@ -204,7 +214,7 @@ export interface AiExplanation {
   explanation: string;
   sampleLabel: string;
   contextSummary: string[];
-  synthetic: true;
+  synthetic: boolean;
   finalAnswerOnly: true;
   evidence?: AiEvidence[];
   /** @maxItems 4 */

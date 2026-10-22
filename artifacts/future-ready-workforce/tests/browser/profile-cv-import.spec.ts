@@ -15,6 +15,7 @@ async function storedAdultProfile(page: Page) {
 
 test('CV review adds confirmed skills without exposing or changing About You details', async ({ page }) => {
   const skillName = 'CV-reviewed skill';
+  const aiRequests: unknown[] = [];
   await page.route('**/api/career/cv-skills', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
@@ -24,6 +25,21 @@ test('CV review adds confirmed skills without exposing or changing About You det
       profileSuggestions: { occupation: 'Must not be displayed or applied', education: 'Private field' },
     }),
   }));
+  await page.route('**/api/ai/explanations', async route => {
+    aiRequests.push(JSON.parse(route.request().postData() ?? '{}'));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        explanation: 'Python is commonly used to automate data preparation and build scripts.',
+        sampleLabel: 'CV-detected skill',
+        contextSummary: ['Only one detected skill name was sent.'],
+        evidence: [],
+        synthetic: false,
+        finalAnswerOnly: true,
+      }),
+    });
+  });
 
   await page.goto('/my-profile');
   await expect(page.getByTestId('input-occupation')).toHaveCount(0);
@@ -39,6 +55,15 @@ test('CV review adds confirmed skills without exposing or changing About You det
   await expect(review).toBeVisible();
   await expect(review).toContainText(skillName);
   await expect(review).not.toContainText(/About You|Must not be displayed|Private field/i);
+  await review.getByTestId('button-ai-explain-cv-skill-0').click();
+  await expect(review).not.toBeVisible();
+  await expect(page.getByTestId('drawer-ai')).toBeVisible();
+  await expect(page.getByTestId('panel-ai-cv-analysis')).toContainText(skillName);
+  await page.getByTestId('button-ai-demo-cv-analysis').click();
+  await expect(page.getByTestId('result-ai-cv-analysis')).toContainText('commonly used');
+  expect(aiRequests).toEqual([{ feature: 'cv-analysis', cvDetectedSkill: skillName }]);
+  await page.getByTestId('button-close-ai-drawer').click();
+  await expect(review).toBeVisible();
 
   const level = page.getByTestId('cv-skill-level-0-range');
   await level.focus();

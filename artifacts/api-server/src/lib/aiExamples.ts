@@ -45,10 +45,6 @@ export function syntheticExplanationContext(feature: AiFeature, sampleId: AiSamp
     exactAndRelatedMappings: result.skillMappings,
     deterministicMatch: match,
   };
-  if (feature === "cv-analysis") {
-    context.cvInput = "Fictional reviewed skill detections only; no document text, name, contact details, or real CV.";
-    summary.push("Fictional reviewed CV skills only; no uploaded CV or text is sent.");
-  }
   if (feature === "digital-twin") {
     context.fictionalConfirmation = { completedMilestoneOnlyChangesProgress: true, separatelyConfirmedSkill: sample.confirmedSkill, after };
     summary.push(`Fictional separate skill confirmation: ${sample.confirmedSkill}; no real profile changes.`);

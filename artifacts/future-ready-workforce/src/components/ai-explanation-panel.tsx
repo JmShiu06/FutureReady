@@ -7,7 +7,7 @@ import type { ProfileSkill } from '@/domain/types';
 type Feature = AiExplanationInput['feature'];
 export const aiFeatureTitles: Record<Feature, string> = {
   'career-explorer': 'Career Explorer',
-  'cv-analysis': 'CV Analysis',
+  'cv-analysis': 'CV skill explanation',
   'learning-roadmap': 'Learning Roadmap',
   'digital-twin': 'Digital Twin',
   'task-exposure': 'AI task support',
@@ -18,7 +18,7 @@ export const aiFeatureTitles: Record<Feature, string> = {
 };
 export const aiFeatureActions: Record<Feature, string> = {
   'career-explorer': 'Explain My Career Match with AI',
-  'cv-analysis': 'Analyse with AI',
+  'cv-analysis': 'Explain this detected skill with AI',
   'learning-roadmap': 'Explain My Learning Plan with AI',
   'digital-twin': 'Explain AI Scenarios',
   'task-exposure': 'Explain task support with AI',
@@ -29,7 +29,7 @@ export const aiFeatureActions: Record<Feature, string> = {
 };
 const contexts: Record<Feature, string> = {
   'career-explorer': 'Fictional skills, existing exact/related matches and separately labelled TalentCorp/O*NET occupation evidence.',
-  'cv-analysis': 'Fixed fictional CV excerpts, locally detected skills and existing dataset mappings. Never your uploaded CV.',
+  'cv-analysis': 'Only one skill name detected in your CV. The file, extracted text, proficiency and other profile data stay out of the AI request.',
   'learning-roadmap': 'Fictional gaps, beginner practice sequence, available study time and a free-practice budget.',
   'digital-twin': 'Fictional before/after overlap and explicit moderate/fast adoption workshop assumptions—not forecasts.',
   'task-exposure': 'Fictional task characteristics, not a skill-replacement prediction.',
@@ -39,13 +39,13 @@ const contexts: Record<Feature, string> = {
   'profile-skills': 'Fictional background and career goal; candidate skills come from existing dataset gaps. Nothing is added automatically.',
 };
 
-/** Deliberately independent of workspace/profile state: only fixed example IDs leave the browser. */
-export function AiExplanationPanel({ feature, jobId, goal, onApplySkills, embedded = false }: {
-  feature: Feature; jobId?: string; goal?: number; embedded?: boolean;
+/** General features use fixed samples; CV Analysis receives one explicitly selected detected skill name only. */
+export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onApplySkills, embedded = false }: {
+  feature: Feature; jobId?: string; goal?: number; cvDetectedSkill?: string; embedded?: boolean;
   onApplySkills?: (skills: ProfileSkill[]) => string | undefined;
 }) {
   const selectId = useId();
-  const [sampleId, setSampleId] = useState<AiExplanationInput['sampleId']>('data-starter');
+  const [sampleId, setSampleId] = useState<NonNullable<AiExplanationInput['sampleId']>>('data-starter');
   const [result, setResult] = useState<AiExplanation | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ export function AiExplanationPanel({ feature, jobId, goal, onApplySkills, embedd
     setResult(null);
     setError('');
     setLoading(false);
-  }, [feature, jobId, goal]);
+  }, [feature, jobId, goal, cvDetectedSkill]);
 
   const explain = async () => {
     if (controller.current) return;
@@ -70,7 +70,8 @@ export function AiExplanationPanel({ feature, jobId, goal, onApplySkills, embedd
     setError('');
     try {
       const response = await createAiExplanation({
-        feature, sampleId,
+        feature,
+        ...(feature === 'cv-analysis' ? { cvDetectedSkill } : { sampleId }),
         ...(feature === 'job-fit' && jobId ? { jobId } : {}),
         ...(feature === 'sdg-contribution' && goal !== undefined ? { goal } : {}),
       }, { signal: request.signal });
@@ -90,13 +91,16 @@ export function AiExplanationPanel({ feature, jobId, goal, onApplySkills, embedd
 
   return <section className={embedded ? 'ai-demo-panel ai-demo-embedded' : 'panel panel-pad ai-demo-panel'} aria-label={`${aiFeatureTitles[feature]} AI explanation`} data-testid={`panel-ai-${feature}`}>
     {!embedded && <h2 className="ai-demo-title"><Sparkles size={17} aria-hidden="true" /> {aiFeatureTitles[feature]} · Qwen3 explanation</h2>}
-    <p className="muted small">Only server-owned fictional learner data and selected public evidence go to RunPod—not your saved profile or CV. AI cannot change matches, official data, skill levels, roadmap progress, or team records. Profile suggestions require separate confirmation.</p>
+    <p className="muted small">{feature === 'cv-analysis'
+      ? 'Only this detected skill name is sent to RunPod. Your CV file, extracted text, proficiency and other profile data are not sent. The explanation is general and does not verify your skill level.'
+      : 'Only server-owned fictional learner data and selected public evidence go to RunPod—not your saved profile or CV. AI cannot change matches, official data, skill levels, roadmap progress, or team records. Profile suggestions require separate confirmation.'}</p>
+    {feature === 'cv-analysis' && cvDetectedSkill && <div className="ai-context-note"><strong>Detected skill:</strong> {cvDetectedSkill}</div>}
     <p className="ai-context-note"><strong>Evidence used:</strong> {contexts[feature]}</p>
     <div className="ai-demo-controls">
-      {!['market-trends', 'sdg-contribution'].includes(feature) && <>
+      {!['market-trends', 'sdg-contribution', 'cv-analysis'].includes(feature) && <>
       <label htmlFor={selectId}>Fictional sample</label>
       <select id={selectId} value={sampleId} disabled={loading} onChange={event => {
-        setSampleId(event.target.value as AiExplanationInput['sampleId']);
+        setSampleId(event.target.value as NonNullable<AiExplanationInput['sampleId']>);
         setResult(null);
         setError('');
       }} data-testid={`select-ai-sample-${feature}`}>
@@ -104,7 +108,7 @@ export function AiExplanationPanel({ feature, jobId, goal, onApplySkills, embedd
         <option value="operations-starter">Operations starter — coordination, research, storytelling</option>
       </select>
       </>}
-      <button type="button" className="btn btn-secondary" disabled={loading} onClick={() => void explain()} data-testid={`button-ai-demo-${feature}`}>
+      <button type="button" className="btn btn-secondary" disabled={loading || (feature === 'cv-analysis' && !cvDetectedSkill)} onClick={() => void explain()} data-testid={`button-ai-demo-${feature}`}>
         {loading ? 'Generating explanation…' : aiFeatureActions[feature]}
       </button>
     </div>

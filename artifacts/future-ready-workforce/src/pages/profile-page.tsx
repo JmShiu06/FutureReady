@@ -97,11 +97,6 @@ export default function ProfilePage() {
     </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    <div className="tab-intro">
-      <p className="muted small">CV explanations use a fictional example, never your uploaded document.</p>
-      <AiExplainButton request={{ feature: 'cv-analysis' }} label="Explain CV analysis with AI" />
-    </div>
-
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
         <div className="panel panel-pad">

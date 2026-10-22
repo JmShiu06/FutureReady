@@ -122,12 +122,12 @@ paths:
     post:
       operationId: createAiExplanation
       tags: [ai]
-      summary: Explain a server-owned synthetic career example
+      summary: Explain a synthetic example or one CV-detected skill
       description: >
-        Accepts only a feature, fixed synthetic sample ID and optional evidence selectors. Context is built
-        on the server using fictional profiles and the unchanged dataset matcher.
-        No real profile, CV text, or uploaded document is accepted. Qwen thinking
-        mode is disabled and responses with reasoning traces are rejected.
+        For general features, accepts a fixed synthetic sample ID and optional evidence selectors. CV Analysis
+        accepts only one skill name returned by the CV detector and chosen in the review UI. The uploaded file,
+        extracted text, proficiency, other detected skills and saved profile are never sent. Context is built
+        on the server. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
       requestBody:
         required: true
         content:
@@ -142,7 +142,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/AiExplanation"
         "400":
-          description: Invalid feature, sample or evidence selector
+          description: Invalid feature, sample, CV skill or evidence selector
           content:
             application/json:
               schema:
@@ -837,7 +837,7 @@ components:
     AiExplanationInput:
       type: object
       additionalProperties: false
-      required: [feature, sampleId]
+      required: [feature]
       properties:
         feature:
           type: string
@@ -845,6 +845,12 @@ components:
         sampleId:
           type: string
           enum: [data-starter, operations-starter]
+          description: Required for every feature except CV Analysis.
+        cvDetectedSkill:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: One canonical skill detected in a CV and explicitly selected for explanation. Only valid with the cv-analysis feature.
         jobId:
           type: string
           minLength: 1
@@ -870,7 +876,6 @@ components:
             type: string
         synthetic:
           type: boolean
-          enum: [true]
         finalAnswerOnly:
           type: boolean
           enum: [true]

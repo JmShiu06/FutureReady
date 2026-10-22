@@ -412,8 +412,8 @@ export const getCreateAiExplanationUrl = () => {
 }
 
 /**
- * Accepts only a feature, fixed synthetic sample ID and optional evidence selectors. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
- * @summary Explain a server-owned synthetic career example
+ * For general features, accepts a fixed synthetic sample ID and optional evidence selectors. CV Analysis accepts only one skill name returned by the CV detector and chosen in the review UI. The uploaded file, extracted text, proficiency, other detected skills and saved profile are never sent. Context is built on the server. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
+ * @summary Explain a synthetic example or one CV-detected skill
  */
 export const createAiExplanation = async (aiExplanationInput: AiExplanationInput, options?: Parameters<typeof customFetch>[1]): Promise<AiExplanation> => {
 
@@ -479,7 +479,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CreateAiExplanationMutationVariables = {data: BodyType<AiExplanationInput>}
 
     /**
- * @summary Explain a server-owned synthetic career example
+ * @summary Explain a synthetic example or one CV-detected skill
  */
 export const useCreateAiExplanation = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAiExplanation>>, TError,CreateAiExplanationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}

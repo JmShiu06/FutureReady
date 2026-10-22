@@ -1,16 +1,10 @@
 import { z } from "zod";
 import type { AiEvidence, AiSkillSuggestion } from "@workspace/api-zod";
-import { careerDataset } from "./careerMatcher";
-import { detectSkills } from "./cvSkillExtractor";
 import { parseSkillSuggestions, validateQualitativeAnswer, type prepareAiContext } from "./aiEvidence";
 
 type PreparedContext = Awaited<ReturnType<typeof prepareAiContext>>;
 const prose = z.string().trim().min(1).max(2400).refine(text => !/^(?:\{|\[)|```/.test(text), "Expected explanation prose, not JSON or code fences.");
 const reason = z.string().trim().min(1).max(240);
-const cvOutput = z.object({
-  explanation: prose,
-  skills: z.array(z.object({ skill: z.string().min(1).max(60), evidence: z.string().min(1).max(240) }).strict()).max(12),
-}).strict();
 const roadmapOutput = z.object({
   explanation: prose,
   resources: z.array(z.object({ resourceId: z.string().min(1).max(120), reason }).strict()).max(6),
@@ -28,22 +22,6 @@ export function parseFeatureAnswer(text: string, context: PreparedContext): {
   if (context.output === "profile-skills") {
     suggestions = parseSkillSuggestions(text, context.allowedSuggestions);
     explanation = "Review these AI-suggested skills for the fictional career goal. Confirm each skill and self-rate proficiency before adding it to your draft.";
-  } else if (context.output === "cv-skills") {
-    const result = cvOutput.parse(JSON.parse(text));
-    const cv = context.context.fictionalCv as { text: string };
-    const allowed = context.context.canonicalCandidates as string[];
-    const seen = new Set<string>();
-    for (const candidate of result.skills) {
-      if (!careerDataset.allSkills.includes(candidate.skill) || !allowed.includes(candidate.skill)
-        || seen.has(candidate.skill) || !cv.text.includes(candidate.evidence)
-        || !detectSkills(candidate.evidence).includes(candidate.skill)) {
-        throw new Error("Unsupported canonical skill or CV evidence.");
-      }
-      seen.add(candidate.skill);
-      extra.push(`AI candidate (not proficiency): ${candidate.skill}; exact fictional CV evidence: "${candidate.evidence}"`);
-    }
-    if (!result.skills.length) extra.push("No supported AI skill candidates returned; the local extraction remains available.");
-    explanation = result.explanation;
   } else if (context.output === "resource-references") {
     const result = roadmapOutput.parse(JSON.parse(text));
     const seen = new Set<string>();

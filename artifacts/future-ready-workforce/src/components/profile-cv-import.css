@@ -50,7 +50,10 @@
 .profile-cv-suggestion small { color:#8092a5; font-size:8px; white-space:nowrap; }
 .profile-cv-dialog-skills { display:grid; gap:8px; max-height:38vh; overflow:auto; margin-top:3px; padding:1px 3px 1px 1px; }
 .profile-cv-dialog-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(195px,225px); align-items:center; gap:13px; padding:10px 11px; border:1px solid #e1e8f0; border-radius:10px; background:#fff; }
+.profile-cv-dialog-skill-main { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
 .profile-cv-dialog-skill-name { display:flex; align-items:center; gap:8px; min-width:0; color:#344860; }
+.profile-cv-dialog-skill-name strong { min-width:0; }
+.cv-skill-ai-button { flex:none; white-space:nowrap; }
 .profile-cv-dialog-skill-name input { width:15px;height:15px; flex:none; accent-color:#1674d1; }
 .profile-cv-dialog-row strong { color:#344860; font-size:11px; overflow-wrap:anywhere; }
 .profile-cv-dialog-row .chili-slider { justify-self:start; display:grid; gap:3px; }

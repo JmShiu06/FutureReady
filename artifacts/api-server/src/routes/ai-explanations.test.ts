@@ -17,7 +17,6 @@ const marketFixture = {
 function mockReply(input: Parameters<typeof generateLlmExplanation>[0]) {
   const explanation = "Synthetic final answer.";
   switch (input.context.task) {
-    case "cv-analysis": return { explanation: JSON.stringify({ explanation, skills: [] }) };
     case "learning-roadmap": return { explanation: JSON.stringify({ explanation, resources: [] }) };
     case "market-trends": return { explanation: JSON.stringify({ explanation, sourceIds: ["dosm:lfs_month"] }) };
     case "profile-skills": return { explanation: JSON.stringify({ suggestions: [{ skill: (input.context.allowedSuggestions as string[])[0], rationale: "Useful for the fictional goal." }] }) };
@@ -25,7 +24,7 @@ function mockReply(input: Parameters<typeof generateLlmExplanation>[0]) {
   }
 }
 function requestFor(feature: PromptFeature) {
-  return { feature, sampleId: "data-starter", ...(feature === "job-fit" ? { jobId: "demo-data-analyst" } : {}), ...(feature === "sdg-contribution" ? { goal: 4 } : {}) };
+  return { feature, ...(feature === "cv-analysis" ? { cvDetectedSkill: "python" } : { sampleId: "data-starter" }), ...(feature === "job-fit" ? { jobId: "demo-data-analyst" } : {}), ...(feature === "sdg-contribution" ? { goal: 4 } : {}) };
 }
 
 async function testServer(provider: typeof generateLlmExplanation, run: (post: (body: unknown, path?: string) => Promise<Response>) => Promise<void>) {
@@ -51,7 +50,9 @@ it("rejects arbitrary profiles, CV text, extra fields, and unknown features befo
     for (const body of [
       {}, { feature: "other", sampleId: "data-starter" },
       { feature: "career-explorer", sampleId: "real-person" },
-      { feature: "cv-analysis", sampleId: "data-starter", resume_text: "Do not send this" },
+      { feature: "cv-analysis", cvDetectedSkill: "python", resume_text: "Do not send this" },
+      { feature: "cv-analysis", sampleId: "data-starter", cvDetectedSkill: "python" },
+      { feature: "cv-analysis", sampleId: "data-starter" },
       { feature: "digital-twin", sampleId: "data-starter", profile: { name: "Do not send this" } },
       { feature: "career-explorer", sampleId: "data-starter", goal: 4 },
       { feature: "job-fit", sampleId: "data-starter" },
@@ -77,7 +78,7 @@ it("uses validated structured output for profile suggestions and refuses unsuppo
       { feature: "profile-skills", sampleId: "data-starter" },
     ]) {
       const response = await post(body);
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 200, `${feature}: ${JSON.stringify(await response.clone().json())}`);
       const result = CreateAiExplanationResponse.parse(await response.json());
       assert.ok(result.evidence?.length);
       if (body.feature === "profile-skills") assert.equal(result.suggestions?.length, 1);
@@ -92,7 +93,7 @@ it("deduplicates identical in-flight requests rather than calling the GPU twice"
   const gate = new Promise<void>(r => { release = r; });
   const started = new Promise<void>(r => { notify = r; });
   await testServer(async input => { calls++; notify(); await gate; return mockReply(input); }, async post => {
-    const input = { feature: "cv-analysis", sampleId: "data-starter" };
+    const input = { feature: "cv-analysis", cvDetectedSkill: "python" };
     const first = post(input);
     await started;
     const second = post(input);
@@ -123,17 +124,18 @@ it("handles Pod failures safely without mutating state or exposing provider inte
 
 it("connects every existing feature to its prompt and validates the unchanged response envelope", async () => {
   for (const feature of Object.keys(FEATURE_PROMPTS) as PromptFeature[]) await testServer(async input => {
-    assert.equal(input.context.synthetic, true);
+    assert.equal(input.context.synthetic, feature !== "cv-analysis");
     assert.equal("profile" in input.context, false);
-    assert.equal(input.context.task, feature);
+    if (feature === "cv-analysis") assert.deepEqual(input.context, { detectedSkill: "python" });
+    else assert.equal(input.context.task, feature);
     assert.equal(input.json, FEATURE_PROMPTS[feature].output !== "text");
     return mockReply(input);
   }, async post => {
       const response = await post(requestFor(feature));
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 200, `${feature}: ${JSON.stringify(await response.clone().json())}`);
       assert.equal(response.headers.get("cache-control"), "no-store");
       const body = CreateAiExplanationResponse.parse(await response.json());
-      assert.equal(body.synthetic, true);
+      assert.equal(body.synthetic, feature !== "cv-analysis");
       assert.equal(body.finalAnswerOnly, true);
       if (feature !== "profile-skills") assert.equal(body.explanation, "Synthetic final answer.");
   });
@@ -142,8 +144,8 @@ it("connects every existing feature to its prompt and validates the unchanged re
 it("limits repeated requests before the provider can incur further cost", async () => {
   let calls = 0;
   await testServer(async input => { calls++; return mockReply(input); }, async post => {
-    for (let i = 0; i < 8; i++) assert.equal((await post({ feature: "cv-analysis", sampleId: "data-starter" })).status, 200);
-    const blocked = await post({ feature: "cv-analysis", sampleId: "data-starter" });
+    for (let i = 0; i < 8; i++) assert.equal((await post({ feature: "cv-analysis", cvDetectedSkill: "python" })).status, 200);
+    const blocked = await post({ feature: "cv-analysis", cvDetectedSkill: "python" });
     assert.equal(blocked.status, 429);
     assert.equal(blocked.headers.get("retry-after"), "60");
     assert.equal(calls, 8);
@@ -183,7 +185,7 @@ it("limits concurrent model calls and releases the slots after completion", asyn
     const second = post({ feature: "digital-twin", sampleId: "data-starter" });
     await started;
     try {
-      assert.equal((await post({ feature: "cv-analysis", sampleId: "data-starter" })).status, 503);
+      assert.equal((await post({ feature: "cv-analysis", cvDetectedSkill: "python" })).status, 503);
     } finally { release(); }
     assert.equal((await first).status, 200);
     assert.equal((await second).status, 200);

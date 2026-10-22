@@ -5,13 +5,12 @@ import { syntheticExplanationContext } from "./aiExamples";
 import { dosmLabourForceService } from "./dosmData";
 import { occupationEvidence, getOccupationSources } from "./occupationEvidence";
 import { jobProvider } from "../services/job_provider";
-import { detectSkills } from "./cvSkillExtractor";
-import { matchProfileSkills, careerDataset } from "./careerMatcher";
+import { careerDataset } from "./careerMatcher";
 import { FEATURE_PROMPTS } from "./llmPrompts";
 import { learningResources, learningResourceCatalog, type VerifiedLearningResource } from "../data/learningResources";
 
 export class AiContextError extends Error {
-  constructor(readonly status: 422 | 503, message: string) { super(message); }
+  constructor(readonly status: 400 | 422 | 503, message: string) { super(message); }
 }
 
 type Dependencies = {
@@ -19,8 +18,28 @@ type Dependencies = {
   getJob?: typeof jobProvider.getJobDetails;
 };
 
-/** Selectors only. Profile data and private CV content never enter this function. */
+/** Build server-owned demo context, or a CV-skill explanation from one approved skill label only. */
 export async function prepareAiContext(input: AiExplanationInput, dependencies: Dependencies = {}) {
+  if (input.feature === "cv-analysis") {
+    const skill = input.cvDetectedSkill;
+    if (input.sampleId !== undefined || !skill || skill !== skill.trim() || !careerDataset.allSkills.includes(skill)) {
+      throw new AiContextError(422, "Choose one recognized CV skill from the review list.");
+    }
+    return {
+      instruction: FEATURE_PROMPTS["cv-analysis"].instruction,
+      context: { detectedSkill: skill },
+      sampleLabel: "CV-detected skill",
+      contextSummary: ["Only one canonical CV-detected skill name was sent. The CV file, extracted text, proficiency and other profile data were not sent."],
+      evidence: [] as AiEvidence[],
+      allowedSuggestions: [] as string[],
+      resources: [] as readonly VerifiedLearningResource[],
+      sourceIds: [] as string[],
+      output: "text" as const,
+      json: false,
+      synthetic: false,
+    };
+  }
+  if (!input.sampleId) throw new AiContextError(400, "Choose a supported fictional example.");
   const base = syntheticExplanationContext(input.feature, input.sampleId);
   const evidence: AiEvidence[] = [];
   let allowedSuggestions: string[] = [];
@@ -31,7 +50,7 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
     base.contextSummary.push(`${item.title}${item.date ? ` (${item.date})` : ""}: ${item.note}`);
   };
   const sampleMatch = base.context.deterministicMatch as { missingSkills: string[] };
-  if (["career-explorer", "cv-analysis", "learning-roadmap", "digital-twin", "profile-skills"].includes(input.feature)) {
+  if (["career-explorer", "learning-roadmap", "digital-twin", "profile-skills"].includes(input.feature)) {
     add({ title: String(base.context.dataset), note: "Bundled role-skill dataset and unchanged exact/related matcher. Not official Malaysian demand or a hiring probability." });
   }
   if (input.feature === "career-explorer") {
@@ -49,15 +68,6 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
       add({ title: sources.mycol.title, url: sources.mycol.landingUrl, note: "TalentCorp MyCOL critical-occupation evidence, separate from personal overlap." });
       add({ title: sources.onet.name, url: sources.onet.databaseUrl, date: sources.onet.releaseDate, note: "US occupational skill evidence; mapped relationships have documented limitations." });
     }
-  }
-  if (input.feature === "cv-analysis") {
-    const fictionalCv = input.sampleId === "data-starter"
-      ? "Fictional sample CV: used Python and Excel to prepare reports and data visualization for a practice project."
-      : "Fictional sample CV: practised project coordination, customer research and data storytelling in a training project.";
-    const detected = detectSkills(fictionalCv);
-    base.context.fictionalCv = { text: fictionalCv, detectedSkills: detected, matching: matchProfileSkills(careerDataset, detected).skillMappings };
-    base.context.canonicalCandidates = detected.filter(skill => careerDataset.allSkills.includes(skill));
-    base.contextSummary.push("Fixed fictional CV excerpt; locally detected using the existing CV detector. Real uploads are never used here.");
   }
   if (input.feature === "learning-roadmap") {
     base.context.studyConstraints = { weeklyHours: input.sampleId === "data-starter" ? 4 : 2, budgetMYR: 0, level: "beginner", sequence: sampleMatch.missingSkills.slice(0, 3) };
@@ -191,7 +201,7 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
     base.contextSummary = ["Fictional task characteristics only; no profile, real task selections or assessment results are sent.", ...traits];
   }
   base.context.task = input.feature;
-  return { ...base, evidence, allowedSuggestions, resources, sourceIds, output: FEATURE_PROMPTS[input.feature].output, json: FEATURE_PROMPTS[input.feature].output !== "text" };
+  return { ...base, evidence, allowedSuggestions, resources, sourceIds, output: FEATURE_PROMPTS[input.feature].output, json: FEATURE_PROMPTS[input.feature].output !== "text", synthetic: true };
 }
 
 /** Authoritative numbers, source links and citations come from the server, never from model prose. */

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import { Check, CloudUpload, FileText, Info, Loader2, X } from 'lucide-react';
+import { Check, CloudUpload, FileText, Info, Loader2, Sparkles, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
+import { useAiDrawer } from '@/components/ai-drawer';
 import './profile-cv-import.css';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -41,6 +42,7 @@ export function ProfileCvImport({
   const [announcement, setAnnouncement] = useState('');
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [linkedInPreviewOpen, setLinkedInPreviewOpen] = useState(false);
+  const { open: openAiDrawer } = useAiDrawer();
   const inputRef = useRef<HTMLInputElement>(null);
   const reviewDialogRef = useRef<HTMLDialogElement>(null);
   const linkedInPreviewRef = useRef<HTMLDialogElement>(null);
@@ -160,6 +162,14 @@ export function ProfileCvImport({
     setReviewDialogOpen(false);
     setAnnouncement(`${importedSkills.length} confirmed skill${importedSkills.length === 1 ? '' : 's'} added to your profile. Review and save your skills.`);
   };
+  const explainCvSkill = (skillName: string) => {
+    setReviewDialogOpen(false);
+    requestAnimationFrame(() => openAiDrawer({
+      feature: 'cv-analysis',
+      cvDetectedSkill: skillName,
+      onClose: () => setReviewDialogOpen(true),
+    }));
+  };
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -232,8 +242,8 @@ export function ProfileCvImport({
     >
       <button type="button" className="profile-cv-dialog-close" aria-label="Close CV skill review" onClick={() => setReviewDialogOpen(false)}><X size={16} /></button>
       <header className="profile-cv-dialog-header">
-        <h2 id="profile-cv-review-title">Review skills from your CV</h2>
-        <p id="profile-cv-review-description">Select recognized skills and set your own proficiency. The CV does not set or change proficiency automatically.</p>
+        <h2 id="profile-cv-review-title">Review and explain CV skills</h2>
+        <p id="profile-cv-review-description">Ask AI to explain any detected skill, or select skills and set your own proficiency before adding them. AI receives only the chosen skill name, never your CV.</p>
       </header>
       {warnings.length > 0 && <ul className="profile-cv-warnings" data-testid="warnings-profile-cv">{warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>}
       {reviewSkills.length === 0
@@ -246,17 +256,22 @@ export function ProfileCvImport({
           {remainingSlots === 0 && <p className="profile-cv-level-note">Your profile already has 50 skills. Remove one from the profile before adding more.</p>}
           <div className="profile-cv-dialog-skills">
             {reviewSkills.map((skill, index) => <div className="profile-cv-dialog-row" key={skill.name}>
-              <label className="profile-cv-dialog-skill-name">
-                <input
-                  type="checkbox"
-                  checked={skill.alreadyInProfile || skill.selected}
-                  disabled={skill.alreadyInProfile || (!skill.selected && selectedSkills.length >= remainingSlots)}
-                  onChange={event => toggleSkill(index, event.target.checked)}
-                  aria-label={`Add ${skill.name} to profile`}
-                />
-                <strong>{skill.name}</strong>
-                <span className="cv-skill-check" title="Found in CV" role="img" aria-label="Found in CV"><Check size={12} /></span>
-              </label>
+              <div className="profile-cv-dialog-skill-main">
+                <label className="profile-cv-dialog-skill-name">
+                  <input
+                    type="checkbox"
+                    checked={skill.alreadyInProfile || skill.selected}
+                    disabled={skill.alreadyInProfile || (!skill.selected && selectedSkills.length >= remainingSlots)}
+                    onChange={event => toggleSkill(index, event.target.checked)}
+                    aria-label={`Add ${skill.name} to profile`}
+                  />
+                  <strong>{skill.name}</strong>
+                  <span className="cv-skill-check" title="Found in CV" role="img" aria-label="Found in CV"><Check size={12} /></span>
+                </label>
+                <button type="button" className="btn btn-secondary btn-small cv-skill-ai-button" aria-label={`Explain ${skill.name} with AI`} data-testid={`button-ai-explain-cv-skill-${index}`} onClick={() => explainCvSkill(skill.name)}>
+                  <Sparkles size={12} aria-hidden="true" /> Explain
+                </button>
+              </div>
               {skill.alreadyInProfile
                 ? <span className="profile-cv-existing"><Check size={12} /> Already in profile</span>
                 : <ChiliLevelSlider

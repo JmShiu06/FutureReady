@@ -128,9 +128,11 @@ export const MatchCareersResponse = zod.object({
 
 
 /**
- * Accepts only a feature, fixed synthetic sample ID and optional evidence selectors. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
- * @summary Explain a server-owned synthetic career example
+ * For general features, accepts a fixed synthetic sample ID and optional evidence selectors. CV Analysis accepts only one skill name returned by the CV detector and chosen in the review UI. The uploaded file, extracted text, proficiency, other detected skills and saved profile are never sent. Context is built on the server. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
+ * @summary Explain a synthetic example or one CV-detected skill
  */
+export const createAiExplanationBodyCvDetectedSkillMax = 100;
+
 export const createAiExplanationBodyJobIdMax = 100;
 
 
@@ -141,7 +143,8 @@ export const createAiExplanationBodyGoalMax = 17;
 
 export const CreateAiExplanationBody = zod.object({
   "feature": zod.enum(['career-explorer', 'cv-analysis', 'learning-roadmap', 'digital-twin', 'task-exposure', 'market-trends', 'job-fit', 'sdg-contribution', 'profile-skills']),
-  "sampleId": zod.enum(['data-starter', 'operations-starter']),
+  "sampleId": zod.enum(['data-starter', 'operations-starter']).optional().describe('Required for every feature except CV Analysis.'),
+  "cvDetectedSkill": zod.string().min(1).max(createAiExplanationBodyCvDetectedSkillMax).optional().describe('One canonical skill detected in a CV and explicitly selected for explanation. Only valid with the cv-analysis feature.'),
   "jobId": zod.string().min(1).max(createAiExplanationBodyJobIdMax).regex(createAiExplanationBodyJobIdRegExp).optional(),
   "goal": zod.number().int().min(1).max(createAiExplanationBodyGoalMax).optional()
 })
@@ -160,7 +163,7 @@ export const CreateAiExplanationResponse = zod.object({
   "explanation": zod.string().min(1).max(createAiExplanationResponseExplanationMax),
   "sampleLabel": zod.string(),
   "contextSummary": zod.array(zod.string()),
-  "synthetic": zod.literal(true),
+  "synthetic": zod.boolean(),
   "finalAnswerOnly": zod.literal(true),
   "evidence": zod.array(zod.object({
   "title": zod.string(),

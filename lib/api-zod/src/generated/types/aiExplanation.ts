@@ -16,7 +16,7 @@ export interface AiExplanation {
   explanation: string;
   sampleLabel: string;
   contextSummary: string[];
-  synthetic: true;
+  synthetic: boolean;
   finalAnswerOnly: true;
   evidence?: AiEvidence[];
   /** @maxItems 4 */
