@@ -124,7 +124,7 @@ paths:
       tags: [ai]
       summary: Explain a server-owned synthetic career example
       description: >
-        Accepts only a feature and a fixed synthetic sample ID. Context is built
+        Accepts only a feature, fixed synthetic sample ID and optional evidence selectors. Context is built
         on the server using fictional profiles and the unchanged dataset matcher.
         No real profile, CV text, or uploaded document is accepted. Qwen thinking
         mode is disabled and responses with reasoning traces are rejected.
@@ -142,7 +142,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/AiExplanation"
         "400":
-          description: Invalid skill or task traits
+          description: Invalid feature, sample or evidence selector
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Selected evidence is missing or unsupported
           content:
             application/json:
               schema:
@@ -802,10 +808,19 @@ components:
       properties:
         feature:
           type: string
-          enum: [career-explorer, cv-analysis, learning-roadmap, digital-twin, task-exposure]
+          enum: [career-explorer, cv-analysis, learning-roadmap, digital-twin, task-exposure, market-trends, job-fit, sdg-contribution, profile-skills]
         sampleId:
           type: string
           enum: [data-starter, operations-starter]
+        jobId:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '^[a-zA-Z0-9_-]+$'
+        goal:
+          type: integer
+          minimum: 1
+          maximum: 17
     AiExplanation:
       type: object
       required: [explanation, sampleLabel, contextSummary, synthetic, finalAnswerOnly]
@@ -826,6 +841,41 @@ components:
         finalAnswerOnly:
           type: boolean
           enum: [true]
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiEvidence"
+        suggestions:
+          type: array
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/AiSkillSuggestion"
+    AiEvidence:
+      type: object
+      required: [title, note]
+      properties:
+        title:
+          type: string
+        note:
+          type: string
+        url:
+          type: string
+          format: uri
+        date:
+          type: string
+    AiSkillSuggestion:
+      type: object
+      additionalProperties: false
+      required: [skill, rationale]
+      properties:
+        skill:
+          type: string
+          minLength: 1
+          maxLength: 60
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 240
     ResumeTextInput:
       type: object
       properties:

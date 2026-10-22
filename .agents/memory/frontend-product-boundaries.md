@@ -35,11 +35,23 @@ AI exposure must be assessed at the task level from user-selected work character
 **How to apply:** Describe possible task automation or assistance only from the user's own task details. A sourced exposure model or saved assessment history requires separate evidence and explicit scope.
 
 ## Runpod AI skill explanations
-Runpod explanations use server-owned synthetic profiles only, requested explicitly by a feature name and fixed sample ID. This applies to Career Explorer, CV Analysis, Learning Roadmap, Digital Twin and AI task support. Real saved profile data, skill selections, CV files and extracted CV text must not be sent. Deterministic labels and calculations stay separate from model explanations; explanations never change progress, skill levels or team data.
+Runpod explanations use server-owned synthetic profiles only, requested explicitly by a feature name and fixed sample ID, optionally with a public listing ID or SDG selector. This applies across career, CV, roadmap, twin, task support, market, job-fit, SDG and profile-suggestion features. Real saved profile data, skill selections, CV files and extracted CV text must not be sent. Public evidence is selected on the server, never fabricated by the model.
 
 **Why:** The user expanded the shared Qwen3 integration but explicitly required synthetic profiles only, superseding the earlier permission to send selected real skill names and task traits.
 
 **How to apply:** Build demonstration context on the server; reject arbitrary profile/text fields at the API boundary. Preserve matching algorithms, official datasets, team features and Replit configuration. Do not let model prose become scores, forecasts, evidence or state updates.
+
+AI profile suggestions are the only approved addition workflow: users must explicitly confirm each skill, self-rate its proficiency and then separately save the profile. An AI suggestion cannot overwrite an existing skill or its level.
+
+**Why:** The expanded integration request requires human confirmation and prohibits automatic profile changes, even though suggestions originate from fictional background examples.
+
+**How to apply:** Keep generated suggestions constrained to existing dataset skills and treat confirmed additions as an unsaved draft until the existing Save profile action.
+
+Authoritative figures, dates and citations belong in server-rendered evidence/context panels. Give the model qualitative projections (matched/missing skills, observed trend directions and scenario assumptions), not raw scores to restate.
+
+**Why:** Live Qwen responses repeated numerical scores and source identifiers despite instructions to avoid figures. Instructions alone are insufficient to keep generated prose separate from authoritative calculations.
+
+**How to apply:** Retain output validation; do not relax it merely to make responses pass. Keep all numerical computations deterministic, and present source-supported thematic SDG relevance separately from measured impact or official occupational classification.
 
 ## Roadmap and confirmation rules (My Profile)
 - Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.

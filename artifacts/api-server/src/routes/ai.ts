@@ -1,13 +1,14 @@
 import { Router, type IRouter } from "express";
-import { CreateAiExplanationBody, CreateAiExplanationResponse } from "@workspace/api-zod";
+import { CreateAiExplanationBody, CreateAiExplanationResponse, type AiExplanation } from "@workspace/api-zod";
 import { generateLlmExplanation, RunpodConfigurationError, RunpodRequestError } from "../lib/runpod";
-import { syntheticExplanationContext } from "../lib/aiExamples";
+import { prepareAiContext, AiContextError, parseSkillSuggestions, validateQualitativeAnswer } from "../lib/aiEvidence";
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 8;
 const MAX_ACTIVE_REQUESTS = 2;
-export function createAiRouter(provider: typeof generateLlmExplanation = generateLlmExplanation): IRouter {
+export function createAiRouter(provider: typeof generateLlmExplanation = generateLlmExplanation, prepare = prepareAiContext): IRouter {
 const router: IRouter = Router();
+const inFlight = new Map<string, Promise<AiExplanation>>();
 const requestWindows = new Map<string, { startedAt: number; count: number }>();
 let activeRequests = 0;
 let globalWindow = { startedAt: Date.now(), count: 0 };
@@ -45,6 +46,12 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Choose a supported AI feature and synthetic sample. Profile data and CV text are not accepted." });
     return;
   }
+  const input = parsed.data;
+  if ((input.feature === "job-fit" ? !input.jobId : input.jobId !== undefined) ||
+      (input.feature === "sdg-contribution" ? input.goal === undefined : input.goal !== undefined)) {
+    res.status(400).json({ error: "Choose a listing ID only for Job Fit, or a goal only for SDG Contribution." });
+    return;
+  }
 
   const client = req.ip || req.socket.remoteAddress || "unknown";
   if (!allowRequest(client)) {
@@ -52,22 +59,39 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
     res.status(429).json({ error: "Too many AI explanation requests. Please wait a minute and try again." });
     return;
   }
-  if (activeRequests >= MAX_ACTIVE_REQUESTS) {
+  const key = JSON.stringify([input.feature, input.sampleId, input.jobId ?? null, input.goal ?? null]);
+  let pending = inFlight.get(key);
+  if (!pending && activeRequests >= MAX_ACTIVE_REQUESTS) {
     res.setHeader("Retry-After", "5");
     res.status(503).json({ error: "AI explanations are busy. Please try again shortly." });
     return;
   }
 
-  activeRequests += 1;
+  if (!pending) {
+    activeRequests += 1;
+    pending = Promise.resolve().then(async () => {
+      const example = await prepare(input);
+      const result = await provider({ instruction: example.instruction, context: example.context, json: example.json });
+      const suggestions = example.json ? parseSkillSuggestions(result.explanation, example.allowedSuggestions) : undefined;
+      if (!suggestions) validateQualitativeAnswer(result.explanation);
+      return CreateAiExplanationResponse.parse({
+        explanation: suggestions ? "Review these AI-suggested skills for the fictional career goal. Confirm each skill and self-rate proficiency before adding it to your draft." : result.explanation,
+        ...(suggestions ? { suggestions } : {}),
+        sampleLabel: example.sampleLabel, contextSummary: example.contextSummary,
+        evidence: example.evidence, synthetic: true, finalAnswerOnly: true,
+      });
+    }).finally(() => {
+      activeRequests -= 1;
+      inFlight.delete(key);
+    });
+    inFlight.set(key, pending);
+  }
   try {
-    const example = syntheticExplanationContext(parsed.data.feature, parsed.data.sampleId);
-    const result = await provider({ instruction: example.instruction, context: example.context });
-    res.json(CreateAiExplanationResponse.parse({
-      ...result, sampleLabel: example.sampleLabel, contextSummary: example.contextSummary,
-      synthetic: true, finalAnswerOnly: true,
-    }));
+    res.json(await pending);
   } catch (error) {
-    if (error instanceof RunpodConfigurationError) {
+    if (error instanceof AiContextError) {
+      res.status(error.status).json({ error: error.message });
+    } else if (error instanceof RunpodConfigurationError) {
       res.status(503).json({ error: error.message });
     } else if (error instanceof RunpodRequestError && error.status !== undefined) {
       const step = error.stage === "model-list" ? "model discovery" : "chat completion";
@@ -82,8 +106,6 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
     } else {
       res.status(502).json({ error: "Runpod could not complete the explanation. Please try again shortly." });
     }
-  } finally {
-    activeRequests -= 1;
   }
 });
 

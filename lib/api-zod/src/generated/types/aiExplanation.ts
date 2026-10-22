@@ -5,6 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AiEvidence } from './aiEvidence';
+import type { AiSkillSuggestion } from './aiSkillSuggestion';
 
 export interface AiExplanation {
   /**
@@ -16,4 +18,7 @@ export interface AiExplanation {
   contextSummary: string[];
   synthetic: true;
   finalAnswerOnly: true;
+  evidence?: AiEvidence[];
+  /** @maxItems 4 */
+  suggestions?: AiSkillSuggestion[];
 }

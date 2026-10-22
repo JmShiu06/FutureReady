@@ -60,8 +60,11 @@ describe("resume skill analysis endpoints", () => {
     assert.deepEqual(result.json.current_skills, ["python", "docker", "sql"]);
     assert.equal(result.json.missing_skills.length, 27);
     assert.equal(result.json.overlap_score, 10);
-    assert.deepEqual(result.json.recommended_courses, []);
-    assert.equal(result.json.estimated_learning_time, null);
+    // The reviewed catalogue now includes a resource for this role's missing AWS skill.
+    assert.deepEqual(result.json.recommended_courses, ["AWS Cloud Practitioner Essentials"]);
+    assert.equal(result.json.learning_resources.resources[0].id, "aws-cloud-practitioner-essentials");
+    assert.ok(result.json.missing_skills.includes("aws"));
+    assert.equal(result.json.estimated_learning_time, "12 hrs 45 min");
     assert.deepEqual(result.json.synthetic_ai_skill_reference.references, []);
     assert.ok(result.json.synthetic_ai_skill_reference.limitations.some((item: string) => item.includes("synthetic")));
 

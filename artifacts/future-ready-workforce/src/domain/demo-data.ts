@@ -1,4 +1,5 @@
-import type { AggregateRecord, Audience, CareerRole, DemoProfile, Evidence, Scenario, SdgGoal, SdgMapping, SkillMarketRecord } from './types';
+import type { AggregateRecord, Audience, CareerRole, DemoProfile, Evidence, Scenario, SdgGoal, SkillMarketRecord } from './types';
+export { sdgMappings } from '@workspace/workforce-evidence';
 
 export const audienceLabels: Record<Audience, string> = {
   adult: 'Working Adults', graduate: 'Graduates & Career Switchers',
@@ -95,29 +96,3 @@ export const aggregateRecords: AggregateRecord[] = Array.from({ length: 12 }, (_
 }));
 const goalNames = ['No Poverty', 'Zero Hunger', 'Good Health and Well-being', 'Quality Education', 'Gender Equality', 'Clean Water and Sanitation', 'Affordable and Clean Energy', 'Decent Work and Economic Growth', 'Industry, Innovation and Infrastructure', 'Reduced Inequalities', 'Sustainable Cities and Communities', 'Responsible Consumption and Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice and Strong Institutions', 'Partnerships for the Goals'];
 export const sdgGoals: SdgGoal[] = goalNames.map((name, i) => ({ number: i + 1, name }));
-export const sdgMappings: SdgMapping[] = [
-  {
-    goal: 4, roleId: 'learning-partner', skills: ['Learning design', 'Facilitation'],
-    explanation: 'Targets 4.3–4.4 call for equitable access to technical and vocational education and relevant skills for work. That supports thematic relevance for learning design and facilitation, not evidence of this sample role’s outcomes.',
-    status: 'source-supported', sourceTitle: 'Transforming our world: the 2030 Agenda for Sustainable Development (A/RES/70/1)',
-    sourceUrl: 'https://docs.un.org/en/A/RES/70/1', sourceDate: '2015-09-25',
-    sourceObservation: 'Targets 4.3–4.4 address access to technical, vocational and tertiary education and relevant skills for employment.',
-  },
-  {
-    goal: 8, roleId: 'workforce-analyst', skills: ['Workforce planning', 'Data storytelling'],
-    explanation: 'This is an unverified example: the source defines decent-work goals but does not establish that workforce planning or this sample role advances them.',
-    status: 'unverified', sourceTitle: null, sourceUrl: null, sourceDate: null, sourceObservation: null,
-  },
-  {
-    goal: 10, roleId: 'service-designer', skills: ['Customer research', 'Service blueprinting'],
-    explanation: 'Target 10.2 calls for social and economic inclusion. Inclusive service research is thematically relevant, but the source does not show that this sample role removes barriers or reduces inequality.',
-    status: 'source-supported', sourceTitle: 'Transforming our world: the 2030 Agenda for Sustainable Development (A/RES/70/1)',
-    sourceUrl: 'https://docs.un.org/en/A/RES/70/1', sourceDate: '2015-09-25',
-    sourceObservation: 'Target 10.2 calls for promoting social, economic and political inclusion of all.',
-  },
-  {
-    goal: 9, roleId: 'ai-operations', skills: ['AI literacy', 'Process improvement'],
-    explanation: 'This is an unverified example: the source defines goals for infrastructure and innovation but does not establish a link to this sample operations role.',
-    status: 'unverified', sourceTitle: null, sourceUrl: null, sourceDate: null, sourceObservation: null,
-  },
-];

@@ -47,6 +47,15 @@ export default function ProfilePage() {
     skills.append(imported);
     setSaved(`${imported.length} confirmed CV skill${imported.length === 1 ? '' : 's'} added. Review and save your skills.`);
   };
+  const applyAiSkills = (suggested: ProfileSkill[]) => {
+    const current = form.getValues('skills');
+    if (current.length + suggested.length > 50) return 'A profile can hold up to 50 skills. Remove an existing skill before adding these suggestions.';
+    const duplicate = suggested.find(s => current.some(existing => normaliseSkillName(existing.name) === normaliseSkillName(s.name)));
+    if (duplicate) return `"${duplicate.name}" is already in your profile draft. Its proficiency was not changed.`;
+    skills.append(suggested);
+    setSaved(`${suggested.length} confirmed AI suggestion${suggested.length === 1 ? '' : 's'} added to the draft. Review and save your profile.`);
+    return undefined;
+  };
   const addSkill = () => {
     const name = newSkill.trim().replace(/\s+/g, ' ');
     const current = form.getValues('skills');
@@ -75,7 +84,7 @@ export default function ProfilePage() {
 
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : section === 'roadmap' ? 'One practical step at a time.' : 'See how far you have come.'} subtitle="Skills, learning roadmap and progress in one place. Each audience keeps its own profile." />
-    <AiExplanationPanel key={section} feature={section === 'skills' ? 'cv-analysis' : section === 'roadmap' ? 'learning-roadmap' : 'digital-twin'} />
+    <AiExplanationPanel key={section} feature={section === 'skills' ? 'profile-skills' : section === 'roadmap' ? 'learning-roadmap' : 'digital-twin'} onApplySkills={section === 'skills' ? applyAiSkills : undefined} />
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}
@@ -84,6 +93,7 @@ export default function ProfilePage() {
     <div id="panel-twin" role="tabpanel" aria-labelledby="tab-twin" hidden={section !== 'twin'} data-testid="panel-profile-twin">{section === 'twin' && <TwinSection />}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
+    {section === 'skills' && <AiExplanationPanel feature="cv-analysis" />}
 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>

@@ -146,6 +146,10 @@ export const AiExplanationInputFeature = {
   'learning-roadmap': 'learning-roadmap',
   'digital-twin': 'digital-twin',
   'task-exposure': 'task-exposure',
+  'market-trends': 'market-trends',
+  'job-fit': 'job-fit',
+  'sdg-contribution': 'sdg-contribution',
+  'profile-skills': 'profile-skills',
 } as const;
 
 export type AiExplanationInputSampleId = typeof AiExplanationInputSampleId[keyof typeof AiExplanationInputSampleId];
@@ -159,6 +163,37 @@ export const AiExplanationInputSampleId = {
 export interface AiExplanationInput {
   feature: AiExplanationInputFeature;
   sampleId: AiExplanationInputSampleId;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     * @pattern ^[a-zA-Z0-9_-]+$
+     */
+  jobId?: string;
+  /**
+     * @minimum 1
+     * @maximum 17
+     */
+  goal?: number;
+}
+
+export interface AiEvidence {
+  title: string;
+  note: string;
+  url?: string;
+  date?: string;
+}
+
+export interface AiSkillSuggestion {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  skill: string;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  rationale: string;
 }
 
 export interface AiExplanation {
@@ -171,6 +206,9 @@ export interface AiExplanation {
   contextSummary: string[];
   synthetic: true;
   finalAnswerOnly: true;
+  evidence?: AiEvidence[];
+  /** @maxItems 4 */
+  suggestions?: AiSkillSuggestion[];
 }
 
 export interface ResumeTextInput {

@@ -70,6 +70,16 @@ describe("shared RunPod Qwen3 service", () => {
       env: { ...env, RUNPOD_LLM_MODEL: undefined }, fetcher,
     })).explanation, "Synthetic final answer.");
   });
+  it("requests validated JSON only when the feature requires it and bounds context size", async () => {
+    await generateLlmExplanation({ ...input, json: true }, { env, fetcher: async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      assert.deepEqual(body.response_format, { type: "json_object" });
+      return Response.json({ choices: [{ finish_reason: "stop", message: { content: '{"suggestions":[]}' } }] });
+    } });
+    await assert.rejects(generateLlmExplanation({
+      instruction: "Explain", context: { text: "x".repeat(18_001) },
+    }, { env }), RunpodRequestError);
+  });
 });
 
 describe("server-owned synthetic examples", () => {

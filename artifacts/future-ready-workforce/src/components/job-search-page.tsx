@@ -8,6 +8,7 @@ import {
   getListJobsQueryKey, useCalculateJobMatchScores, useListJobs,
 } from '@workspace/api-client-react';
 import type { ListJobsParams } from '@workspace/api-client-react';
+import { AiExplanationPanel } from '@/components/ai-explanation-panel';
 
 type Props = { profileSkills: string[] };
 
@@ -180,6 +181,10 @@ export function JobSearchPage({ profileSkills }: Props) {
             </div>
             <div className="job-card-actions"><Link className="job-details-link" href={`/jobs/${encodeURIComponent(job.id)}`} data-testid={`link-job-details-${job.id}`}>View details <ArrowRight size={13} /></Link>{applyAction}</div>
           </div>
+          <details className="job-ai-details">
+            <summary>Explain Job Fit with AI</summary>
+            <AiExplanationPanel feature="job-fit" jobId={job.id} />
+          </details>
         </article>;
       })}
     </div>}

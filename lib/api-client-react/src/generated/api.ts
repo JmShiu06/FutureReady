@@ -410,7 +410,7 @@ export const getCreateAiExplanationUrl = () => {
 }
 
 /**
- * Accepts only a feature and a fixed synthetic sample ID. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
+ * Accepts only a feature, fixed synthetic sample ID and optional evidence selectors. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
  * @summary Explain a server-owned synthetic career example
  */
 export const createAiExplanation = async (aiExplanationInput: AiExplanationInput, options?: Parameters<typeof customFetch>[1]): Promise<AiExplanation> => {

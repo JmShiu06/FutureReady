@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { Info } from 'lucide-react';
 import { demoRoles, sdgGoals, sdgMappings } from '@/domain/demo-data';
 import { EmptyBlock, PageHead, SectionTitle } from '@/components/workspace/ui';
+import { AiExplanationPanel } from '@/components/ai-explanation-panel';
 
 export default function SdgsPage() {
   const [filter, setFilter] = useState<'all' | 'mapped' | 'unmapped'>('all');
@@ -19,6 +20,7 @@ export default function SdgsPage() {
   };
   return <>
     <PageHead eyebrow="SDG explorer · 17 goals" title="Possible links to wider impact." subtitle="Some links have source-supported relevance to a UN target; others remain unverified examples. None is evidence of impact." />
+    <AiExplanationPanel feature="sdg-contribution" goal={goal} />
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
       <div className="spread" style={{ marginBottom: 12 }}>
         <div className="scenario-tabs" role="group" aria-label="Filter goals">{(['all', 'mapped', 'unmapped'] as const).map(f => <button key={f} className={`scenario-tab${filter === f ? ' active' : ''}`} aria-pressed={filter === f} onClick={() => changeFilter(f)} data-testid={`button-sdg-filter-${f}`}>{f === 'all' ? 'All 17' : f === 'mapped' ? 'With example mapping' : 'No mapping'}</button>)}</div>

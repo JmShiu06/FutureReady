@@ -11,4 +11,15 @@ import type { AiExplanationInputSampleId } from './aiExplanationInputSampleId';
 export interface AiExplanationInput {
   feature: AiExplanationInputFeature;
   sampleId: AiExplanationInputSampleId;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     * @pattern ^[a-zA-Z0-9_-]+$
+     */
+  jobId?: string;
+  /**
+     * @minimum 1
+     * @maximum 17
+     */
+  goal?: number;
 }

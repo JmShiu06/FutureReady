@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams } from 'wouter';
 import { ArrowLeft, ArrowUpRight, BriefcaseBusiness, Clock3, MapPin, Wifi } from 'lucide-react';
 import { getGetJobQueryKey, useCalculateJobMatchScores, useGetJob } from '@workspace/api-client-react';
+import { AiExplanationPanel } from '@/components/ai-explanation-panel';
 
 type Props = { profileSkills: string[] };
 
@@ -58,6 +59,7 @@ export function JobDetailsPage({ profileSkills }: Props) {
       <div className="job-detail-salary">{formatSalary(job.salaryMin, job.salaryMax)}<small>Sample range, if provided</small></div>
     </section>
 
+    <AiExplanationPanel feature="job-fit" jobId={job.id} />
     <div className="job-detail-columns">
       <div className="job-detail-content">
         <section className="panel panel-pad" data-testid="section-job-description"><div className="section-head"><div><h2>About this role</h2><div className="section-kicker">SAMPLE LISTING DESCRIPTION</div></div></div><div className="job-description-text">{job.description.split(/\n+/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></section>

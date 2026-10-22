@@ -128,15 +128,31 @@ export const MatchCareersResponse = zod.object({
 
 
 /**
- * Accepts only a feature and a fixed synthetic sample ID. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
+ * Accepts only a feature, fixed synthetic sample ID and optional evidence selectors. Context is built on the server using fictional profiles and the unchanged dataset matcher. No real profile, CV text, or uploaded document is accepted. Qwen thinking mode is disabled and responses with reasoning traces are rejected.
  * @summary Explain a server-owned synthetic career example
  */
+export const createAiExplanationBodyJobIdMax = 100;
+
+
+export const createAiExplanationBodyJobIdRegExp = new RegExp('^[a-zA-Z0-9_-]+$');
+export const createAiExplanationBodyGoalMax = 17;
+
+
+
 export const CreateAiExplanationBody = zod.object({
-  "feature": zod.enum(['career-explorer', 'cv-analysis', 'learning-roadmap', 'digital-twin', 'task-exposure']),
-  "sampleId": zod.enum(['data-starter', 'operations-starter'])
+  "feature": zod.enum(['career-explorer', 'cv-analysis', 'learning-roadmap', 'digital-twin', 'task-exposure', 'market-trends', 'job-fit', 'sdg-contribution', 'profile-skills']),
+  "sampleId": zod.enum(['data-starter', 'operations-starter']),
+  "jobId": zod.string().min(1).max(createAiExplanationBodyJobIdMax).regex(createAiExplanationBodyJobIdRegExp).optional(),
+  "goal": zod.number().int().min(1).max(createAiExplanationBodyGoalMax).optional()
 })
 
 export const createAiExplanationResponseExplanationMax = 4000;
+
+export const createAiExplanationResponseSuggestionsItemSkillMax = 60;
+
+export const createAiExplanationResponseSuggestionsItemRationaleMax = 240;
+
+export const createAiExplanationResponseSuggestionsMax = 4;
 
 
 
@@ -145,7 +161,17 @@ export const CreateAiExplanationResponse = zod.object({
   "sampleLabel": zod.string(),
   "contextSummary": zod.array(zod.string()),
   "synthetic": zod.literal(true),
-  "finalAnswerOnly": zod.literal(true)
+  "finalAnswerOnly": zod.literal(true),
+  "evidence": zod.array(zod.object({
+  "title": zod.string(),
+  "note": zod.string(),
+  "url": zod.string().url().optional(),
+  "date": zod.string().optional()
+})).optional(),
+  "suggestions": zod.array(zod.object({
+  "skill": zod.string().min(1).max(createAiExplanationResponseSuggestionsItemSkillMax),
+  "rationale": zod.string().min(1).max(createAiExplanationResponseSuggestionsItemRationaleMax)
+})).max(createAiExplanationResponseSuggestionsMax).optional()
 })
 
 

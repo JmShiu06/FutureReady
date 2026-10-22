@@ -94,6 +94,22 @@
 .ai-skill-details[open] summary { margin-bottom:8px; }
 .ai-explanation-button { display:inline-flex; align-items:center; gap:7px; margin-top:10px; }
 .ai-demo-panel { margin:0 0 18px; }
+.ai-context-note { margin:10px 0 0; color:#536980; font-size:12px; line-height:1.6; }
+.ai-evidence-list { display:grid; gap:8px; margin:10px 0; padding-left:18px; }
+.ai-evidence-list p { margin:3px 0 0; }
+.job-ai-details { padding:0 18px 14px; }
+.job-ai-details > summary { display:flex; align-items:center; min-height:44px; color:#2869a5; font-size:12px; font-weight:700; cursor:pointer; }
+.job-ai-details > summary:focus-visible { outline:2px solid #3989d5; outline-offset:2px; }
+.job-ai-details .ai-demo-panel { margin:8px 0 0; }
+.ai-suggestion-review { display:grid; gap:10px; margin:14px 0 0; padding:12px; border:1px solid #cbdff0; border-radius:10px; }
+.ai-suggestion-review legend { color:#304d6a; font-size:12px; font-weight:700; }
+.ai-suggestion-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:10px 0; border-bottom:1px solid #dce7f2; }
+.ai-suggestion-choice { display:flex; align-items:flex-start; gap:8px; flex:1; min-width:150px; cursor:pointer; }
+.ai-suggestion-choice input { margin-top:3px; width:17px; height:17px; flex:none; accent-color:#2878bc; }
+.ai-suggestion-rationale { display:block; margin-top:4px; }
+.ai-suggestion-row label { font-size:12px; }
+.ai-suggestion-row select { display:block; max-width:100%; min-height:44px; margin-top:4px; border:1px solid #cbdbea; padding:6px 8px; border-radius:7px; background:white; color:#30445c; }
+.ai-suggestion-review :focus-visible { outline:2px solid #3989d5; outline-offset:2px; }
 .ai-demo-title { display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:16px; color:#294d70; }
 .ai-demo-controls { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:12px; }
 .ai-demo-controls label { font-size:12px; font-weight:600; }

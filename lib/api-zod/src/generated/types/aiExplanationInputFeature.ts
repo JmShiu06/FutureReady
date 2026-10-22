@@ -15,4 +15,8 @@ export const AiExplanationInputFeature = {
   'learning-roadmap': 'learning-roadmap',
   'digital-twin': 'digital-twin',
   'task-exposure': 'task-exposure',
+  'market-trends': 'market-trends',
+  'job-fit': 'job-fit',
+  'sdg-contribution': 'sdg-contribution',
+  'profile-skills': 'profile-skills',
 } as const;
