@@ -23,8 +23,9 @@ it("uses only reviewed facts, unchanged match scores and catalogue resources", (
   const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
   const matches = matchCvCareerSkills(syntheticReviewedCv.skills).matches.slice(0, 3);
   assert.deepEqual(prepared.matches.map(match => match.score), matches.map(match => match.score));
+  assert.ok("reviewedCv" in prepared.request.context);
   assert.deepEqual(prepared.request.context.reviewedCv, { skills: syntheticReviewedCv.skills });
-  assert.deepEqual(Object.keys(prepared.request.context.reviewedCv), ["skills"]);
+  assert.deepEqual(Object.keys(prepared.request.context.reviewedCv!), ["skills"]);
   assert.equal("sampleId" in prepared.request.context, false);
   assert.equal("score" in prepared.request.context.matches[0], false);
   assert.equal(JSON.stringify(syntheticReviewedCv), before);
@@ -123,4 +124,27 @@ it("supports limited single-skill input without requiring definitions for every 
     improvementSuggestions: `Explore ${gap} first, then combine it with python in a small hypothetical practice exercise and inspect its output locally.`,
   };
   assert.deepEqual(parseCvCareerExplanation(JSON.stringify(sections), prepared).sections, sections);
+});
+
+it("accepts consented saved/manual skills independently of a CV and excludes all other profile fields", () => {
+  const prepared = prepareCvCareerExplanation({
+    source: "profile-skills", consent: true,
+    data: { skills: ["Python", "SQL", "Data storytelling", "unsupported skill"], languages: [], extractionLimited: false },
+  });
+  assert.equal(prepared.profileSource, true);
+  assert.deepEqual(prepared.reviewedCv.skills, ["python", "sql", "data visualization"]);
+  assert.ok("reviewedSkills" in prepared.request.context);
+  assert.deepEqual(prepared.request.context.reviewedSkills, { skills: ["python", "sql", "data visualization"] });
+  assert.equal("reviewedCv" in prepared.request.context, false);
+  assert.doesNotMatch(JSON.stringify(prepared.request), /\bCV\b|unsupported skill|cvDetected|education|occupation|experienceYears|contact|rating/i);
+  assert.ok(prepared.warnings.some(warning => warning.includes("outside the current reference catalogue")));
+  assert.ok(prepared.request.instruction.length <= 3000);
+  assert.throws(() => prepareCvCareerExplanation({
+    source: "profile-skills", consent: true,
+    data: { skills: ["unsupported skill"], languages: [], extractionLimited: false },
+  }), CvCareerInputError);
+  assert.throws(() => prepareCvCareerExplanation({
+    source: "profile-skills", consent: true,
+    data: { skills: ["python"], languages: [], extractionLimited: false, occupation: "private" },
+  }), CvCareerInputError);
 });

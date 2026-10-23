@@ -6,8 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CvAiSkillData } from './cvAiSkillData';
+import type { CvCareerExplanationInputSource } from './cvCareerExplanationInputSource';
 
 export interface CvCareerExplanationInput {
+  /** Optional saved-profile skill source. Only skill names are shared; CV upload is not required. Omit for legacy CV clients. */
+  source?: CvCareerExplanationInputSource;
   data: CvAiSkillData;
   consent: true;
 }

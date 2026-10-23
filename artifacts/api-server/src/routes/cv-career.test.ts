@@ -86,6 +86,27 @@ it("passes the real shared provider guards and validates its final response with
   });
 });
 
+it("analyses saved profile skills without a CV, upload state or external personal fields", async () => {
+  let calls = 0;
+  await server(async input => {
+    calls++;
+    assert.deepEqual(input.context.reviewedSkills, { skills: ["python", "sql"] });
+    assert.equal("reviewedCv" in input.context, false);
+    return { explanation: JSON.stringify({
+      ...sections,
+      skillAnalysis: sections.skillAnalysis.replace("reviewed CV", "saved profile"),
+      careerMatchAnalysis: sections.careerMatchAnalysis.replace(/\bCV\b/g, "profile"),
+    }) };
+  }, async post => {
+    const response = await post({ source: "profile-skills", consent: true, data: { ...data, skills: ["Python", "SQL"], extractionLimited: false } });
+    assert.equal(response.status, 200);
+    assert.equal(calls, 1);
+    const result = GenerateCvCareerExplanationResponse.parse(await response.json());
+    assert.doesNotMatch(JSON.stringify(result), /\bCV\b/);
+    assert.equal(result.matches.length, 3);
+  });
+});
+
 it("rate limits CV requests and never echoes malformed provider text", async () => {
   let calls = 0;
   await server(async () => { calls++; return { explanation: JSON.stringify(sections) }; }, async post => {

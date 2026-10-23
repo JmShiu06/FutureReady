@@ -3,7 +3,7 @@ import {
   GenerateCvCareerExplanationResponse,
   type CvAiSkillData,
 } from "@workspace/api-zod";
-import { careerDataset } from "./careerMatcher";
+import { careerDataset, matchProfileSkills } from "./careerMatcher";
 import { matchCvCareerSkills, CV_CAREER_TITLE_NOTE } from "./cvCareerCatalogue";
 import { learningResources } from "../data/learningResources";
 import { cvCertifications } from "../data/cvCertifications";
@@ -47,8 +47,12 @@ Use concise, distinct plain-text paragraphs. No Meaning/Importance/Industries la
 
 export function prepareCvCareerExplanation(body: unknown) {
   const parsed = schema.safeParse(body);
-  if (!parsed.success) throw new CvCareerInputError("Review the extracted CV fields and explicitly consent before generating the explanation.");
-  const data = parsed.data.data;
+  if (!parsed.success) throw new CvCareerInputError("Review selected skill names and explicitly consent before generating the analysis.");
+  const profileSource = parsed.data.source === "profile-skills";
+  const mapped = profileSource ? matchProfileSkills(careerDataset, parsed.data.data.skills) : null;
+  const data = profileSource
+    ? { ...parsed.data.data, skills: mapped!.skillMappings.map(mapping => mapping.datasetSkill).slice(0, 50), languages: [], extractionLimited: false }
+    : parsed.data.data;
   if (new Set(data.skills).size !== data.skills.length || data.skills.some(skill => !careerDataset.allSkills.includes(skill))) {
     throw new CvCareerInputError("Use only the recognized skills detected in your CV.");
   }
@@ -59,7 +63,7 @@ export function prepareCvCareerExplanation(body: unknown) {
     skills: [...data.skills], languages: [],
   };
   if (!reviewedCv.skills.length) {
-    throw new CvCareerInputError("Select at least one recognized CV skill before requesting analysis.");
+    throw new CvCareerInputError(profileSource ? "These saved skills are not covered by the current skill-reference catalogue. No AI request was made." : "Select at least one recognized CV skill before requesting analysis.");
   }
   const matches = (data.skills.length ? matchCvCareerSkills(data.skills).matches : []).slice(0, 3).map(match => ({
     roleId: match.roleFamily.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -92,11 +96,14 @@ export function prepareCvCareerExplanation(body: unknown) {
     CV_CAREER_TITLE_NOTE,
   ];
   return {
-    reviewedCv, matches, resources, warnings,
+    profileSource, reviewedCv, matches, resources, warnings: [
+      ...warnings.map(warning => profileSource ? warning.replace(/\bCV\b/g, "profile") : warning),
+      ...(mapped?.unrecognizedSkills.length ? ["Some selected skills are outside the current reference catalogue and were not sent to AI. Your saved skills are unchanged."] : []),
+    ],
     request: {
-      instruction: CV_CAREER_INSTRUCTION,
+      instruction: profileSource ? CV_CAREER_INSTRUCTION.replaceAll("reviewedCv", "reviewedSkills").replace(/\bCV\b/g, "profile") : CV_CAREER_INSTRUCTION,
       context: {
-        reviewedCv: { skills: reviewedCv.skills },
+        ...(profileSource ? { reviewedSkills: { skills: reviewedCv.skills } } : { reviewedCv: { skills: reviewedCv.skills } }),
         careerNameSource: "User-supplied AI Job Market Dataset, job_title column only. Skills are pooled reference evidence, not title-specific requirements. Recommend only the career titles in matches.",
         matches: matches.map(({ title, skillRoleFamily, matchedSkills, missingSkills }) => ({
           title, skillRoleFamily, matchedSkills, missingSkills: missingSkills.slice(0, 6),

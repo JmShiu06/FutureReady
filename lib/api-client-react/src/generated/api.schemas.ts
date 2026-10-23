@@ -281,7 +281,19 @@ export interface CvAiSkillData {
   extractionLimited: boolean;
 }
 
+/**
+ * Optional saved-profile skill source. Only skill names are shared; CV upload is not required. Omit for legacy CV clients.
+ */
+export type CvCareerExplanationInputSource = typeof CvCareerExplanationInputSource[keyof typeof CvCareerExplanationInputSource];
+
+
+export const CvCareerExplanationInputSource = {
+  'profile-skills': 'profile-skills',
+} as const;
+
 export interface CvCareerExplanationInput {
+  /** Optional saved-profile skill source. Only skill names are shared; CV upload is not required. Omit for legacy CV clients. */
+  source?: CvCareerExplanationInputSource;
   data: CvAiSkillData;
   consent: true;
 }

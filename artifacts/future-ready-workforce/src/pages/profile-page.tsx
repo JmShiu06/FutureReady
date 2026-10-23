@@ -102,7 +102,7 @@ export default function ProfilePage() {
     </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    {cvPhase === 'ready' && <p className="muted small"><Link href="/market-and-ai-impact?tab=ai-impact" className="text-link" data-testid="link-profile-cv-review">Review your CV skills in Skill analysis</Link></p>}
+    {cvPhase === 'ready' && <p className="muted small"><Link href="/market-and-ai-impact?tab=ai-impact" className="text-link" data-testid="link-profile-cv-review">Save your skills, then open Skill analysis</Link></p>}
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
         <div className="panel panel-pad">
@@ -163,7 +163,7 @@ export default function ProfilePage() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Open Skill analysis?</AlertDialogTitle>
-          <AlertDialogDescription>You’ve finished grading your skills. Would you like to save your skills and open Skill analysis to review the skills detected from your CV? Opening the page does not send anything to AI; you’ll choose which skills to share and give consent there.</AlertDialogDescription>
+          <AlertDialogDescription>You’ve finished grading your skills. Would you like to save your skills and open Skill analysis to analyse your saved profile skills? Opening the page does not send anything to AI; you’ll choose which skills to share and give consent there.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel data-testid="button-stay-after-grading">Stay here</AlertDialogCancel>

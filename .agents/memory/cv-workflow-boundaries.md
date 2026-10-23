@@ -3,11 +3,11 @@ name: CV workflow boundaries
 description: User-defined privacy and scope constraints for FutureReady CV work and separate canvas experiments.
 ---
 
-The CV analysis destination is “Skill analysis” and should analyse CV skill names only, not languages. After CV skill grading, offer optional navigation and save grades before leaving; never start inference merely because navigation was accepted.
+Skill analysis is independent of CV uploads and uses skills saved in the active My profile, including manually added skills. After skill grading, offer optional navigation and save grades before leaving; never start inference merely because navigation was accepted.
 
-**Why:** The user explicitly requested skill-only analysis and an optional redirect after grading.
+**Why:** The user explicitly clarified that Skill analysis should analyse skills, not be linked to a CV, then chose saved My profile skills including manually added skills as its input.
 
-**How to apply:** Keep language data out of analysis payloads, preserve explicit AI consent, and retain old route links for compatibility.
+**How to apply:** Require fresh consent for selected saved skill names, never share ratings or other profile fields, and invalidate analysis when the active profile or its saved skill names change. Keep CV extraction/review separate, with no upload prerequisite for analysis, and retain old route links for compatibility.
 
 The CV workflow belongs in the existing FutureReady website and follows the current soft brown-and-cream site palette (see frontend-product-boundaries.md). FPS-style canvas frames are separate design references, not approval to replace the live website theme.
 
@@ -19,7 +19,7 @@ CV files and full extracted document text must remain transient and must not be 
 
 **Why:** The user explicitly treats CVs as sensitive personal documents and requires a non-LLM, no-paid-service workflow.
 
-**How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it. The user later approved transient, reviewed structured CV details for RunPod career explanations after explicit consent; see frontend-product-boundaries.md for that exception.
+**How to apply:** Preserve these boundaries when extending extraction, adding OCR, changing storage, or introducing analytics. Return only the minimum candidate field values needed for review, never raw CV text. If a field is absent or unchecked, do not write to it. The RunPod exception is now selected saved skill names after explicit consent; see frontend-product-boundaries.md.
 
 A detected CV name stays in the in-memory CV session and appears only in the My Profile sidebar label in place of “Your profile.” Keep the My Profile page heading unchanged, and do not persist the name or show it on other pages or in a separate badge.
 
@@ -51,7 +51,7 @@ Show proficiency as five chili icons, from 1 “New to it” through 5 “Can te
 
 **How to apply:** Reuse this visual scale anywhere users set profile or CV-review proficiency, and label CV evidence as detection rather than validated expertise.
 
-Non-keyword skill matching should stay local and transparent: use curated related-phrase mappings, label related matches separately from exact matches, and leave CV-derived suggestions subject to profile review. Do not infer proficiency or send full CV/profile text externally. Only explicitly consented, minimized structured CV details may use the approved RunPod explanation path.
+Non-keyword skill matching should stay local and transparent: use curated related-phrase mappings, label related matches separately from exact matches, and leave CV-derived suggestions subject to profile review. Do not infer proficiency or send full CV/profile text externally. Only explicitly consented, selected saved skill names may use the approved RunPod analysis path.
 
 **Why:** The user requested recognition of skills expressed with different wording while retaining the project's no-external-service CV privacy boundary.
 

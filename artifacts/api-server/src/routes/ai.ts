@@ -81,7 +81,7 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
       : stage === "response" ? "The AI service did not return a complete, supported final answer."
       : "The AI responded, but its analysis did not pass validation.";
     if (!res.destroyed) res.status(error instanceof RunpodConfigurationError ? 503 : 502).json({
-      error: `${message} Your CV review and profile are unchanged.`,
+      error: `${message} ${prepared.profileSource ? "Your saved skills are unchanged." : "Your CV review and profile are unchanged."}`,
     });
   } finally {
     activeRequests--;

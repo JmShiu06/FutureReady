@@ -7,6 +7,7 @@ import '@/styles/workspace.css';
 import '@/styles/consolidation.css';
 import { WorkspaceProvider, useWorkspace } from '@/domain/workspace-context';
 import { CvSessionProvider } from '@/domain/cv-session';
+import { SkillAnalysisProvider } from '@/domain/skill-analysis-session';
 import { AppShell } from '@/components/workspace/app-shell';
 import { LoadingBlock } from '@/components/workspace/ui';
 import DashboardPage from '@/pages/dashboard-page';
@@ -42,6 +43,7 @@ function NotFoundPage() {
 function App() {
   return <WorkspaceProvider>
     <CvSessionProvider>
+    <SkillAnalysisProvider>
     <AppShell>
       <Suspense fallback={<LoadingBlock />}>
       <Switch>
@@ -70,6 +72,7 @@ function App() {
       </Switch>
       </Suspense>
     </AppShell>
+    </SkillAnalysisProvider>
     </CvSessionProvider>
   </WorkspaceProvider>;
 }

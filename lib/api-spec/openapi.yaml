@@ -1035,6 +1035,10 @@ components:
       additionalProperties: false
       required: [data, consent]
       properties:
+        source:
+          type: string
+          enum: [profile-skills]
+          description: Optional saved-profile skill source. Only skill names are shared; CV upload is not required. Omit for legacy CV clients.
         data:
           $ref: "#/components/schemas/CvAiSkillData"
         consent: { type: boolean, enum: [true] }

@@ -192,6 +192,7 @@ export const generateCvCareerExplanationBodyDataLanguagesMax = 12;
 
 
 export const GenerateCvCareerExplanationBody = zod.object({
+  "source": zod.enum(['profile-skills']).optional().describe('Optional saved-profile skill source. Only skill names are shared; CV upload is not required. Omit for legacy CV clients.'),
   "data": zod.object({
   "skills": zod.array(zod.string().min(1).max(generateCvCareerExplanationBodyDataSkillsItemMax)).max(generateCvCareerExplanationBodyDataSkillsMax),
   "languages": zod.array(zod.enum(['English', 'Malay', 'Mandarin', 'Chinese', 'Tamil', 'Arabic', 'French', 'German', 'Spanish', 'Japanese', 'Korean', 'Hindi', 'Portuguese', 'Indonesian', 'Thai', 'Vietnamese', 'Cantonese', 'Hokkien', 'Russian', 'Italian', 'Dutch', 'Turkish', 'Urdu', 'Bengali', 'Punjabi', 'Tagalog', 'Filipino', 'Burmese', 'Khmer', 'Lao', 'Nepali', 'Sinhala', 'Telugu', 'Kannada', 'Marathi', 'Persian', 'Greek', 'Polish', 'Romanian', 'Ukrainian', 'Swahili', 'Hebrew', 'Malay Sign Language', 'American Sign Language', 'British Sign Language'])).max(generateCvCareerExplanationBodyDataLanguagesMax),

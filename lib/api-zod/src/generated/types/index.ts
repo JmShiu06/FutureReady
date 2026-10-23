@@ -32,6 +32,7 @@ export * from './cvAiSkillData';
 export * from './cvCareerData';
 export * from './cvCareerExplanation';
 export * from './cvCareerExplanationInput';
+export * from './cvCareerExplanationInputSource';
 export * from './cvCareerExplanationMatchesItem';
 export * from './cvCareerExplanationResourcesItem';
 export * from './cvCareerExplanationSections';

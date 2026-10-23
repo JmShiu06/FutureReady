@@ -7,10 +7,10 @@ export function AiImpactTab() {
     <aside className="panel panel-pad ai-exposure-intro" data-testid="panel-ai-explanation-boundary">
       <Info size={17} aria-hidden="true" />
       <div>
-        <strong>Explanations come only from your confirmed CV details.</strong>
+        <strong>Analyse the skills saved in My profile.</strong>
         <p className="muted">
-          This view shares the CV you uploaded in My profile during this session. Nothing is sent to AI until you
-          review the details and give consent, and nothing is saved. A new upload or audience switch clears it.
+          Manually added skills and saved imported skills are available here. No CV upload is required. Only selected skill names
+          are sent after explicit consent; no ratings or personal details are shared. Results are temporary.
         </p>
       </div>
     </aside>
