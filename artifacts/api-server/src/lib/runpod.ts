@@ -6,7 +6,7 @@ type Fetcher = typeof fetch;
 export class RunpodConfigurationError extends Error {}
 export class RunpodRequestError extends Error {
   constructor(
-    readonly stage: "model-list" | "completion" | "response",
+    readonly stage: "input" | "model-list" | "completion" | "response",
     readonly status?: number,
   ) {
     super("Runpod request failed.");
@@ -100,7 +100,7 @@ export async function generateLlmExplanation(
   const env = options.env ?? process.env;
   const fetcher = options.fetcher ?? fetch;
   if (JSON.stringify(input.context).length > 18_000 || input.instruction.length > 3_000) {
-    throw new RunpodRequestError("response");
+    throw new RunpodRequestError("input");
   }
   const baseUrl = runpodBaseUrl(env.RUNPOD_LLM_BASE_URL);
   const apiKey = env.RUNPOD_LLM_API_KEY?.trim();

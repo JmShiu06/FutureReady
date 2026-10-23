@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import express from "express";
 import type { AddressInfo } from "node:net";
 import { createAiRouter } from "./ai";
-import type { generateLlmExplanation } from "../lib/runpod";
+import { generateLlmExplanation, RunpodRequestError } from "../lib/runpod";
 import { GenerateCvCareerExplanationResponse } from "@workspace/api-zod";
 
 const data = { skills: ["python", "sql"], languages: [], extractionLimited: true };
@@ -60,6 +60,32 @@ it("returns six grounded sections, no-store and authoritative matches after cons
   });
 });
 
+it("passes the real shared provider guards and validates its final response without external requests", async () => {
+  let networkCalls = 0;
+  await server(input => generateLlmExplanation(input, {
+    env: {
+      RUNPOD_LLM_BASE_URL: "https://fictional.proxy.runpod.net/v1",
+      RUNPOD_LLM_API_KEY: "fictional-test-key",
+      RUNPOD_LLM_MODEL: "Qwen/Qwen3-4B",
+    },
+    fetcher: async (url, init) => {
+      networkCalls++;
+      assert.equal(String(url), "https://fictional.proxy.runpod.net/v1/chat/completions");
+      const request = JSON.parse(String(init?.body));
+      assert.deepEqual(request.response_format, { type: "json_object" });
+      assert.deepEqual(JSON.parse(request.messages[1].content).reviewedCv, { skills: data.skills });
+      return Response.json({
+        choices: [{ finish_reason: "stop", message: { content: JSON.stringify(sections), reasoning_content: null } }],
+      });
+    },
+  }), async post => {
+    const response = await post({ consent: true, data });
+    assert.equal(response.status, 200);
+    assert.equal(networkCalls, 1, "the real provider must reach the mocked transport rather than reject the prompt");
+    assert.deepEqual(GenerateCvCareerExplanationResponse.parse(await response.json()).sections, sections);
+  });
+});
+
 it("rate limits CV requests and never echoes malformed provider text", async () => {
   let calls = 0;
   await server(async () => { calls++; return { explanation: JSON.stringify(sections) }; }, async post => {
@@ -80,4 +106,23 @@ it("rate limits CV requests and never echoes malformed provider text", async () 
     assert.equal(response.headers.get("cache-control"), "no-store");
     assert.doesNotMatch(JSON.stringify(await response.json()), /candidate is an expert/);
   });
+});
+
+it("distinguishes input, connection, upstream and validation failures without echoing data", async () => {
+  for (const [failure, expected] of [
+    [new RunpodRequestError("input"), /input limit/],
+    [new RunpodRequestError("completion"), /could not be reached or timed out/],
+    [new RunpodRequestError("completion", 401), /HTTP 401/],
+    [new RunpodRequestError("response"), /complete, supported final answer/],
+    [new Error("private output must never appear"), /did not pass validation/],
+  ] as const) {
+    await server(async () => { throw failure; }, async post => {
+      const response = await post({ consent: true, data });
+      assert.equal(response.status, 502);
+      const body = await response.json();
+      assert.ok(body && typeof body === "object" && "error" in body && typeof body.error === "string");
+      assert.match(body.error, expected);
+      assert.doesNotMatch(body.error, /private output/);
+    });
+  }
 });

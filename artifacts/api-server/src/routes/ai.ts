@@ -4,6 +4,7 @@ import { generateLlmExplanation, RunpodConfigurationError, RunpodRequestError } 
 import { prepareAiContext, AiContextError } from "../lib/aiEvidence";
 import { parseFeatureAnswer } from "../lib/aiOutput";
 import { CvCareerInputError, prepareCvCareerExplanation, parseCvCareerExplanation } from "../lib/cvCareerExplanation";
+import { logger } from "../lib/logger";
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 8;
@@ -66,8 +67,21 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
     const result = await provider(prepared.request);
     if (!res.destroyed) res.json(parseCvCareerExplanation(result.explanation, prepared));
   } catch (error) {
+    // Only bounded diagnostic categories: never log CV data, prompts, output or credentials.
+    const stage = error instanceof RunpodConfigurationError ? "configuration"
+      : error instanceof RunpodRequestError ? error.stage : "output-validation";
+    logger.warn({
+      event: "cv_analysis_failed", stage,
+      ...(error instanceof RunpodRequestError && error.status !== undefined ? { upstreamStatus: error.status } : {}),
+    }, "CV analysis failed");
+    const message = stage === "configuration" ? "The AI service configuration is unavailable."
+      : stage === "input" ? "The analysis request exceeds the AI service input limit. Retrying unchanged will not help."
+      : error instanceof RunpodRequestError && error.status !== undefined ? `The AI service returned HTTP ${error.status}.`
+      : stage === "completion" || stage === "model-list" ? "The AI service could not be reached or timed out."
+      : stage === "response" ? "The AI service did not return a complete, supported final answer."
+      : "The AI responded, but its analysis did not pass validation.";
     if (!res.destroyed) res.status(error instanceof RunpodConfigurationError ? 503 : 502).json({
-      error: "The AI career explanation is unavailable or could not be validated. Your CV review and profile are unchanged. Please retry.",
+      error: `${message} Your CV review and profile are unchanged.`,
     });
   } finally {
     activeRequests--;

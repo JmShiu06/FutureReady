@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { cleanFinalAnswer, generateLlmExplanation, RunpodConfigurationError, RunpodRequestError } from "./runpod";
 import { syntheticExplanationContext, type AiFeature, type AiSampleId } from "./aiExamples";
+import { FEATURE_PROMPTS } from "./llmPrompts";
 
 const env = {
   RUNPOD_LLM_BASE_URL: "https://api.runpod.ai/v2/test-only/openai/v1",
@@ -79,6 +80,31 @@ describe("shared RunPod Qwen3 service", () => {
     await assert.rejects(generateLlmExplanation({
       instruction: "Explain", context: { text: "x".repeat(18_001) },
     }, { env }), RunpodRequestError);
+  });
+
+  it("all feature instructions pass the shared input guard using a mocked transport", async () => {
+    let calls = 0;
+    for (const prompt of Object.values(FEATURE_PROMPTS)) {
+      await generateLlmExplanation({
+        instruction: prompt.instruction, context: { synthetic: true },
+      }, { env, fetcher: async () => {
+        calls++;
+        return Response.json({ choices: [{ finish_reason: "stop", message: { content: "Fictional final answer." } }] });
+      } });
+    }
+    assert.equal(calls, Object.keys(FEATURE_PROMPTS).length);
+  });
+
+  it("reports oversized instructions as an input failure before any network call", async () => {
+    let calls = 0;
+    await assert.rejects(generateLlmExplanation({
+      instruction: "x".repeat(3001), context: {},
+    }, { env, fetcher: async () => { calls++; return Response.json({}); } }), error => {
+      assert.ok(error instanceof RunpodRequestError);
+      assert.equal(error.stage, "input");
+      return true;
+    });
+    assert.equal(calls, 0);
   });
 });
 

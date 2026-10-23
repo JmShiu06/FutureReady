@@ -3,3 +3,4 @@
 - [Frontend product boundaries](frontend-product-boundaries.md) — audience/evidence boundaries and synthetic-only Runpod explanations; real profiles and CV text remain local.
 - [Learning recommendation boundaries](learning-recommendation-boundaries.md) — Python learning engine was explicitly retired; preserve existing analysis and verified learning resources.
 - [SDG duty evidence](sdg-duty-evidence.md) — require target-plus-duty evidence and sub-role limits; real-occupation citations must not silently reuse fictional goal-only AI explanations.
+- [LLM boundary verification](llm-boundary-verification.md) — test prompts through real provider preflight with mocked transport; model discovery alone does not verify generation.
