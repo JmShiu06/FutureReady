@@ -1,4 +1,6 @@
 import { Link } from 'wouter';
+import { useState } from 'react';
+import { roleSupportsGoal } from '@workspace/workforce-evidence';
 import { ArrowRight } from 'lucide-react';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { planKey } from '@/domain/learning';
@@ -18,18 +20,26 @@ const hiddenRecommendationRoleIds = new Set([
 
 /** Career paths tab: sample-role coverage, SDG relevance tags and official occupation evidence. */
 export function CareerPathsTab() {
+  const [sdgGoal, setSdgGoal] = useState(0);
   const { profile, state, targetRoleId } = useWorkspace();
   const occupationQuery = useOccupationEvidence();
   const roadmapTarget = (id: string) => id === targetRoleId && !!state.baselines[planKey(state.audience, id)];
   const key = `${state.audience}:${JSON.stringify(profile.skills)}`;
   const result = useAsync(signal => demoService.matchCareers(profile, signal), key);
   const list = result.data ?? [];
-  const recommendationCards = list.filter(x => !hiddenRecommendationRoleIds.has(x.role.id));
+  const recommendationCards = list.filter(x => !hiddenRecommendationRoleIds.has(x.role.id) && (!sdgGoal || roleSupportsGoal(x.role.id, sdgGoal)));
   return <>
     <div className="tab-intro">
       <p className="muted">Sample career paths ranked by <b>illustrative proficiency coverage</b>, with SDG relevance tags. Malaysian critical occupations below use a separate <b>O*NET documented overlap</b> count.</p>
       <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>
     </div>
+    <label className="field" style={{ marginBottom: 16 }}>I care about…
+      <select className="fr-select" value={sdgGoal} onChange={e => setSdgGoal(Number(e.target.value))} data-testid="select-career-sdg">
+        <option value={0}>All reviewed SDG learning intentions</option>
+        {[4, 8, 10, 3, 16, 17].map(goal => <option key={goal} value={goal}>SDG {goal}</option>)}
+      </select>
+      <span className="small muted">Filters reviewed conditional learning/use-case relevance only. Match scores and order are unchanged.</span>
+    </label>
     {result.status === 'loading' && !result.data && <LoadingBlock rows={4} />}
     {result.status === 'error' && <ErrorBlock message={result.error ?? 'Could not rank careers.'} onRetry={result.retry} />}
     {result.status !== 'error' && result.data && recommendationCards.length > 0 && <div className="grid-2">{recommendationCards.map((x, i) => <article key={x.role.id} className={`role-card${roadmapTarget(x.role.id) ? ' selected' : ''}`} data-testid={`card-career-${x.role.id}`}>
@@ -48,7 +58,7 @@ export function CareerPathsTab() {
           <Link href={`/careers-and-jobs/roles/${x.role.id}`} className="text-link" data-testid={`link-role-${x.role.id}`}>Role detail & evidence <ArrowRight size={12} /></Link>
         </div>
       </article>)}</div>}
-    <OfficialOccupationsPanel query={occupationQuery} />
+    <OfficialOccupationsPanel query={occupationQuery} sdgGoal={sdgGoal} />
     <OccupationComparisonPanel query={occupationQuery} />
   </>;
 }

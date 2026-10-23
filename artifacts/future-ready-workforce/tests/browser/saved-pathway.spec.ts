@@ -7,9 +7,10 @@ import {
 test.use({ serviceWorkers: 'block' });
 
 for (const [sample, label, skills] of [
-  ['it-graduate', 'Fresh IT graduate', ['Reading Comprehension', 'Mathematics']],
-  ['admin-to-data', 'Admin worker switching to data', ['Active Listening', 'Speaking', 'Writing']],
-  ['factory-supervisor', 'Factory supervisor upskilling', ['Coordination', 'Monitoring', 'Time Management']],
+  ['it-graduate', 'Aina - fresh IT graduate', ['Reading Comprehension', 'Mathematics']],
+  ['admin-to-data', 'Ravi - admin clerk whose tasks are being automated', ['Active Listening', 'Speaking', 'Writing']],
+  ['retail-to-hr', 'Mei Ling - retail supervisor switching to HR', ['Coordination', 'Service Orientation', 'Time Management']],
+  ['factory-supervisor', 'Farid - factory supervisor upskilling', ['Coordination', 'Monitoring', 'Time Management']],
 ] as const) {
   test(`${label} creates a synthetic baseline without replacing the saved profile`, async ({ page }) => {
     await buildSample(page, sample);

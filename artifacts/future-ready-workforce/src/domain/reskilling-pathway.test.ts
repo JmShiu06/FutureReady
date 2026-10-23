@@ -44,13 +44,14 @@ test('foundation comes before core; existing scenario priority reorders core gap
   assert.deepEqual(fast.steps.filter(s => s.phase === 'Core skills').map(s => s.skill), ['Critical Thinking', 'Time Management']);
   assert.equal(fast.steps.at(-1)?.phase, 'Apply it');
 });
-test('each step rounds weeks up, and total is sequential whole-week allowances', () => {
+test('remaining ordered hours are packed into weekly capacity, not rounded per step', () => {
   const plan = buildPathway(input(['Critical Thinking', 'Systems Analysis'], {
     catalog: [fixture('a', 'Critical Thinking', 0), fixture('b', 'Systems Analysis', 0)],
   }));
   assert.equal(plan.totalHours, 6);
-  assert.equal(plan.totalWeeks, 3);
-  assert.equal(plan.finishDate, '2026-11-13');
+  assert.equal(plan.totalWeeks, 2);
+  assert.equal(plan.finishDate, '2026-11-06');
+  assert.deepEqual(plan.steps.map(s => [s.startWeek, s.endWeek]), [[1, 1], [1, 1], [1, 2]]);
   assert.deepEqual(plan.steps.map(s => s.weeks), [1, 1, 1]);
   assert.equal(weeksFor(6, 5), 2);
   assert.equal(weeksFor(24, 5), 5);
@@ -144,7 +145,7 @@ test('one course covering multiple gaps is timed and costed once and retains all
   assert.deepEqual(plan.steps[0].milestoneIds.sort(), ['Active Listening', 'Writing']);
 });
 test('unmatched skills remain visible with unknown duration/cost rather than invented courses', () => {
-  const plan = buildPathway(input(['Negotiation']));
+  const plan = buildPathway(input(['An uncovered skill'], { catalog: [] }));
   assert.equal(plan.steps[0].status, 'no-resource');
   assert.equal(plan.steps[0].resource, null);
   assert.equal(plan.steps[0].hours, null);
@@ -187,7 +188,7 @@ test('samples preserve saved profile; completion, including portfolio, cannot up
   assert.equal(state.completion[completionKey(state.audience, projectId)], true);
   assert.ok(confirmSkillUpdate(state, { milestoneId: projectId, toLevel: 2 }).error);
   const restored = parseWorkspace(JSON.stringify(state)).state;
-  assert.equal(restored.baselines[`${state.audience}:${roleId}`].sampleLabel, 'Fresh IT graduate');
+  assert.equal(restored.baselines[`${state.audience}:${roleId}`].sampleLabel, 'Aina - fresh IT graduate');
   assert.equal(restored.completion[completionKey(state.audience, projectId)], true);
   const reset = resetActiveRoadmap(restored);
   assert.equal(reset.completion[completionKey(state.audience, projectId)], undefined);
@@ -208,7 +209,7 @@ test('invalid saved pathway controls recover without consuming or changing works
 test('public catalogue contains reviewed provider metadata and positive stated hours only', () => {
   assert.equal(new Set(courseCatalog.map(course => course.id)).size, courseCatalog.length);
   for (const course of courseCatalog) {
-    assert.match(course.url, /^https:\/\/(www\.open\.edu|www\.netacad\.com)\//);
+    assert.match(course.url, /^https:\/\/(www\.open\.edu|www\.netacad\.com|learn\.saylor\.org)\//);
     assert.ok(course.hours !== null && course.hours > 0);
     assert.ok(course.coverage && course.sourceUrl && course.skills.length && course.sdgs.length);
     assert.equal(course.verified_on, '2026-10-23');
@@ -234,22 +235,22 @@ test('new exact O*NET coverage is selectable at zero budget with or without free
     }
   }
   // Near names and related capabilities are not silently treated as reviewed coverage.
-  for (const skill of ['Learning', 'Decision Making', 'Systems Evaluation', 'Negotiation']) {
+  for (const skill of ['Learning', 'Decision Making']) {
     assert.equal(selectResource(skill, courseCatalog, 1000, false), null);
   }
 });
 
 test('expanded catalogue reuses learning course and leaves the plan-wide budget for paid gaps', () => {
   const skills = ['Active Learning', 'Learning Strategies', 'Monitoring', 'Judgment and Decision Making'];
-  const catalog = [...courseCatalog, fixture('paid-negotiation', 'Negotiation', 60), fixture('paid-persuasion', 'Persuasion', 60)];
+  const catalog = [...courseCatalog.filter(r => !r.id.startsWith('saylor-')), fixture('paid-negotiation', 'Negotiation', 60), fixture('paid-persuasion', 'Persuasion', 60)];
   const free = buildPathway(input(skills, { freeOnly: true }));
   assert.equal(free.steps.length, 4); // Three courses plus the app-estimated portfolio.
   assert.equal(free.totalHours, 19);
-  assert.equal(free.totalWeeks, 5);
+  assert.equal(free.totalWeeks, 4);
   assert.equal(free.totalCostMYR, 0);
   assert.equal(free.unavailableCount, 0);
   assert.equal(free.unknownDurationCount, 0);
-  assert.equal(free.finishDate, '2026-11-27');
+  assert.equal(free.finishDate, '2026-11-20');
   assert.deepEqual(free.skills.sort(), [...skills].sort());
   assert.deepEqual(free.steps.find(s => s.resource?.id === 'ol-learning-how-to-learn')?.milestoneIds.sort(),
     ['Active Learning', 'Learning Strategies']);

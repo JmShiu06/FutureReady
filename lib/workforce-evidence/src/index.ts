@@ -11,8 +11,10 @@ export { learningResources, learningResourceCatalog } from './learning-resources
 export type { CatalogSkill, VerifiedLearningResource } from './learning-resources';
 export type { MycolSdgMapping, SdgCitation } from './mycol-sdg';
 export * from './planning';
+export * from './ai-research';
 export * from './occupational-learning';
 export * from './sdg-use-cases';
+export * from './pathway-sdg-targets';
 
 export const sdgMappings: SdgMapping[] = [
   {

@@ -5,6 +5,39 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AiResearchCount {
+  capability: string;
+  label: string;
+  query: string;
+  currentQueryUrl: string;
+  previousQueryUrl: string;
+  /** @minimum 0 */
+  current: number;
+  /** @minimum 0 */
+  previous: number;
+  /** @nullable */
+  growth: number | null;
+}
+
+export type AiResearchSnapshotWeights = {[key: string]: number};
+
+export interface AiResearchSnapshot {
+  source: string;
+  fetchedAt: string;
+  currentStart: string;
+  previousStart: string;
+  end: string;
+  counts: AiResearchCount[];
+  weights: AiResearchSnapshotWeights;
+}
+
+export interface AiResearchResponse {
+  snapshot: AiResearchSnapshot | null;
+  refreshing: boolean;
+  /** @nullable */
+  error: string | null;
+}
+
 export interface AiAnnouncement {
   title: string;
   publishedOn: string;

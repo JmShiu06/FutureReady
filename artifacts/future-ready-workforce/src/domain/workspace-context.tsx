@@ -12,6 +12,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const saved = loadWorkspace(window.localStorage);
       const profiles = audiences.reduce((profiles, audience) => {
         const profile = saved.state.profiles[audience];
+        // Fictional demo preferences may persist; retain the established privacy reset for other profiles.
+        if (profile.sampleId) { profiles[audience] = { ...profile, skills: migrateLegacySkills(profile.skills) }; return profiles; }
         profiles[audience] = {
           ...profile,
           skills: migrateLegacySkills(profile.skills),

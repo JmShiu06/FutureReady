@@ -1,6 +1,7 @@
 import { rankFutureRoles, scenarioSkillBonus, skillPlanningScore, roleSdgUseCases, type PlanningScenario, type PlanningSignal } from '@workspace/workforce-evidence';
 import { courseCatalog, type CourseResource } from './resource-catalog';
 import type { LearningMilestone, OfficialRoadmapOccupation } from './types';
+import { targetsForPathwaySkill, type PathwaySdgTarget } from '@workspace/workforce-evidence';
 
 export type Phase = 'Foundation' | 'Core skills' | 'Apply it';
 export interface PathwayStep {
@@ -10,18 +11,23 @@ export interface PathwayStep {
   hours: number | null; weeks: number | null; priority: number; scenarioBonus: number;
   why: string; whyResource: string; sdgs: number[]; activity: string;
   evidenceUrl: string | null; importance: number | null;
+  sdgTargets?: PathwaySdgTarget[];
+  startWeek?: number; endWeek?: number; endDate?: string;
   marketEvidence?: { signalIndex: number; trendIndex: number; period: string; url: string; scenario: PlanningScenario };
 }
 export interface PathwayPlan {
-  steps: PathwayStep[]; totalHours: number; totalWeeks: number; totalCostMYR: number;
+  steps: PathwayStep[]; totalHours: number; remainingHours: number; totalWeeks: number; totalCostMYR: number;
   unknownDurationCount: number; unavailableCount: number; finishDate: string | null;
   sdgs: number[]; skills: string[];
+  knownFinishDate: string | null;
 }
 export interface PathwayInput {
   milestones: LearningMilestone[]; roleId: string; roleTitle: string;
   occupation?: OfficialRoadmapOccupation; signals: PlanningSignal[];
   scenario: PlanningScenario; hoursPerWeek: number; budgetMYR: number; freeOnly: boolean;
   now?: Date; catalog?: CourseResource[];
+  researchWeights?: Record<string, number>;
+  completedMilestoneIds?: string[];
 }
 export const portfolioMilestoneId = (roleId: string) => `${roleId}:portfolio`;
 const normalized = (s: string) => s.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
@@ -42,17 +48,19 @@ export function selectResource(skill: string, catalog: CourseResource[], remaini
 /** Calls the existing priority functions; no changes to market scoring or occupation ranking. */
 export function buildPathway(input: PathwayInput): PathwayPlan {
   const { milestones, roleId, occupation, signals, scenario } = input;
-  const catalog = input.catalog ?? courseCatalog;
+  const catalog = (input.catalog ?? courseCatalog).filter(r => !r.applicableRoleIds
+    || r.applicableRoleIds.includes((occupation?.id ?? roleId).replace(/^official:/, '')));
   const h = Number.isFinite(input.hoursPerWeek) ? Math.max(1, Math.min(40, input.hoursPerWeek)) : 5;
   let remaining = Number.isFinite(input.budgetMYR) ? Math.max(0, input.budgetMYR) : 0;
   const ranked = occupation ? rankFutureRoles([{
     id: occupation.id, mycol: { title: occupation.title, masco4: occupation.masco4 },
     onet: { url: occupation.sourceUrl }, documentedSkills: occupation.documentedSkills, recommendationStatus: 'eligible',
-  }], [], signals, scenario)[0] : null;
+  }], [], signals, scenario, input.researchWeights)[0] : null;
   const priorities = new Map(ranked?.missing.map(s => [normalized(s.name), s.priority]) ?? []);
   const importanceOf = (m: LearningMilestone) => occupation?.documentedSkills.find(s => normalized(s.name) === normalized(m.skill))?.importance ?? null;
   const priorityOf = (m: LearningMilestone) => priorities.get(normalized(m.skill))
-    ?? skillPlanningScore(m.skill, m.priority === 'High' ? 5 : m.priority === 'Medium' ? 3 : 1, 0, scenario);
+    ?? Math.max(0, Math.min(100, skillPlanningScore(m.skill, m.priority === 'High' ? 5 : m.priority === 'Medium' ? 3 : 1, 0, scenario)
+      + (input.researchWeights?.[m.skill] ?? 0) * (scenario === 'moderate' ? .5 : 1)));
   const sorted = [...milestones].sort((a, b) =>
     Number(!basic.has(normalized(a.skill))) - Number(!basic.has(normalized(b.skill)))
     || priorityOf(b) - priorityOf(a) || a.skill.localeCompare(b.skill));
@@ -106,20 +114,41 @@ export function buildPathway(input: PathwayInput): PathwayPlan {
       evidenceUrl: occupation?.sourceUrl ?? null,
     });
   }
-  return summarizePathway(steps, h, input.now);
+  return summarizePathway(steps.map(step => ({
+    ...step, sdgTargets: [...new Map(step.coveredSkills.flatMap(skill =>
+      targetsForPathwaySkill(occupation?.id ?? roleId, skill)).map(t => [t.target, t])).values()],
+  })), h, input.now, input.completedMilestoneIds);
 }
-/** Sequential steps each get a whole-week allowance, exactly as the step labels show. */
-export function summarizePathway(steps: PathwayStep[], hoursPerWeek: number, now = new Date()): PathwayPlan {
-  const timed = steps.map(s => ({ ...s, weeks: weeksFor(s.hours, hoursPerWeek) }));
-  const unknownDurationCount = timed.filter(s => s.weeks === null).length;
-  const totalWeeks = timed.reduce((n, s) => n + (s.weeks ?? 0), 0);
+/** Pack remaining known hours into weekly capacity; unknown durations are not guessed.
+ * A completed multi-skill course is excluded only when ALL of its milestone IDs are done.
+ */
+export function summarizePathway(steps: PathwayStep[], hoursPerWeek: number, now = new Date(), completedMilestoneIds: string[] = []): PathwayPlan {
+  const capacity = Number.isFinite(hoursPerWeek) && hoursPerWeek >= 1 && hoursPerWeek <= 40 ? hoursPerWeek : 5;
+  const completed = new Set(completedMilestoneIds);
+  const isDone = (s: PathwayStep) => s.milestoneIds.every(id => completed.has(id));
+  let cursor = 0;
+  const timed = steps.map(s => {
+    const hours = s.hours !== null && Number.isFinite(s.hours) && s.hours > 0 ? s.hours : null;
+    const result = { ...s, hours, weeks: weeksFor(hours, capacity), startWeek: undefined as number | undefined, endWeek: undefined as number | undefined, endDate: undefined as string | undefined };
+    if (hours !== null && !isDone(s)) {
+      result.startWeek = Math.floor(cursor / capacity) + 1;
+      cursor += hours;
+      result.endWeek = Math.ceil(cursor / capacity);
+      const finish = new Date(now); finish.setUTCDate(finish.getUTCDate() + result.endWeek * 7);
+      result.endDate = finish.toISOString().slice(0, 10);
+    }
+    return result;
+  });
+  const unknownDurationCount = timed.filter(s => !isDone(s) && s.hours === null).length;
+  const totalWeeks = Math.ceil(cursor / capacity);
   const finish = new Date(now);
   finish.setUTCDate(finish.getUTCDate() + totalWeeks * 7);
   return {
-    steps: timed, totalHours: timed.reduce((n, s) => n + (s.hours ?? 0), 0), totalWeeks,
+    steps: timed, totalHours: timed.reduce((n, s) => n + (s.hours ?? 0), 0), remainingHours: cursor, totalWeeks,
     totalCostMYR: timed.reduce((n, s) => n + (s.status === 'available' ? s.resource?.costMYR ?? 0 : 0), 0),
     unknownDurationCount, unavailableCount: timed.filter(s => s.status !== 'available').length,
     finishDate: unknownDurationCount || !timed.length ? null : finish.toISOString().slice(0, 10),
+    knownFinishDate: timed.length ? finish.toISOString().slice(0, 10) : null,
     sdgs: [...new Set(timed.flatMap(s => s.sdgs))].sort((a, b) => a - b),
     skills: [...new Set(timed.filter(s => s.status === 'available' && s.kind === 'course').flatMap(s => s.coveredSkills))],
   };

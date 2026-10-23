@@ -8,7 +8,9 @@ const signalSchema = z.object({
 const preferencesSchema = z.object({
   version: z.literal(1), hours: z.number().int().min(1).max(40),
   budget: z.number().min(0).max(100000), freeOnly: z.boolean(),
-  accepted: z.object({ scenario: z.enum(['moderate', 'fast']), signals: z.array(signalSchema).max(10) }),
+  accepted: z.object({ scenario: z.enum(['moderate', 'fast']), signals: z.array(signalSchema).max(10),
+    researchWeights: z.record(z.string().max(100), z.number().min(-10).max(10)).optional(),
+    researchFetchedAt: z.string().max(80).optional(), researchSource: z.enum(['arxiv', 'demo', 'unavailable']).optional() }),
   ignoredFingerprint: z.string().max(50000).optional(),
 });
 export type PathwayPreferences = z.infer<typeof preferencesSchema>;

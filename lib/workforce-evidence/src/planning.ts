@@ -34,7 +34,7 @@ export function scenarioSkillBonus(name: string, scenario: PlanningScenario) {
 export function skillPlanningScore(name: string, importance: number, signalIndex: number, scenario: PlanningScenario) {
   return bounded(60 * importance / 5 + .2 * signalIndex + scenarioSkillBonus(name, scenario));
 }
-export function rankFutureRoles(roles: PlanningRole[], skills: string[], signals: PlanningSignal[], scenario: PlanningScenario) {
+export function rankFutureRoles(roles: PlanningRole[], skills: string[], signals: PlanningSignal[], scenario: PlanningScenario, researchWeights?: Record<string, number>) {
   const names = new Set(skills.map(key));
   const maximum = Math.max(0, ...signals.map(s => s.latest));
   const p = planningScenarios[scenario];
@@ -49,7 +49,8 @@ export function rankFutureRoles(roles: PlanningRole[], skills: string[], signals
     const task = taskAssumptions[role.id];
     const adjustment = task ? p.adaptationWeight * task.adaptation - p.automationWeight * task.routine : 0;
     const missing = role.documentedSkills.filter(s => !names.has(key(s.name))).map(s => ({
-      ...s, priority: skillPlanningScore(s.name, s.importance, .7 * signalIndex + .3 * trendIndex, scenario),
+      ...s, priority: bounded(skillPlanningScore(s.name, s.importance, .7 * signalIndex + .3 * trendIndex, scenario)
+        + (researchWeights?.[s.name] ?? 0) * (scenario === 'moderate' ? .5 : 1)),
     })).sort((a, b) => b.priority - a.priority || a.name.localeCompare(b.name));
     return { role, overlap, signalIndex, trendIndex, change, baseline, adjustment: Math.round(adjustment * 10) / 10,
       suitability: bounded(baseline + adjustment), matched: matched.map(s => s.name), missing, signal, task };

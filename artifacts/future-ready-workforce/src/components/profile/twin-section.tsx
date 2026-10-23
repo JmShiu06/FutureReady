@@ -5,6 +5,7 @@ import { completionKey } from '@/domain/services';
 import { confirmationFor, currentLevel, progressReport, proposedLevel, roadmapMilestones } from '@/domain/learning';
 import { Bar, EmptyBlock, SectionTitle, levelLabel } from '@/components/workspace/ui';
 import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
+import { usePathwayProgress } from '@/hooks/use-pathway-progress';
 import type { RoadmapBaseline } from '@/domain/types';
 import { MatchScore } from '@/components/shared/match-score';
 
@@ -33,6 +34,7 @@ function Proposal({ milestoneId, skill, required, title }: { milestoneId: string
 }
 
 function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
+  const pathway = usePathwayProgress();
   const { state, profile } = useWorkspace();
   const occupation = baseline.occupation!;
   const start = documentedOverlap(baseline.skills, occupation);
@@ -50,7 +52,7 @@ function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
         <div><p className="small muted">Current</p><MatchScore metric="onet" variant="bar" value={current.score} matched={current.matched} considered={current.total} testId="text-current-overlap" /></div>
       </div>
       <p className="muted small">The original name-overlap formula is unchanged. A higher self-rating for an existing skill does not increase this score. Completing activities alone never changes skills or overlap. No O*NET rating is a 1–5 proficiency target.</p>
-      <p data-testid="text-twin-summary">{completed.length} completed activities · {confirmations.length} confirmed skill updates · {current.total - current.matched} documented skills not in profile</p>
+      <p data-testid="text-twin-summary">{pathway.done} of {pathway.total} steps done · {pathway.percent}% · {confirmations.length} confirmed skill updates · {current.total - current.matched} documented skills not in profile</p>
       <p className="small muted">Started {new Date(baseline.startedAt).toLocaleDateString()} · evidence snapshot: O*NET {occupation.release}.</p>
     </div>
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
@@ -76,6 +78,7 @@ function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
 }
 
 export function TwinSection() {
+  const pathway = usePathwayProgress();
   const { state } = useWorkspace();
   const report = progressReport(state);
   const completed = roadmapMilestones(state).filter(m => state.completion[completionKey(state.audience, m.id)]);
@@ -101,7 +104,7 @@ export function TwinSection() {
           </div>
           <div className="panel panel-pad">
             <SectionTitle title="Summary" />
-            <p className="small" style={{ margin: 0 }} data-testid="text-twin-summary">{completed.length} completed activit{completed.length === 1 ? 'y' : 'ies'} · {report.confirmations.length} confirmed skill update{report.confirmations.length === 1 ? '' : 's'} · {report.current.gaps.length} gap{report.current.gaps.length === 1 ? '' : 's'} remaining</p>
+            <p className="small" style={{ margin: 0 }} data-testid="text-twin-summary">{pathway.done} of {pathway.total} steps done · {pathway.percent}% · {report.confirmations.length} confirmed skill updates · {report.current.gaps.length} gaps remaining</p>
             <p className="muted small">Started {report.startedAt.startsWith('1970') ? 'before progress tracking was added' : new Date(report.startedAt).toLocaleDateString()}.</p>
           </div>
         </div>

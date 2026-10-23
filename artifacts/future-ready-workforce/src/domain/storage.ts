@@ -12,6 +12,7 @@ export const skillSchema = z.object({
   cvDetected: z.boolean().optional(),
 });
 export const profileSchema = z.object({
+  sampleId: z.enum(['it-graduate', 'admin-to-data', 'retail-to-hr', 'factory-supervisor']).optional(),
   id: z.string().min(1).max(80), audience: z.enum(audiences), occupation: boundedText,
   experienceYears: z.number().min(0).max(60).nullable(), education: boundedText, qualification: boundedText,
   studyField: boundedText, interests: z.array(boundedText.min(1)).max(10),

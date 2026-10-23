@@ -9,6 +9,8 @@ import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { PageHead } from '@/components/workspace/ui';
 import { MatchScore } from '@/components/shared/match-score';
 import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
+import { FictionalSamples } from '@/components/shared/fictional-samples';
+import { usePathwayProgress } from '@/hooks/use-pathway-progress';
 
 function SummaryCard({ icon, eyebrow, title, value, foot, href, cta, testId }: {
   icon: React.ReactNode; eyebrow: string; title: string; value?: React.ReactNode; foot?: React.ReactNode; href: string; cta: string; testId: string;
@@ -66,9 +68,8 @@ function PersonalOverview() {
   const occupation = officialBaseline(state)?.occupation;
   const overlap = occupation ? documentedOverlap(profile.skills, occupation) : null;
   const targetAssessment = useMemo(() => assessRole(profile, target), [profile, target]);
-  const milestones = useMemo(() => roadmapMilestones(state), [state]);
+  const pathway = usePathwayProgress();
   const built = !!activeBaseline(state);
-  const done = milestones.filter(m => state.completion[completionKey(state.audience, m.id)]).length;
   const top = ranked[0];
   const graduate = state.audience === 'graduate';
   const audienceDetails = graduate
@@ -80,6 +81,7 @@ function PersonalOverview() {
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · dashboard`} title={graduate ? 'Turn your studies into a first career move.' : 'Make your next move with a little more clarity.'}
       subtitle="A summary of where you stand. Each card opens the full view." />
+    <FictionalSamples />
     <section className="summary-grid summary-grid-lead">
       <article className="welcome-card">
         <div className="eyebrow">Starting from</div>
@@ -101,7 +103,7 @@ function PersonalOverview() {
         foot="Upload a CV or edit skills. CVs are processed transiently; only skills you confirm are saved in this browser." href="/my-profile" cta="Open My profile" />
       <SummaryCard icon={<BriefcaseBusiness size={15} />} eyebrow="Careers & jobs" title={profile.skills.length ? 'Explore matches for your saved skills' : 'No CV-based matches yet'} testId="careers"
         foot="Use reviewed skills to explore role alignment, not hiring predictions." href="/careers-and-jobs?tab=matched-roles" cta="View matched roles" />
-      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Learning roadmap" title={built ? `${done} of ${milestones.length} milestones complete` : 'No roadmap yet'} testId="roadmap"
+      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Learning roadmap" title={built ? `${pathway.done} of ${pathway.total} steps done · ${pathway.percent}%` : 'No roadmap yet'} testId="roadmap"
         foot={built ? 'Completion tracks progress only' : 'Build one from a career path'} href="/learning-roadmap" cta="Open learning roadmap" />
       <SummaryCard icon={<BarChart3 size={15} />} eyebrow="Market & AI impact" title="Labour-market indicators and AI task support" testId="market"
         foot="Dated DOSM context and a local self-check" href="/market-and-ai-impact" cta="Open Market & AI impact" />

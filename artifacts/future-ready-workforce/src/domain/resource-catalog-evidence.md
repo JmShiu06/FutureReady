@@ -56,6 +56,36 @@ qualification caveats remain as in the existing OpenLearn records.
 
 ## Evidence limits
 
+## Additional provider review — 2026-10-23
+
+Fetched each new Saylor course introduction and linked syllabus before inclusion.
+Titles match the syllabus headings. Syllabi explicitly state free materials,
+enrolment and certificates, and the recorded full-course hours:
+
+| Course | Hours | Primary syllabus |
+| --- | ---: | --- |
+| BUS301: Human Resource Management | 24 | https://learn.saylor.org/mod/page/view.php?id=69748 |
+| BUS403: Negotiations and Conflict Management | 24 | https://learn.saylor.org/mod/page/view.php?id=99152 |
+| BUS208: Principles of Management | 70 | https://learn.saylor.org/mod/page/view.php?id=86571 |
+| ESL001: Elementary English as a Second Language | 18 | https://learn.saylor.org/mod/page/view.php?id=92274 |
+| CS302: Software Engineering | 36 | https://learn.saylor.org/mod/page/view.php?id=71746 |
+
+Course levels are app prerequisite classifications, not Saylor qualifications.
+The metadata records bounded reviewed coverage and exclusions. CS302 is restricted
+to reviewed software/IT role contexts, never HR, nursing or factory management.
+It assumes prior computer-science study; its testing and requirements outcomes do
+not establish general organisational Systems Evaluation competence. ESL001 is
+optional foundational English-context comprehension, not a new language input or
+requirement in any match score.
+
+e-LATiH course and catalogue URLs returned HTTP 405 during direct verification.
+Its catalogue is therefore a separate **Check availability** reference, NOT a
+verified course, free price, duration or HRD-claimable entitlement. No search-result
+snippet was promoted into verified metadata. The link checker also reports
+OpenLearn HTTP 403 responses for manual review: a blocked checker is not proof
+that the course has been removed. Existing reviewed records are not silently
+deleted or re-dated.
+
 The provider's expandable metadata was omitted by the text-only page extractor;
 hours and levels above were checked in the primary-provider page search index,
 not derived from activity timings, reviews, ratings or third-party listings.

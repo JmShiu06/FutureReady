@@ -19,7 +19,13 @@ Readiness, observed market evidence and scenario assumptions are different conce
 
 **Why:** The user explicitly prohibits fake live signals, random match scores, fabricated sources, unvalidated forecasts and individual hiring decisions from aggregate planning views.
 
-**How to apply:** Use documented deterministic prototype calculations; keep source URLs nullable and show missing/stale evidence. Do not make synthetic refresh controls pretend to fetch live data. Candidate skills come from reviewed CV extraction or manual entry; do not seed fictional skills.
+**How to apply:** Use documented deterministic prototype calculations; keep source URLs nullable and show missing/stale evidence. Do not make synthetic refresh controls pretend to fetch live data. Candidate skills come from reviewed CV extraction or manual entry; never silently seed fictional skills. Explicitly selected, labelled fictional samples are now permitted for Domain 1 demonstrations.
+
+Domain 1 demonstrations must use fictional sample profiles and sample CVs, not real personal data. LinkedIn import/recruitment integration is outside this demo's scope.
+
+**Why:** The user explicitly required fictional samples for judging and prohibited real personal data and recruitment integrations in that flow. This does not remove the separate privacy and consent protections on existing CV features.
+
+**How to apply:** Make samples opt-in and conspicuously fictional. Warn before replacing current profile data; keep existing roadmap evidence and progress separate. Do not auto-load samples into a real or existing profile.
 
 For official labour-market data integrations, use DOSM sources only unless the user explicitly approves additional providers.
 

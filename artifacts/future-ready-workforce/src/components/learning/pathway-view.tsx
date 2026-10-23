@@ -6,6 +6,8 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import '@/styles/pathway.css';
+import { PathwayContribution } from './pathway-contribution';
+import { pathwayProgress } from '@/domain/pathway-progress';
 
 type Resource = NonNullable<PathwayStep['resource']>;
 type Phase = PathwayStep['phase'];
@@ -50,7 +52,7 @@ function ResourceBlock({ step }: { step: PathwayStep }) {
   if (step.kind === 'project') {
     return <div className="pw-resource pw-project" data-testid={`text-project-${step.id}`}>
       <span className="pw-tag">Portfolio project · written by FutureReady</span>
-      <div className="pw-chips"><span className="pw-chip">MYR 0</span><span className="pw-chip">{step.hours} hrs · ~{step.weeks} {step.weeks === 1 ? 'week' : 'weeks'} · app estimate</span></div>
+      <div className="pw-chips"><span className="pw-chip">MYR 0</span><span className="pw-chip">{step.hours} hrs · app estimate</span></div>
       <p>{step.activity}</p>
       <small>This is a fictional practice brief created by this app, not a provider course. There is no course link.</small>
     </div>;
@@ -76,7 +78,7 @@ function ResourceBlock({ step }: { step: PathwayStep }) {
     <div className="pw-chips">
       <span className="pw-chip">{r.provider}</span>
       <span className="pw-chip">{step.status === 'check-availability' ? 'Cost not verified' : r.cost}</span>
-      <span className="pw-chip">{step.hours != null ? `${step.hours} hrs · ~${step.weeks} ${step.weeks === 1 ? 'week' : 'weeks'}` : 'Duration not stated'}</span>
+      <span className="pw-chip">{step.hours != null ? `${step.hours} hrs` : 'Duration not stated'}</span>
       <span className="pw-chip">{r.level}</span>
       {step.status === 'check-availability' && <span className="pw-chip pw-chip-warn">Check availability</span>}
     </div>
@@ -97,6 +99,10 @@ function WhyDetails({ step, r }: { step: PathwayStep; r: Resource | null }) {
         {safeUrl(step.marketEvidence.url) && <> · <a className="pw-link" href={step.marketEvidence.url} target="_blank" rel="noopener noreferrer">DOSM workbook</a></>}</dd></>}
       {step.coveredSkills.length > 1 && <><dt>Also covers</dt><dd>{step.coveredSkills.join(', ')}</dd></>}
       <dt>Resource choice</dt><dd>{step.whyResource || '—'}</dd>
+      {!!step.sdgTargets?.length && <><dt>Why this SDG?</dt><dd>{step.sdgTargets.map(t => <p key={t.target}>
+        <a href={t.sourceUrl} target="_blank" rel="noreferrer">SDG target {t.target}</a>: {t.reason}
+        {t.dutyUrl && <> · <a href={t.dutyUrl} target="_blank" rel="noreferrer">Duty evidence</a></>} · reviewed {t.reviewedOn}.
+      </p>)}</dd></>}
       {r && <><dt>Source</dt><dd>{safeUrl(r.sourceUrl) ? <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="pw-link">{r.provider}</a> : r.provider}</dd>
         <dt>Verified</dt><dd>{r.verified_on}</dd>
         <dt>Coverage</dt><dd>{r.coverage}</dd>
@@ -113,6 +119,7 @@ function StepCard({ step, index, done, onToggle }: { step: PathwayStep; index: n
     <span>{done ? 'Done' : 'Mark done'}</span>
   </label>;
   const body = <div className="pw-body">
+    {!done && step.startWeek !== undefined && <p className="small"><b>Week {step.startWeek}{step.endWeek !== step.startWeek ? `–${step.endWeek}` : ''}</b> · estimated step finish {step.endDate} · known-hours schedule</p>}
     <p className="pw-whyline">{step.why}</p>
     <ResourceBlock step={step} />
     <Sdgs ids={step.sdgs} testid={`list-sdgs-${step.id}`} />
@@ -136,11 +143,8 @@ function StepCard({ step, index, done, onToggle }: { step: PathwayStep; index: n
 export function PathwayView(p: PathwayViewProps) {
   const { plan } = p;
   const [reviewOpen, setReviewOpen] = useState(false);
-  const doneCount = plan.steps.filter(p.isDone).length;
-  const total = plan.steps.length;
-  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const { done: doneCount, total, percent: pct } = pathwayProgress(plan, p.isDone);
   const sources = Array.from(new Set(plan.steps.map(s => s.resource && safeUrl(s.resource.url)).filter((u): u is string => !!u)));
-  let n = 0;
   const printPlan = () => {
     const collapsed = [...document.querySelectorAll<HTMLDetailsElement>('.pw-collapsed:not([open])')];
     collapsed.forEach(d => { d.open = true; });
@@ -169,7 +173,7 @@ export function PathwayView(p: PathwayViewProps) {
         <div>
           <div className="eyebrow">Your reskilling pathway</div>
           <h2 className="pw-target" data-testid="text-target-title">{p.targetTitle}</h2>
-          <p className="pw-time" data-testid="text-plan-time">~{plan.totalWeeks} {plan.unknownDurationCount ? 'known weeks' : 'weeks'} at {p.hours} hrs/week{plan.finishDate ? ` · planned finish around ${plan.finishDate}` : plan.unknownDurationCount ? ' · full finish date unavailable until missing resources are confirmed' : ''}</p>
+          <p className="pw-time" data-testid="text-plan-time">~{plan.totalWeeks} {plan.unknownDurationCount ? 'known weeks' : 'weeks'} remaining at {p.hours} hrs/week{plan.finishDate ? ` · planned finish around ${plan.finishDate}` : plan.unknownDurationCount ? ` · known activities finish around ${plan.knownFinishDate}; full finish date unknown` : ''}</p>
         </div>
         <div className="row pw-noprint">
           <button type="button" className="btn btn-quiet btn-small" onClick={printPlan} data-testid="button-print-plan"><Printer size={13} /> Print / Save as PDF</button>
@@ -185,12 +189,13 @@ export function PathwayView(p: PathwayViewProps) {
         </div>
       </div>
       <dl className="pw-stats">
-        <div><dt>Total time</dt><dd data-testid="text-total-hours">{plan.totalHours} hrs{plan.unknownDurationCount ? <small> + {plan.unknownDurationCount} unstated</small> : null}</dd></div>
+        <div><dt>Remaining study time</dt><dd data-testid="text-total-hours">{plan.remainingHours} hrs{plan.unknownDurationCount ? <small> + {plan.unknownDurationCount} unstated</small> : null}</dd></div>
         <div><dt>{plan.unavailableCount ? 'Known cost' : 'Total cost'}</dt><dd data-testid="text-total-cost">{myr(plan.totalCostMYR)}{plan.unavailableCount ? <small> · full cost unknown</small> : null}</dd></div>
         <div><dt>Steps</dt><dd data-testid="text-step-count">{total}{plan.unavailableCount ? <small> · {plan.unavailableCount} without resource</small> : null}</dd></div>
         <div><dt>Skills to build</dt><dd data-testid="text-skill-count">{plan.skills.length}</dd></div>
       </dl>
       {!!plan.sdgs.length && <div className="pw-support"><span>This path supports these SDG learning intentions:</span><Sdgs ids={plan.sdgs} testid="list-plan-sdgs" /></div>}
+      <PathwayContribution plan={plan} />
       <div className="pw-progress" data-testid="text-progress">
         <div className="spread"><span>{doneCount} of {total} steps done</span><b>{pct}%</b></div>
         <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Pathway progress"><i style={{ width: '100%', transform: `scaleX(${pct / 100})` }} /></div>
@@ -210,14 +215,19 @@ export function PathwayView(p: PathwayViewProps) {
 
     {!total && <div className="panel panel-pad" data-testid="text-no-pathway-gaps">No documented skill names were missing from your starting profile. This is not a proficiency assessment. You can pick another role in Careers &amp; jobs.</div>}
     {PHASES.map(ph => {
-      const steps = plan.steps.filter(s => s.phase === ph.key);
+      const steps = plan.steps.filter(s => s.phase === ph.key && (s.hours !== null || p.isDone(s)));
       if (!steps.length) return null;
       return <section key={ph.key} className={`pw-phase ${ph.cls}`} data-testid={`section-phase-${ph.key.replace(/\s/g, '-').toLowerCase()}`}>
         <header className="pw-phase-head"><span className="pw-phase-icon" aria-hidden><ph.Icon size={15} /></span>
           <div><h2>{ph.key}</h2><p>{ph.note}</p></div></header>
-        <ol className="pw-steps">{steps.map(s => { n += 1; return <StepCard key={s.id} step={s} index={n} done={p.isDone(s)} onToggle={d => p.onToggle(s, d)} />; })}</ol>
+        <ol className="pw-steps">{steps.map(s => <StepCard key={s.id} step={s} index={plan.steps.indexOf(s) + 1} done={p.isDone(s)} onToggle={d => p.onToggle(s, d)} />)}</ol>
       </section>;
     })}
+    {plan.unknownDurationCount > 0 && <section className="pw-phase" data-testid="section-unknown-time"><h2>Steps with no time estimate</h2>
+      <p className="small muted">These remain in your plan and progress count, but are not scheduled. No hours or complete finish date is invented.</p>
+      <ol className="pw-steps">{plan.steps.filter(s => s.hours === null && !p.isDone(s)).map(s => <StepCard key={s.id} step={s} index={plan.steps.indexOf(s) + 1} done={false} onToggle={d => p.onToggle(s, d)} />)}</ol>
+    </section>}
+    <p className="small muted">Remaining known hours are packed in order into your weekly capacity. Steps may share a week. Dates are estimates starting today; unknown-duration steps may extend them. Full-course hours: {plan.totalHours}.</p>
 
     <div className="pw-twin pw-noprint">
       <p>Ticking steps tracks progress only — it doesn't change your skill levels.</p>
@@ -240,7 +250,7 @@ export function PathwayEmpty(p: PathwayEmptyProps) {
         <p className="muted">Choose a role you want to grow into. Try a sample first if you just want to look around.</p></div>
     </div>
     <fieldset className="pw-presets">
-      <legend>1 · Try a sample profile (optional)</legend>
+      <legend>1 · Try a fictional sample profile (optional)</legend>
       <p className="muted small">Samples are synthetic and kept separate — they never overwrite your saved profile.</p>
       <div className="pw-preset-grid">{p.presets.map(pr => <label key={pr.id} className={`pw-preset${p.selectedPresetId === pr.id ? ' is-on' : ''}`} data-testid={`card-preset-${pr.id}`}>
         <input type="radio" name="pw-preset" checked={p.selectedPresetId === pr.id} onChange={() => p.onSelectPreset(pr.id)} data-testid={`radio-preset-${pr.id}`} />

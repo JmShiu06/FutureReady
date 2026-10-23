@@ -43,8 +43,8 @@ A general O*NET skill such as Programming does not establish that a Python-speci
 **How to apply:** Use direct reviewed skill coverage only. If none exists, show an unavailable resource with unknown cost and duration, rather than generating course details or substituting fictional sample courses.
 
 ## Pathway time estimates
-Use sequential whole-week allowances for the personalised pathway: round each course's hours divided by weekly availability up, then add the step allowances. Do not silently substitute packed-week scheduling.
+Pack the personalised pathway's remaining known hours in order into weekly capacity: total weeks = ceil(remaining known hours / hours per week). Completed grouped courses are omitted only when all covered milestones are complete.
 
-**Why:** The pathway's requested contract explicitly rounds each step up. Packing spare capacity across steps gives a different, shorter total than the visible step estimates. A missing verified duration also means a complete finish date cannot honestly be promised.
+**Why:** The user explicitly replaced per-step week rounding with packed scheduling (74 hours at 11 hours/week must be 7 weeks). A missing verified duration still means a complete finish date cannot honestly be promised.
 
-**How to apply:** Keep total hours distinct from summed step weeks. Clearly mark known-only estimates when resources are missing, and distinguish app-estimated portfolio practice from provider-stated course time.
+**How to apply:** Show ordered week ranges, keep full-course hours distinct from remaining hours, list unknown-duration steps separately and label known-only finish dates. Distinguish app-estimated portfolio practice from provider-stated course time.

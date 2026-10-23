@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { Check, CloudUpload, FileText, Info, Sparkles, X } from 'lucide-react';
 import { extractCvSkills } from '@workspace/api-client-react';
+import { SampleCvLinks } from '@/components/shared/fictional-samples';
 import type { ProfileSkill, Proficiency } from '@/domain/types';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
 import { useCvSession } from '@/domain/cv-session';
@@ -218,9 +219,8 @@ export function ProfileCvImport({
         <button type="button" className="btn btn-secondary btn-small" onClick={() => inputRef.current?.click()} disabled={phase === 'extracting'} data-testid="button-choose-cv">
           Choose a file
         </button>
-        <button type="button" className="btn btn-secondary btn-small" onClick={() => setLinkedInPreviewOpen(true)} data-testid="button-linkedin-import">
-          Import from LinkedIn
-        </button>
+        <p className="small">For the demo, use a sample CV, not a real one.</p>
+        <SampleCvLinks />
       </div>
       <input
         ref={inputRef}

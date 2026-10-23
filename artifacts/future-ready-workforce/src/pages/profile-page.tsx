@@ -17,6 +17,7 @@ import { audienceLabels } from '@/domain/demo-data';
 import type { DemoProfile, ProfileSkill, Proficiency } from '@/domain/types';
 import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { PageHead, SectionTitle, slug } from '@/components/workspace/ui';
+import { FictionalSamples } from '@/components/shared/fictional-samples';
 
 type ProfileSection = 'skills' | 'twin';
 const formSchema = profileSchema.extend({ interestsText: z.string().max(1200) }).superRefine((v, ctx) => {
@@ -92,6 +93,7 @@ export default function ProfilePage() {
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · my profile`} title={section === 'skills' ? 'Your starting point.' : 'See how far you have come.'} subtitle="Your skills, CV import and progress. Each audience keeps its own profile."
       action={<span className="art-doodle-row"><RaccoonArt name={section === 'skills' ? 'star' : 'heart'} size={56} /><RaccoonArt name="sparkles" size={30} /></span>} />
+    {section === 'skills' && <FictionalSamples />}
     <div className="profile-tabs" role="tablist" aria-label="My profile sections">
       {tabs.map((t, i) => <button key={t.key} id={`tab-${t.key}`} role="tab" type="button" aria-selected={section === t.key} aria-controls={`panel-${t.key}`} tabIndex={section === t.key ? 0 : -1}
         className={`profile-tab${section === t.key ? ' active' : ''}`} onClick={() => openSection(t.key)} onKeyDown={e => onTabKey(e, i)} data-testid={`tab-profile-${t.key}`}>{t.label}</button>)}

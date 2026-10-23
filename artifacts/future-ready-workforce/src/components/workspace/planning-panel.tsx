@@ -11,6 +11,8 @@ import { SdgUseCase } from '@/components/shared/sdg-use-case';
 import { officialMilestones, occupationSnapshot } from '@/domain/official-roadmap';
 import { learningSchedule } from '@/domain/learning-schedule';
 import { usePlanningScenario } from '@/hooks/use-planning-scenario';
+import { useAiResearch } from '@/hooks/use-ai-research';
+import { AiResearchEvidence } from '@/components/shared/ai-research-evidence';
 
 
 type Row = ReturnType<typeof rankFutureRoles>[number];
@@ -85,6 +87,7 @@ export function PlanningPanel() {
   const { profile } = useWorkspace();
   const [mode, setMode] = useState<'real' | 'a' | 'b'>('real');
   const { scenario, setScenario } = usePlanningScenario();
+  const ai = useAiResearch();
   const query = useGetDosmJobMarketInsights();
   const refresh = useRefreshDosmJobMarketInsights();
   const client = useQueryClient();
@@ -100,7 +103,7 @@ export function PlanningPanel() {
       group, previous: syntheticSignalSnapshots[mode][group][0], latest: syntheticSignalSnapshots[mode][group][1],
       sourceUrl: '', period: syntheticSignalSnapshots[mode].label,
     }));
-  const rank = (s: PlanningScenario) => rankFutureRoles(occupations.data?.occupations ?? [], skills, signals, s);
+  const rank = (s: PlanningScenario) => rankFutureRoles(occupations.data?.occupations ?? [], skills, signals, s, ai.weights);
   const rows = rank(scenario);
   const hr = occupations.data?.occupations.find(o => o.id === 'mycol-1212');
   const demoSteps = hr && occupations.data ? officialMilestones({
@@ -149,6 +152,14 @@ export function PlanningPanel() {
         <span className="small muted" data-testid="text-planning-updated" title={query.data?.retrievedAt ?? undefined}>{updated ? `Updated ${updated}` : 'Bundled snapshot · not refreshed yet'}</span>
       </div>}
     </div>
+    <div className="pl-controls">
+      <label className="field">AI evidence source<select className="fr-select" value={ai.demo ? 'demo' : 'real'} onChange={e => ai.setDemo(e.target.value === 'demo')}>
+        <option value="real">Real source: arXiv research activity</option><option value="demo">Demo: simulate a fast AI jump</option>
+      </select></label>
+      <button className="btn btn-secondary btn-small" disabled={ai.busy} onClick={ai.refresh}>{ai.busy ? 'Fetching arXiv counts…' : 'Refresh AI signals'}</button>
+    </div>
+    {ai.demo && <p className="disclaimer">Synthetic AI A · Demo: simulate a fast AI jump. Authored weights only; not observed research or a forecast. Does not change saved progress.</p>}
+    <AiResearchEvidence />
     {mode !== 'real' ? <p role="status" className="disclaimer" data-testid="notice-synthetic-signals">SYNTHETIC DEMO ONLY. Both snapshots use the same fictional skills: {skills.join(', ')}. Counts are invented demonstration inputs, not Malaysian observations. Your saved profile and roadmap are unchanged.</p>
       : <div className="pl-meta"><span>Official DOSM signals · decision support, not a forecast.</span><details className="pl-info"><summary data-testid="info-planning-dosm"><Info size={13} aria-hidden="true" />About these signals</summary><div className="pl-info-pop" role="note">DOSM broad-group online offerings, not all vacancies or skill growth. Evidence strength: official source, but limited relevance to a specific occupation/skill. {query.data?.warning} {query.data?.retrievedAt && `Retrieved ${query.data.retrievedAt}.`} Refresh replaces the two-quarter posting input and recalculates planning priorities; it does not change O*NET overlap, skills, or saved progress. National unemployment and static global skill frequencies are not inputs.</div></details></div>}
     {refresh.isError && <p role="alert">Refresh failed; previous validated data retained. Retry after one minute.</p>}

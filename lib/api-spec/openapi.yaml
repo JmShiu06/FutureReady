@@ -19,6 +19,28 @@ tags:
   - name: ai
     description: Optional Runpod vLLM explanations for user-requested task exposure
 paths:
+  /signals/ai-research:
+    get:
+      operationId: getAiResearch
+      tags: [ai]
+      responses:
+        "200":
+          description: Last successful arXiv snapshot or unavailable state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiResearchResponse"
+  /signals/ai-research/refresh:
+    post:
+      operationId: refreshAiResearch
+      tags: [ai]
+      responses:
+        "200":
+          description: Start rate-limited refresh; poll GET for completion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiResearchResponse"
   /healthz:
     get:
       operationId: healthCheck
@@ -787,6 +809,43 @@ components:
         enum: [relevance, recent]
         default: recent
   schemas:
+    AiResearchCount:
+      type: object
+      required: [capability, label, query, currentQueryUrl, previousQueryUrl, current, previous, growth]
+      properties:
+        capability: { type: string }
+        label: { type: string }
+        query: { type: string }
+        currentQueryUrl: { type: string }
+        previousQueryUrl: { type: string }
+        current: { type: integer, minimum: 0 }
+        previous: { type: integer, minimum: 0 }
+        growth: { type: [number, "null"] }
+    AiResearchSnapshot:
+      type: object
+      required: [source, fetchedAt, currentStart, previousStart, end, counts, weights]
+      properties:
+        source: { type: string }
+        fetchedAt: { type: string }
+        currentStart: { type: string }
+        previousStart: { type: string }
+        end: { type: string }
+        counts:
+          type: array
+          items: { $ref: "#/components/schemas/AiResearchCount" }
+        weights:
+          type: object
+          additionalProperties: { type: number }
+    AiResearchResponse:
+      type: object
+      required: [snapshot, refreshing, error]
+      properties:
+        snapshot:
+          oneOf:
+            - $ref: "#/components/schemas/AiResearchSnapshot"
+            - type: "null"
+        refreshing: { type: boolean }
+        error: { type: [string, "null"] }
     AiAnnouncement:
       type: object
       properties:

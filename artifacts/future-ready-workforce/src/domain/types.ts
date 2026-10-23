@@ -2,6 +2,7 @@ export type Audience = 'adult' | 'graduate' | 'hr' | 'education';
 export type Proficiency = 1 | 2 | 3 | 4 | 5;
 export interface ProfileSkill { name: string; level: Proficiency; category: string; cvDetected?: boolean }
 export interface DemoProfile {
+  sampleId?: 'it-graduate' | 'admin-to-data' | 'retail-to-hr' | 'factory-supervisor';
   id: string; audience: Audience; occupation: string; experienceYears: number | null;
   education: string; qualification: string; studyField: string; interests: string[];
   skills: ProfileSkill[]; location: string; workPreference: '' | 'Any' | 'Remote' | 'Hybrid' | 'On-site';

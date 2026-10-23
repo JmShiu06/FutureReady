@@ -8,6 +8,66 @@
 import * as zod from 'zod';
 
 
+export const getAiResearchResponseSnapshotOneCountsItemCurrentMin = 0;
+
+export const getAiResearchResponseSnapshotOneCountsItemPreviousMin = 0;
+
+
+
+export const GetAiResearchResponse = zod.object({
+  "snapshot": zod.union([zod.object({
+  "source": zod.string(),
+  "fetchedAt": zod.string(),
+  "currentStart": zod.string(),
+  "previousStart": zod.string(),
+  "end": zod.string(),
+  "counts": zod.array(zod.object({
+  "capability": zod.string(),
+  "label": zod.string(),
+  "query": zod.string(),
+  "currentQueryUrl": zod.string(),
+  "previousQueryUrl": zod.string(),
+  "current": zod.number().int().min(getAiResearchResponseSnapshotOneCountsItemCurrentMin),
+  "previous": zod.number().int().min(getAiResearchResponseSnapshotOneCountsItemPreviousMin),
+  "growth": zod.number().nullable()
+})),
+  "weights": zod.record(zod.string(), zod.number())
+}),zod.null()]),
+  "refreshing": zod.boolean(),
+  "error": zod.string().nullable()
+})
+
+
+export const refreshAiResearchResponseSnapshotOneCountsItemCurrentMin = 0;
+
+export const refreshAiResearchResponseSnapshotOneCountsItemPreviousMin = 0;
+
+
+
+export const RefreshAiResearchResponse = zod.object({
+  "snapshot": zod.union([zod.object({
+  "source": zod.string(),
+  "fetchedAt": zod.string(),
+  "currentStart": zod.string(),
+  "previousStart": zod.string(),
+  "end": zod.string(),
+  "counts": zod.array(zod.object({
+  "capability": zod.string(),
+  "label": zod.string(),
+  "query": zod.string(),
+  "currentQueryUrl": zod.string(),
+  "previousQueryUrl": zod.string(),
+  "current": zod.number().int().min(refreshAiResearchResponseSnapshotOneCountsItemCurrentMin),
+  "previous": zod.number().int().min(refreshAiResearchResponseSnapshotOneCountsItemPreviousMin),
+  "growth": zod.number().nullable()
+})),
+  "weights": zod.record(zod.string(), zod.number())
+}),zod.null()]),
+  "refreshing": zod.boolean(),
+  "error": zod.string().nullable()
+})
+
+
 /**
  * Returns server health status
  * @summary Health check

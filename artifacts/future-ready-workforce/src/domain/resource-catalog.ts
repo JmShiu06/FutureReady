@@ -10,6 +10,7 @@ export interface CourseResource {
   skills: string[]; sdgs: number[]; verified_on: string;
   status: 'verified' | 'check-availability';
   coverage: string; sourceUrl: string; timeBasis: string; costCaveat: string;
+  applicableRoleIds?: string[];
 }
 const openLearn = {
   provider: 'The Open University · OpenLearn', cost: 'Free' as const, costMYR: 0,
@@ -18,6 +19,52 @@ const openLearn = {
   costCaveat: 'Free content at review. Account may be needed for progress. Device/internet costs excluded; no professional qualification promised.',
 };
 export const courseCatalog: CourseResource[] = [
+  {
+    id: 'saylor-esl001', title: 'ESL001: Elementary English as a Second Language', provider: 'Saylor University',
+    url: 'https://learn.saylor.org/course/view.php?id=1279', sourceUrl: 'https://learn.saylor.org/mod/page/view.php?id=92274',
+    cost: 'Free', costMYR: 0, hours: 18, level: 'Beginner', verified_on: '2026-10-23', status: 'verified',
+    skills: ['Reading Comprehension'], sdgs: [4, 8],
+    coverage: 'Provider explicitly teaches comprehension strategies for non-fiction and job-related texts at CEFR A2. Optional foundational English-context practice only, not proof of occupational comprehension or a language requirement for the role.',
+    timeBasis: 'Provider syllabus and course page both state 18 hours for the full course.',
+    costCaveat: 'Provider states all materials, enrolment and course certificate are free; account required for assessments. Not a professional qualification.',
+  },
+  {
+    id: 'saylor-cs302', title: 'CS302: Software Engineering', provider: 'Saylor University',
+    url: 'https://learn.saylor.org/course/cs302', sourceUrl: 'https://learn.saylor.org/mod/page/view.php?id=71746',
+    cost: 'Free', costMYR: 0, hours: 36, level: 'Advanced', verified_on: '2026-10-23', status: 'verified',
+    skills: ['Systems Evaluation', 'Quality Control Analysis', 'Operations Analysis', 'Technology Design'], sdgs: [4],
+    applicableRoleIds: ['mycol-2511', 'mycol-2512', 'mycol-2521', 'mycol-2524', 'mycol-2531'],
+    coverage: 'Reviewed software-specific syllabus covers requirements analysis/specifications, architecture/design, validation/verification, software testing and quality control. Partial software-context coverage only; NOT general HR, clinical or factory systems evaluation. Suggested prerequisites include CS101/102/107/201/202/301; check readiness before starting.',
+    timeBasis: 'Provider syllabus and course introduction state 36 hours for the full course.',
+    costCaveat: 'Free content and course certificate. Optional proctored college-credit exam costs extra and is excluded. This advanced course does not replace prerequisites.',
+  },
+  {
+    id: 'saylor-bus301', title: 'BUS301: Human Resource Management', provider: 'Saylor University',
+    url: 'https://learn.saylor.org/course/bus301', sourceUrl: 'https://learn.saylor.org/mod/page/view.php?id=69748',
+    cost: 'Free', costMYR: 0, hours: 24, level: 'Intermediate', verified_on: '2026-10-23', status: 'verified',
+    skills: ['Management of Personnel Resources', 'Instructing', 'Monitoring'], sdgs: [4, 8, 10],
+    coverage: 'Reviewed syllabus covers recruitment, training/development, performance measurement and remuneration. Partial HR-context coverage; US legislation is not Malaysian employment-law advice.',
+    timeBasis: 'Provider course introduction and syllabus state 24 hours for the full course.',
+    costCaveat: 'Provider states materials, enrolment and course certificate are free. Account required for assessments; no HRD claimability asserted.',
+  },
+  {
+    id: 'saylor-bus403', title: 'BUS403: Negotiations and Conflict Management', provider: 'Saylor University',
+    url: 'https://learn.saylor.org/course/bus403', sourceUrl: 'https://learn.saylor.org/mod/page/view.php?id=99152',
+    cost: 'Free', costMYR: 0, hours: 24, level: 'Intermediate', verified_on: '2026-10-23', status: 'verified',
+    skills: ['Negotiation', 'Persuasion', 'Social Perceptiveness'], sdgs: [4, 8],
+    coverage: 'Reviewed introduction explicitly covers interpersonal, perceptual and persuasive skills, negotiation, interests, bias and cross-cultural conflict. Partial relationship-context skill practice, not competence certification.',
+    timeBasis: 'Provider course introduction states 24 hours for the full course.',
+    costCaveat: 'Free materials and certificate; account needed for progress. No paid professional credential or HRD claimability promised.',
+  },
+  {
+    id: 'saylor-bus208', title: 'BUS208: Principles of Management', provider: 'Saylor University',
+    url: 'https://learn.saylor.org/course/bus208', sourceUrl: 'https://learn.saylor.org/mod/page/view.php?id=86571',
+    cost: 'Free', costMYR: 0, hours: 70, level: 'Beginner', verified_on: '2026-10-23', status: 'verified',
+    skills: ['Coordination', 'Management of Personnel Resources', 'Management of Financial Resources', 'Management of Material Resources'], sdgs: [4, 8],
+    coverage: 'Introduction defines coordinating work and marshalling people, finances, facilities and equipment; outcomes cover cohesive teams and organisational structure. Introductory management-context coverage, not financial or operational certification.',
+    timeBasis: 'Provider syllabus explicitly estimates 70 hours. No duration inferred from CEUs.',
+    costCaveat: 'Free learning and course certificate. Optional proctored college-credit exam costs extra and is excluded.',
+  },
   {
     ...openLearn, id: 'ol-communication', title: 'Effective communication in the workplace',
     url: 'https://www.open.edu/openlearn/money-business/effective-communication-the-workplace',
@@ -86,3 +133,9 @@ export const courseCatalog: CourseResource[] = [
     costCaveat: 'Free self-paced course at review. Account required; optional PCEP exam is separate and not included. Device/internet costs excluded.',
   },
 ];
+/** Availability could not be verified (HTTP 405 at review); never selected as a free course. */
+export const malaysianCatalogReference = {
+  title: 'HRD Corp e-LATiH course catalogue', provider: 'HRD Corp · Malaysia',
+  url: 'https://elatih.hrdcorp.gov.my/courses', status: 'Check availability',
+  checked_on: '2026-10-23', note: 'Provider blocked automated verification (HTTP 405). Confirm course title, hours, price and any claimability directly; none is assumed.',
+};

@@ -1,0 +1,24 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { defaultWorkspace, parseWorkspace } from './storage';
+import { startRoadmap, setMilestoneComplete } from './learning';
+import { readPathwayPreferences } from './pathway-preferences';
+import { resolveActivePathway, pathwayProgress, stepIsDone } from './pathway-progress';
+import { demoRoles } from './demo-data';
+import { completionKey } from './services';
+test('Dashboard, pathway and Digital twin use one grouped-step progress including portfolio after reload', () => {
+  let state = startRoadmap(defaultWorkspace(), demoRoles[0].id);
+  const prefs = readPathwayPreferences(null, 'moderate', []).value;
+  const plan = resolveActivePathway(state, prefs)!;
+  const first = plan.steps[0];
+  for (const id of first.milestoneIds) state = setMilestoneComplete(state, completionKey(state.audience, id), true);
+  const project = plan.steps.find(s => s.kind === 'project')!;
+  state = setMilestoneComplete(state, completionKey(state.audience, project.id), true);
+  const progress = pathwayProgress(plan, step => stepIsDone(state, step));
+  assert.equal(progress.done, first === project ? 1 : 2);
+  assert.equal(progress.total, plan.steps.length);
+  const restored = parseWorkspace(JSON.stringify(state)).state;
+  const restoredPlan = resolveActivePathway(restored, prefs)!;
+  assert.deepEqual(pathwayProgress(restoredPlan, step => stepIsDone(restored, step)), progress);
+  assert.deepEqual(restored.profiles, state.profiles);
+});

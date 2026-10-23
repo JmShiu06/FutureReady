@@ -8,6 +8,7 @@ import { EmptyBlock, ErrorBlock, LoadingBlock, SectionTitle } from '@/components
 import { useState } from 'react';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
+import { roleSupportsGoal } from '@workspace/workforce-evidence';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { officialPlanId, occupationSnapshot } from '@/domain/official-roadmap';
 
@@ -56,9 +57,9 @@ function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
   </span></div>;
 }
 
-export function OfficialOccupationsPanel({ query }: { query: OccupationEvidenceQuery }) {
+export function OfficialOccupationsPanel({ query, sdgGoal }: { query: OccupationEvidenceQuery; sdgGoal?: number }) {
   const { profile } = useWorkspace();
-  const eligible = query.data?.occupations.filter(o => o.recommendationStatus === 'eligible') ?? [];
+  const eligible = query.data?.occupations.filter(o => o.recommendationStatus === 'eligible' && (!sdgGoal || roleSupportsGoal(o.id, sdgGoal))) ?? [];
   const excluded = query.data?.occupations.filter(o => o.recommendationStatus === 'excluded') ?? [];
   return <section className="panel panel-pad" style={{ marginTop: 18 }} data-testid="panel-official-occupations">
     <SectionTitle title="Malaysian critical occupations" note="OFFICIAL EVIDENCE · MYCOL 2024/2025 + O*NET 31.0"

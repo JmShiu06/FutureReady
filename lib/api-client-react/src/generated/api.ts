@@ -23,6 +23,7 @@ import type {
   AiAnnouncementsResponse,
   AiExplanation,
   AiExplanationInput,
+  AiResearchResponse,
   CareerMatchResult,
   CareerPathAnalysisReport,
   CareerSkillList,
@@ -82,6 +83,145 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetAiResearchUrl = () => {
+
+
+
+
+  return `/api/signals/ai-research`
+}
+
+export const getAiResearch = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiResearchResponse> => {
+
+  return customFetch<AiResearchResponse>(getGetAiResearchUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiResearchQueryKey = () => {
+    return [
+    `/api/signals/ai-research`
+    ] as const;
+    }
+
+
+export const getGetAiResearchQueryOptions = <TData = Awaited<ReturnType<typeof getAiResearch>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiResearch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiResearchQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiResearch>>> = ({ signal }) => getAiResearch({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiResearch>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiResearchQueryResult = NonNullable<Awaited<ReturnType<typeof getAiResearch>>>
+export type GetAiResearchQueryError = ErrorType<unknown>
+
+
+
+export function useGetAiResearch<TData = Awaited<ReturnType<typeof getAiResearch>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiResearch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiResearchQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRefreshAiResearchUrl = () => {
+
+
+
+
+  return `/api/signals/ai-research/refresh`
+}
+
+export const refreshAiResearch = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiResearchResponse> => {
+
+  return customFetch<AiResearchResponse>(getRefreshAiResearchUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRefreshAiResearchMutationKey = () => ['refreshAiResearch'] as const;
+
+export const getRefreshAiResearchMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshAiResearch>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshAiResearch>>, TError,void, TContext> => {
+
+const mutationKey = getRefreshAiResearchMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshAiResearch>>, void> = () => {
+
+
+          return  refreshAiResearch(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshAiResearchMutationResult = NonNullable<Awaited<ReturnType<typeof refreshAiResearch>>>
+
+    export type RefreshAiResearchMutationError = ErrorType<unknown>
+
+
+    export const useRefreshAiResearch = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshAiResearch>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshAiResearch>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshAiResearchMutationOptions(options));
+    }
 
 export const getHealthCheckUrl = () => {
 
