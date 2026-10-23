@@ -245,6 +245,7 @@ h3 { font:700 14px var(--display-font); margin:0; }
   color: hsl(27 15% 39%);
 }
 .dosm-occupation-input:focus-within { border-color: hsl(25 35% 34%); box-shadow: 0 0 0 3px hsl(25 35% 34% / 14%); }
+.occupation-listing-filters { margin-top: 16px; padding-top: 16px; border-top: 1px solid hsl(var(--border)); }
 .dosm-occupation-input input { flex: 1; min-width: 0; padding: 12px 0; border: 0; outline: 0; color: hsl(var(--foreground)); background: transparent; font: inherit; }
 .dosm-occupation-scope {
   display: flex;

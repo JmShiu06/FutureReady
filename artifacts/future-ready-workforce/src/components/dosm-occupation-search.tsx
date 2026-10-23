@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Info, Search, UsersRound } from "lucide-react";
 import { useGetDosmOccupationEmploymentSearch } from "@workspace/api-client-react";
 
@@ -33,8 +33,11 @@ function StatCard({ label, value, note }: { label: string; value: string; note?:
   );
 }
 
-export function DosmOccupationSearch() {
-  const [keyword, setKeyword] = useState("");
+export function DosmOccupationSearch({ keyword, onKeywordChange, filters }: {
+  keyword: string;
+  onKeywordChange: (value: string) => void;
+  filters?: ReactNode;
+}) {
   const debouncedKeyword = useDebouncedValue(keyword.trim(), 300);
   const query = useGetDosmOccupationEmploymentSearch({ q: debouncedKeyword || undefined });
   const groups = query.data?.occupationGroups ?? [];
@@ -70,9 +73,9 @@ export function DosmOccupationSearch() {
       <div className="dosm-occupation-heading">
         <div className="dosm-occupation-icon" aria-hidden="true"><UsersRound size={18} /></div>
         <div>
-          <div className="eyebrow">DOSM labour-market data</div>
+          <div className="eyebrow">Occupation data & sample listings</div>
           <h2 id="dosm-occupation-title">Search an occupation</h2>
-          <p>Find a listed job title or major occupation group, then see the employment count DOSM publishes for that group.</p>
+          <p>Search occupations and sample job listings together. Refine the listings using the filters below.</p>
         </div>
       </div>
 
@@ -80,18 +83,20 @@ export function DosmOccupationSearch() {
         <Search size={17} aria-hidden="true" />
         <input
           value={keyword}
-          onChange={event => setKeyword(event.target.value)}
+          onChange={event => onKeywordChange(event.target.value)}
           maxLength={100}
           placeholder="Try Software Engineer, Data Analyst, or Professionals"
-          aria-label="Search DOSM occupation data by job title or group"
+          aria-label="Search occupations and sample job listings"
           data-testid="input-dosm-occupation-search"
         />
         {keyword && (
-          <button type="button" className="search-clear" onClick={() => setKeyword("")} aria-label="Clear occupation search">
+          <button type="button" className="search-clear" onClick={() => onKeywordChange("")} aria-label="Clear occupation search">
             ×
           </button>
         )}
       </label>
+
+      {filters}
 
       <div className="dosm-occupation-scope" role="note">
         <Info size={16} aria-hidden="true" />
