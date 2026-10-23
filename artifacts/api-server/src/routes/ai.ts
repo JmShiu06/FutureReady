@@ -1,8 +1,6 @@
 import { Router, type IRouter } from "express";
 import { CreateAiExplanationBody, CreateAiExplanationResponse, type AiExplanation } from "@workspace/api-zod";
-import { RunpodConfigurationError, RunpodRequestError } from "../lib/runpod";
-import { generateAiExplanation, assertCvProviderAllowed } from "../lib/aiProvider";
-import { GlmPrivacyError, GlmRequestError } from "../lib/glm";
+import { generateLlmExplanation, RunpodConfigurationError, RunpodRequestError } from "../lib/runpod";
 import { prepareAiContext, AiContextError } from "../lib/aiEvidence";
 import { parseFeatureAnswer } from "../lib/aiOutput";
 import { CvCareerInputError, prepareCvCareerExplanation, parseCvCareerExplanation } from "../lib/cvCareerExplanation";
@@ -10,13 +8,9 @@ import { CvCareerInputError, prepareCvCareerExplanation, parseCvCareerExplanatio
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 8;
 const MAX_ACTIVE_REQUESTS = 2;
-export function createAiRouter(
-  provider: typeof generateAiExplanation = generateAiExplanation,
-  prepare = prepareAiContext,
-  checkCvPrivacy: () => void = provider === generateAiExplanation ? assertCvProviderAllowed : () => undefined,
-): IRouter {
+export function createAiRouter(provider: typeof generateLlmExplanation = generateLlmExplanation, prepare = prepareAiContext): IRouter {
 const router: IRouter = Router();
-const inFlight = new Map<string, { promise: Promise<AiExplanation>; controller: AbortController; users: number }>();
+const inFlight = new Map<string, Promise<AiExplanation>>();
 const requestWindows = new Map<string, { startedAt: number; count: number }>();
 let activeRequests = 0;
 let globalWindow = { startedAt: Date.now(), count: 0 };
@@ -51,12 +45,9 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
   res.setHeader("Cache-Control", "no-store");
   let prepared: ReturnType<typeof prepareCvCareerExplanation>;
   try {
-    checkCvPrivacy();
     prepared = prepareCvCareerExplanation(req.body);
   } catch (error) {
-    res.status(error instanceof GlmPrivacyError ? 403 : 400).json({
-      error: error instanceof GlmPrivacyError || error instanceof CvCareerInputError ? error.message : "Invalid reviewed CV details.",
-    });
+    res.status(400).json({ error: error instanceof CvCareerInputError ? error.message : "Invalid reviewed CV details." });
     return;
   }
   if (!allowRequest(req.ip || req.socket.remoteAddress || "unknown")) {
@@ -70,22 +61,15 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
     return;
   }
   // Reviewed CV facts are transient, never cached, deduplicated across users, or logged.
-  const controller = new AbortController();
-  const onClose = () => { if (!res.writableEnded) controller.abort(); };
-  res.once("close", onClose);
   activeRequests++;
   try {
-    const result = await provider(prepared.request, { signal: controller.signal });
-    if (!res.destroyed) res.json({
-      ...parseCvCareerExplanation(result.explanation, prepared),
-      ...(result.provider ? { provider: { id: result.provider.id } } : {}),
-    });
+    const result = await provider(prepared.request);
+    if (!res.destroyed) res.json(parseCvCareerExplanation(result.explanation, prepared));
   } catch (error) {
-    if (!res.destroyed) res.status(error instanceof GlmPrivacyError ? 403 : error instanceof RunpodConfigurationError ? 503 : 502).json({
-      error: error instanceof GlmPrivacyError ? error.message : "The AI career explanation is unavailable or could not be validated. Your CV review and profile are unchanged. Please retry.",
+    if (!res.destroyed) res.status(error instanceof RunpodConfigurationError ? 503 : 502).json({
+      error: "The AI career explanation is unavailable or could not be validated. Your CV review and profile are unchanged. Please retry.",
     });
   } finally {
-    res.off("close", onClose);
     activeRequests--;
   }
 });
@@ -123,13 +107,11 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
 
   if (!pending) {
     activeRequests += 1;
-    const controller = new AbortController();
-    const promise = Promise.resolve().then(async () => {
+    pending = Promise.resolve().then(async () => {
       const example = await prepare(input);
-      const result = await provider({ instruction: example.instruction, context: example.context, json: example.json }, { signal: controller.signal });
+      const result = await provider({ instruction: example.instruction, context: example.context, json: example.json });
       const parsed = parseFeatureAnswer(result.explanation, example);
       return CreateAiExplanationResponse.parse({
-        ...(result.provider ? { provider: { id: result.provider.id } } : {}),
         explanation: parsed.explanation,
         ...(parsed.suggestions ? { suggestions: parsed.suggestions } : {}),
         sampleLabel: example.sampleLabel, contextSummary: parsed.contextSummary,
@@ -139,35 +121,12 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
       activeRequests -= 1;
       inFlight.delete(key);
     });
-    pending = { promise, controller, users: 0 };
     inFlight.set(key, pending);
   }
-  const entry = pending;
-  entry.users++;
-  let detached = false;
-  const detach = () => {
-    if (detached) return;
-    detached = true;
-    entry.users--;
-    // One disconnected waiter must not cancel work still needed by another.
-    if (!res.writableEnded && entry.users === 0) entry.controller.abort();
-  };
-  res.once("close", detach);
   try {
-    const result = await entry.promise;
-    if (!res.destroyed) res.json(result);
+    res.json(await pending);
   } catch (error) {
-    if (res.destroyed) return;
-    if (error instanceof GlmPrivacyError) {
-      res.status(403).json({ error: error.message });
-    } else if (error instanceof GlmRequestError) {
-      const hint = error.status === 401 || error.status === 403
-        ? "Check GLM_API_KEY and endpoint permissions."
-        : error.stage === "timeout"
-          ? "The queue or worker exceeded the request deadline. No replacement job was submitted."
-          : "The job failed, was rate-limited, or returned an invalid final answer. No automatic fallback was used.";
-      res.status(502).json({ error: `GLM explanation unavailable. ${hint}` });
-    } else if (error instanceof AiContextError) {
+    if (error instanceof AiContextError) {
       res.status(error.status).json({ error: error.message });
     } else if (error instanceof RunpodConfigurationError) {
       res.status(503).json({ error: error.message });
@@ -182,11 +141,8 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
     } else if (error instanceof RunpodRequestError) {
       res.status(502).json({ error: "Runpod could not be reached or returned an invalid response. Check endpoint readiness and try again." });
     } else {
-      res.status(502).json({ error: "The AI provider could not complete a validated explanation. Please try again shortly." });
+      res.status(502).json({ error: "Runpod could not complete the explanation. Please try again shortly." });
     }
-  } finally {
-    res.off("close", detach);
-    detach();
   }
 });
 

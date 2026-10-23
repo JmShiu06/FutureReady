@@ -14,8 +14,6 @@ export * from './aiExplanation';
 export * from './aiExplanationInput';
 export * from './aiExplanationInputFeature';
 export * from './aiExplanationInputSampleId';
-export * from './aiProviderMetadata';
-export * from './aiProviderMetadataId';
 export * from './aiSkillSuggestion';
 export * from './careerMatch';
 export * from './careerMatchResult';

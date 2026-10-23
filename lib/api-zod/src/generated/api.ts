@@ -158,9 +158,6 @@ export const generateCvCareerExplanationResponseMatchesItemScoreMax = 100;
 
 
 export const GenerateCvCareerExplanationResponse = zod.object({
-  "provider": zod.object({
-  "id": zod.enum(['qwen', 'glm'])
-}).optional().describe('Server-owned identity of the provider that completed this request. Optional on older responses; never inferred from generated text.'),
   "sections": zod.object({
   "skillAnalysis": zod.string().min(1).max(generateCvCareerExplanationResponseSectionsSkillAnalysisMax),
   "careerMatchAnalysis": zod.string().min(1).max(generateCvCareerExplanationResponseSectionsCareerMatchAnalysisMax),
@@ -320,9 +317,6 @@ export const createAiExplanationResponseSuggestionsMax = 4;
 
 
 export const CreateAiExplanationResponse = zod.object({
-  "provider": zod.object({
-  "id": zod.enum(['qwen', 'glm'])
-}).optional().describe('Server-owned identity of the provider that completed this request. Optional on older responses; never inferred from generated text.'),
   "explanation": zod.string().min(1).max(createAiExplanationResponseExplanationMax),
   "sampleLabel": zod.string(),
   "contextSummary": zod.array(zod.string()),

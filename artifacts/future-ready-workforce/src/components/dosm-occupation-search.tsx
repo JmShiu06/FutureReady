@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Info, Search, UsersRound } from "lucide-react";
 import { useGetDosmOccupationEmploymentSearch } from "@workspace/api-client-react";
 
@@ -33,11 +33,8 @@ function StatCard({ label, value, note }: { label: string; value: string; note?:
   );
 }
 
-export function DosmOccupationSearch({ keyword, onKeywordChange, filters }: {
-  keyword: string;
-  onKeywordChange: (value: string) => void;
-  filters?: ReactNode;
-}) {
+export function DosmOccupationSearch() {
+  const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebouncedValue(keyword.trim(), 300);
   const query = useGetDosmOccupationEmploymentSearch({ q: debouncedKeyword || undefined });
   const groups = query.data?.occupationGroups ?? [];
@@ -45,37 +42,12 @@ export function DosmOccupationSearch({ keyword, onKeywordChange, filters }: {
 
   return (
     <section className="dosm-occupation-search panel" aria-labelledby="dosm-occupation-title" data-testid="panel-dosm-occupation-search">
-      {query.data && latest && (
-        <section className="dosm-occupation-national" aria-labelledby="dosm-national-title" data-testid="panel-dosm-national-context">
-          <div className="dosm-occupation-national-heading">
-            <div>
-              <h3 id="dosm-national-title">Malaysia-wide context</h3>
-              <p>All occupations · {formatMonth(latest.date)}</p>
-            </div>
-            <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noreferrer">OpenDOSM source</a>
-          </div>
-          {query.data.nationalContext.isStale && query.data.nationalContext.warning && (
-            <p className="dosm-occupation-warning" role="status">{query.data.nationalContext.warning}</p>
-          )}
-          <div className="dosm-occupation-stats">
-            <StatCard label="People employed" value={formatPeople(latest.employedThousands)} />
-            <StatCard label="People unemployed" value={formatPeople(latest.unemployedThousands)} />
-            <StatCard label="Unemployment rate" value={`${latest.unemploymentRate.toFixed(1)}%`} />
-            <StatCard label="Employment-to-population ratio" value={`${latest.employmentPopulationRatio.toFixed(1)}%`} />
-          </div>
-          <p className="dosm-occupation-rate-explainer">National figures, not rates for a specific job.</p>
-          <details className="dosm-occupation-methodology">
-            <summary>About these rates</summary>
-            <p>The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for the searched job.</p>
-          </details>
-        </section>
-      )}
       <div className="dosm-occupation-heading">
         <div className="dosm-occupation-icon" aria-hidden="true"><UsersRound size={18} /></div>
         <div>
-          <div className="eyebrow">Occupation data & sample listings</div>
+          <div className="eyebrow">DOSM labour-market data</div>
           <h2 id="dosm-occupation-title">Search an occupation</h2>
-          <p>Search occupations and sample job listings together. Refine the listings using the filters below.</p>
+          <p>Find a listed job title or major occupation group, then see the employment count DOSM publishes for that group.</p>
         </div>
       </div>
 
@@ -83,20 +55,18 @@ export function DosmOccupationSearch({ keyword, onKeywordChange, filters }: {
         <Search size={17} aria-hidden="true" />
         <input
           value={keyword}
-          onChange={event => onKeywordChange(event.target.value)}
+          onChange={event => setKeyword(event.target.value)}
           maxLength={100}
           placeholder="Try Software Engineer, Data Analyst, or Professionals"
-          aria-label="Search occupations and sample job listings"
+          aria-label="Search DOSM occupation data by job title or group"
           data-testid="input-dosm-occupation-search"
         />
         {keyword && (
-          <button type="button" className="search-clear" onClick={() => onKeywordChange("")} aria-label="Clear occupation search">
+          <button type="button" className="search-clear" onClick={() => setKeyword("")} aria-label="Clear occupation search">
             ×
           </button>
         )}
       </label>
-
-      {filters}
 
       <div className="dosm-occupation-scope" role="note">
         <Info size={16} aria-hidden="true" />
@@ -115,6 +85,28 @@ export function DosmOccupationSearch({ keyword, onKeywordChange, filters }: {
 
       {query.data && latest && (
         <>
+          <section className="dosm-occupation-national" aria-labelledby="dosm-national-title" data-testid="panel-dosm-national-context">
+            <div className="dosm-occupation-national-heading">
+              <div>
+                <h3 id="dosm-national-title">Malaysia-wide context</h3>
+                <p>All occupations · latest DOSM observation: {formatMonth(latest.date)}</p>
+              </div>
+              <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noreferrer">OpenDOSM source</a>
+            </div>
+            {query.data.nationalContext.isStale && query.data.nationalContext.warning && (
+              <p className="dosm-occupation-warning" role="status">{query.data.nationalContext.warning}</p>
+            )}
+            <div className="dosm-occupation-stats">
+              <StatCard label="People employed" value={formatPeople(latest.employedThousands)} note="All Malaysian occupations" />
+              <StatCard label="People unemployed" value={formatPeople(latest.unemployedThousands)} note="All Malaysian occupations" />
+              <StatCard label="Unemployment rate" value={`${latest.unemploymentRate.toFixed(1)}%`} note="National labour force" />
+              <StatCard label="Employment-to-population ratio" value={`${latest.employmentPopulationRatio.toFixed(1)}%`} note="National working-age population" />
+            </div>
+            <p className="dosm-occupation-rate-explainer">
+              The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for the searched job.
+            </p>
+          </section>
+
           <div className="dosm-occupation-results-heading">
             <div>
               <h3>{debouncedKeyword ? `Results for “${debouncedKeyword}”` : "Search results"}</h3>

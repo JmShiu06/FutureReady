@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, Clock3, MapPin,
-  Search, SlidersHorizontal, Wifi,
+  Search, SlidersHorizontal, Wifi, X,
 } from 'lucide-react';
 import {
   getListJobsQueryKey, useCalculateJobMatchScores, useListJobs,
@@ -104,10 +104,15 @@ export function JobSearchPage({ profileSkills }: Props) {
   };
 
   return <div className="jobs-page" data-testid="page-job-search">
-    <DosmOccupationSearch keyword={keyword} onKeywordChange={value => { setKeyword(value); setPage(1); }} filters={
-    <section className="occupation-listing-filters" aria-label="Filter sample job listings">
-      <div className="jobs-filter-heading"><span><SlidersHorizontal size={14} /> Refine sample listings</span>{activeFilters && <button className="text-link" onClick={clearFilters} data-testid="button-clear-filters">Clear filters</button>}</div>
-      <p className="small muted">These filters apply to sample listings only, not DOSM occupation counts or national figures.</p>
+    <DosmOccupationSearch />
+
+    <section className="jobs-search-panel panel" aria-label="Search and filter jobs">
+      <label className="jobs-search-box">
+        <Search size={17} aria-hidden="true" />
+        <input value={keyword} onChange={event => { setKeyword(event.target.value); setPage(1); }} placeholder="Search titles, companies, or skills" aria-label="Search job listings" data-testid="input-job-search" />
+        {keyword && <button className="search-clear" onClick={() => { setKeyword(''); setPage(1); }} aria-label="Clear search" data-testid="button-clear-search"><X size={15} /></button>}
+      </label>
+      <div className="jobs-filter-heading"><span><SlidersHorizontal size={14} /> Refine results</span>{activeFilters && <button className="text-link" onClick={clearFilters} data-testid="button-clear-filters">Clear filters</button>}</div>
       <div className="jobs-filter-grid">
         <div className="filter-block">
           <span className="jobs-filter-label">Minimum salary</span>
@@ -126,7 +131,7 @@ export function JobSearchPage({ profileSkills }: Props) {
         <label className="remote-toggle"><input type="checkbox" checked={remoteOnly} onChange={event => { setRemoteOnly(event.target.checked); setPage(1); }} data-testid="checkbox-remote-only" /><span className="toggle-visual" /><Wifi size={14} /><span>Remote only</span></label>
         <label className="sort-control"><span>Sort by</span><select value={sort} onChange={event => { setSort(event.target.value as 'relevance' | 'recent'); setPage(1); }} data-testid="select-job-sort"><option value="relevance">Most relevant</option><option value="recent">Most recent</option></select></label>
       </div>
-    </section>} />
+    </section>
 
     <div className="jobs-results-heading">
       <div><div className="eyebrow">Sample listings</div><h2 data-testid="text-job-results-count">{jobsQuery.isLoading ? 'Finding roles…' : `${total.toLocaleString()} sample ${total === 1 ? 'role' : 'roles'}`}</h2></div>
