@@ -13,6 +13,7 @@ export type { MycolSdgMapping, SdgCitation } from './mycol-sdg';
 export * from './planning';
 export * from './occupational-learning';
 export * from './sdg-use-cases';
+export * from './ai-capabilities';
 
 export const sdgMappings: SdgMapping[] = [
   {

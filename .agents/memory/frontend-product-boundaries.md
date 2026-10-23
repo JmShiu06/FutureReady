@@ -21,11 +21,11 @@ Readiness, observed market evidence and scenario assumptions are different conce
 
 **How to apply:** Use documented deterministic prototype calculations; keep source URLs nullable and show missing/stale evidence. Do not make synthetic refresh controls pretend to fetch live data. Candidate skills come from reviewed CV extraction or manual entry; do not seed fictional skills.
 
-For official labour-market data integrations, use DOSM sources only unless the user explicitly approves additional providers.
+For official labour-market data integrations, use DOSM sources only unless the user explicitly approves additional providers. Public first-party AI-advancement announcements are now approved as a separate qualitative capability signal, not a new official labour-market source.
 
 **Why:** The user set DOSM as the official-source scope for the workforce data milestone and asked that other providers not be added without approval.
 
-**How to apply:** Verify the requested official DOSM pages, API endpoints and data files before implementation. If a DOSM link is unavailable, document the official replacement; do not broaden the provider list on your own.
+**How to apply:** Verify the requested official DOSM pages, API endpoints and data files before implementation. If a DOSM link is unavailable, document the official replacement; do not broaden the provider list on your own. Keep dated AI announcement facts separate from app-authored capability mappings and bounded scenario weights. News does not measure job loss, skill demand or validated forecasts; unsupported skill directions remain unknown.
 
 ## AI task-exposure self-check
 AI exposure must be assessed at the task level from user-selected work characteristics, not inferred from a skill name alone. Keep the result qualitative and clearly distinguish it from an AI prediction or a validated exposure dataset. Do not persist task-check answers into profile data without an explicit request.
@@ -42,11 +42,11 @@ Use the user-supplied AI Job Market Dataset as a reference for career names.
 **How to apply:** Limit these names to CV recommendations and AI Career Explanation; keep general career browsing, DOSM and team features unchanged. Do not treat its salary, openings or skill flags as verified labour evidence or skill requirements. Use declared existing skill-reference families without changing the overlap algorithm; pooled AI/data-science evidence must not be presented as distinct title-specific requirements.
 
 ## Runpod AI skill explanations
-Candidate-facing AI Career Explanation must use the uploaded CV, not fictional profiles. The user explicitly approved sending reviewed structured skills, education, work experience, certifications, projects and languages to RunPod after a preview-and-confirm step for each upload. Never send the CV file, full extracted document text, name/contact fields, proficiency ratings or unrelated saved profile data. Details and explanations stay transient. The earlier single-skill explanation remains a narrower permitted path; non-candidate demonstration endpoints may still use labelled synthetic context.
+Candidate-facing Skill analysis uses reviewed CV skill names only. The earlier approval for structured education, experience, projects, certifications and languages was superseded by the skills-only request. Never send those fields, the CV file, full extracted document text, name/contact fields, proficiency ratings or unrelated saved profile data. Details and explanations stay transient. A live synthetic test needs explicit authorisation and must never reuse a real saved profile or CV.
 
-**Why:** The user superseded the earlier synthetic-only and single-skill limits by approving reviewed structured CV details for the seven-section career explanation, with names/contact fields and raw files/text excluded.
+**Why:** The later teammate request renamed the destination to Skill analysis and excluded language analysis; the Domain 1 brief explicitly preserves that narrowed contract and prohibits testing with existing people's data.
 
-**How to apply:** Require explicit consent, bounded allowlisted structured fields and canonical detected skills. Invalidate the previous explanation and consent on new uploads or edits. Keep matching scores and provider-verified learning links server-owned; distinguish missing CV evidence from a lack of ability. Preserve algorithms, official datasets, team features and Replit configuration.
+**How to apply:** Require explicit consent, bounded canonical detected skill names and backend enforcement, not frontend filtering alone. Invalidate the previous explanation and consent on new uploads or edits. Keep matching scores and provider-verified learning links server-owned; distinguish missing CV evidence from a lack of ability. Preserve algorithms, official datasets, team features and Replit configuration.
 
 A model can interpret a CV-detected skill label as proof of proficiency even when told not to. Treat generated CV explanations as untrusted on this point, not just the input.
 

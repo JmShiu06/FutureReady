@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rankFutureRoles, syntheticPlanningSkills, syntheticSignalSnapshots, roleSdgUseCases, type PlanningSignal } from '@workspace/workforce-evidence';
+import { rankFutureRoles, syntheticPlanningSkills, syntheticSignalSnapshots, roleSdgUseCases, type PlanningSignal, capabilityEffects, syntheticCapabilityFacts } from '@workspace/workforce-evidence';
 import { matchOccupations, getOccupationSources } from '../../../api-server/src/lib/occupationEvidence';
 import { learningSchedule } from './learning-schedule';
 import { occupationSnapshot, officialMilestones } from './official-roadmap';
@@ -28,6 +28,16 @@ test('same profile and signals yield different explained scenario rankings and l
     assert.equal(r.overlap, moderate.find(x => x.role.id === r.role.id)!.overlap);
   }
 });
+
+test('same profile and posting signals + different AI snapshots change explained scores and skill priorities', () => {
+  const a = rankFutureRoles(roles, syntheticPlanningSkills, signals('a'), 'fast', capabilityEffects(syntheticCapabilityFacts.a));
+  const b = rankFutureRoles(roles, syntheticPlanningSkills, signals('a'), 'fast', capabilityEffects(syntheticCapabilityFacts.b));
+  assert.notDeepEqual(a.map(r => [r.role.id, r.suitability]), b.map(r => [r.role.id, r.suitability]));
+  assert.notDeepEqual(a.map(r => r.missing.map(s => s.priority)), b.map(r => r.missing.map(s => s.priority)));
+  for (const r of a) assert.equal(r.overlap, b.find(x => x.role.id === r.role.id)!.overlap);
+  const repeated = capabilityEffects([...syntheticCapabilityFacts.a, ...syntheticCapabilityFacts.a]);
+  assert.deepEqual(repeated.map(e => e.weight), capabilityEffects(syntheticCapabilityFacts.a).map(e => e.weight));
+});
 test('changing only prior-quarter observations changes trend component without changing overlap or latest index', () => {
   const a = rankFutureRoles(roles, syntheticPlanningSkills, signals('a'), 'moderate');
   const b = rankFutureRoles(roles, syntheticPlanningSkills, signals('a').map(s => ({ ...s, previous: s.latest * 3 })), 'moderate');
@@ -49,4 +59,10 @@ test('complete HR demo has real resources, honest practices, SDG context and a c
   assert.ok(weeks.every(w => w.hours <= 5));
   assert.equal(weeks.reduce((sum, w) => sum + w.hours, 0), steps.reduce((sum, m) => sum + m.durationHours!, 0));
   assert.deepEqual(learningSchedule(steps, 0), []);
+  const shared = steps.filter(m => m.verifiedUrl?.includes('working-groups-and-teams'));
+  assert.equal(shared.length, 2);
+  assert.equal(shared.filter(m => m.timeBasis?.includes('Provider-stated')).length, 1);
+  assert.equal(shared.filter(m => m.timeBasis?.includes('counted once')).length, 1);
+  assert.equal(shared.filter(m => m.kind === 'course').length, 1);
+  assert.equal(shared.filter(m => m.kind === 'practice').length, 1);
 });

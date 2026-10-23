@@ -14,7 +14,7 @@ export interface CvAiSkillData {
      * @items.maxLength 60
      */
   skills: string[];
-  /** @maxItems 12 */
+  /** @maxItems 0 */
   languages: CvLanguageName[];
   /** Local extraction warning metadata; not included in model context. */
   extractionLimited: boolean;

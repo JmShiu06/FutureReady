@@ -68,6 +68,8 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
   } catch (error) {
     if (!res.destroyed) res.status(error instanceof RunpodConfigurationError ? 503 : 502).json({
       error: "The AI career explanation is unavailable or could not be validated. Your CV review and profile are unchanged. Please retry.",
+      failureStage: error instanceof RunpodConfigurationError ? "configuration" : error instanceof RunpodRequestError ? error.stage : "output-validation",
+      providerHttpStatus: error instanceof RunpodRequestError ? error.status ?? null : null,
     });
   } finally {
     activeRequests--;

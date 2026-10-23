@@ -6,6 +6,7 @@ import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 import { MatchScore } from '@/components/shared/match-score';
 import { cvExplanationSectionInView, type CvExplanationView } from '@/domain/cv-explanation-sections';
 import './cv-career-explanation.css';
+import { SdgUseCase } from '@/components/shared/sdg-use-case';
 
 export const NO_SKILLS_MESSAGE = 'No skills detected from CV.';
 export const LIMITED_MESSAGE = 'Some information may be incomplete due to CV extraction limitations.';
@@ -71,7 +72,7 @@ function CvPreview() {
 }
 
 function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
-  const { explanation, explainPhase, explainError, requestExplanation, consent } = useCvSession();
+  const { explanation, explainPhase, explainError, requestExplanation, consent, payload } = useCvSession();
   if (explainPhase === 'loading') return <div className="cvx-skeleton" role="status" aria-live="polite" data-testid="status-cvx-loading">
     <span className="sr-only">Generating your AI career explanation.</span>
     <RaccoonLoader />
@@ -95,14 +96,17 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
         <summary><span className="cvx-card-icon"><Icon size={14} aria-hidden="true" /></span><strong>{title}</strong><ChevronDown size={15} className="cvx-chevron" aria-hidden="true" /></summary>
         <div className="cvx-card-body">
           <Paragraphs text={sections[key]} />
+          {key === 'skillAnalysis' && payload?.skills.map(skill => <SdgUseCase key={skill} roleId="mycol-2524" skill={skill} referenceOnlyForTitle="CV skill in an optional statistical-capacity practice project" />)}
           {key === 'careerMatchAnalysis' && (matches.length === 0
             ? <p className="cvx-empty">No career matches were returned for these skills.</p>
             : <div className="cvx-matches">{matches.map(m => <article className="cvx-match" key={m.roleId} data-testid={`card-cvx-match-${m.roleId}`}>
               <h5>{m.title}</h5>
+              <SdgUseCase roleId="mycol-2524" referenceOnlyForTitle={m.title} />
               {m.skillRoleFamily && <p className="muted small">Skill reference: {m.skillRoleFamily} (pooled evidence, not title-specific requirements).</p>}
               <MatchScore metric="cv" variant="bar" value={m.score} matched={m.matchedSkills.length} considered={m.matchedSkills.length + m.missingSkills.length} testId={`score-cvx-${m.roleId}`} />
               {m.matchedSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Matched</span>{m.matchedSkills.map(s => <span className="cvx-chip ok" key={s}><Check size={11} aria-hidden="true" />{s}</span>)}</div>}
               {m.missingSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Missing</span>{m.missingSkills.map(s => <span className="cvx-chip gap" key={s}><X size={11} aria-hidden="true" />{s}</span>)}</div>}
+              {m.missingSkills.length > 0 && <details><summary>Skill-specific SDG project applications (conditional)</summary>{m.missingSkills.map(s => <SdgUseCase key={s} roleId="mycol-2524" skill={s} referenceOnlyForTitle={m.title} />)}</details>}
             </article>)}</div>)}
           {key === 'improvementSuggestions' && resources.length > 0 && <ul className="cvx-resources">{resources.map(r => <li key={r.id}>
             <a href={r.url} target="_blank" rel="noopener noreferrer" data-testid={`link-cvx-resource-${r.id}`}>{r.title} <ExternalLink size={11} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>

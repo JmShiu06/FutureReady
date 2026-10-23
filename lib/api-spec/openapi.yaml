@@ -623,6 +623,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /signals/ai-capabilities:
+    get:
+      operationId: getAiCapabilities
+      tags: [signals]
+      summary: Get bounded public AI capability feed with last validated durable fallback
+      responses:
+        "200":
+          description: Validated source facts, not a job-loss forecast
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiCapabilityFeed"
+  /signals/ai-capabilities/refresh:
+    post:
+      operationId: refreshAiCapabilities
+      tags: [signals]
+      responses:
+        "200":
+          description: Refreshed feed or explicit last validated fallback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiCapabilityFeed"
   /signals/ai-announcements:
     get:
       operationId: getAiAnnouncements
@@ -787,6 +810,27 @@ components:
         enum: [relevance, recent]
         default: recent
   schemas:
+    AiCapabilityFact:
+      type: object
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        url: { type: string, format: uri }
+        publishedOn: { type: string }
+        capability: { type: string, enum: [coding, reasoning, safety] }
+      required: [title, summary, url, publishedOn, capability]
+    AiCapabilityFeed:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AiCapabilityFact" }
+        retrievedAt: { type: [string, "null"] }
+        isStale: { type: boolean }
+        warning: { type: [string, "null"] }
+        changeSummary: { type: string }
+        sourceUrl: { type: string, format: uri }
+      required: [items, retrievedAt, isStale, warning, changeSummary, sourceUrl]
     AiAnnouncement:
       type: object
       properties:
@@ -964,7 +1008,7 @@ components:
           items: { type: string, minLength: 1, maxLength: 60 }
         languages:
           type: array
-          maxItems: 12
+          maxItems: 0
           uniqueItems: true
           items:
             $ref: "#/components/schemas/CvLanguageName"

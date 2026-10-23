@@ -5,6 +5,34 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type AiCapabilityFactCapability = typeof AiCapabilityFactCapability[keyof typeof AiCapabilityFactCapability];
+
+
+export const AiCapabilityFactCapability = {
+  coding: 'coding',
+  reasoning: 'reasoning',
+  safety: 'safety',
+} as const;
+
+export interface AiCapabilityFact {
+  title: string;
+  summary: string;
+  url: string;
+  publishedOn: string;
+  capability: AiCapabilityFactCapability;
+}
+
+export interface AiCapabilityFeed {
+  items: AiCapabilityFact[];
+  /** @nullable */
+  retrievedAt: string | null;
+  isStale: boolean;
+  /** @nullable */
+  warning: string | null;
+  changeSummary: string;
+  sourceUrl: string;
+}
+
 export interface AiAnnouncement {
   title: string;
   publishedOn: string;
@@ -242,7 +270,7 @@ export interface CvAiSkillData {
      * @items.maxLength 60
      */
   skills: string[];
-  /** @maxItems 12 */
+  /** @maxItems 0 */
   languages: CvLanguageName[];
   /** Local extraction warning metadata; not included in model context. */
   extractionLimited: boolean;

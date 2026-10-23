@@ -18,3 +18,4 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./skill-learning";
+export * from "./trend-snapshots";

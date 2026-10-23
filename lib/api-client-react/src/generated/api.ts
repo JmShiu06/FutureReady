@@ -21,6 +21,7 @@ import type {
 
 import type {
   AiAnnouncementsResponse,
+  AiCapabilityFeed,
   AiExplanation,
   AiExplanationInput,
   CareerMatchResult,
@@ -1841,6 +1842,151 @@ export const useRefreshDosmLabourForce = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getRefreshDosmLabourForceMutationOptions(options));
+    }
+
+export const getGetAiCapabilitiesUrl = () => {
+
+
+
+
+  return `/api/signals/ai-capabilities`
+}
+
+/**
+ * @summary Get bounded public AI capability feed with last validated durable fallback
+ */
+export const getAiCapabilities = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiCapabilityFeed> => {
+
+  return customFetch<AiCapabilityFeed>(getGetAiCapabilitiesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiCapabilitiesQueryKey = () => {
+    return [
+    `/api/signals/ai-capabilities`
+    ] as const;
+    }
+
+
+export const getGetAiCapabilitiesQueryOptions = <TData = Awaited<ReturnType<typeof getAiCapabilities>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiCapabilities>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiCapabilitiesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiCapabilities>>> = ({ signal }) => getAiCapabilities({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiCapabilities>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiCapabilitiesQueryResult = NonNullable<Awaited<ReturnType<typeof getAiCapabilities>>>
+export type GetAiCapabilitiesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get bounded public AI capability feed with last validated durable fallback
+ */
+
+export function useGetAiCapabilities<TData = Awaited<ReturnType<typeof getAiCapabilities>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiCapabilities>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiCapabilitiesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRefreshAiCapabilitiesUrl = () => {
+
+
+
+
+  return `/api/signals/ai-capabilities/refresh`
+}
+
+export const refreshAiCapabilities = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiCapabilityFeed> => {
+
+  return customFetch<AiCapabilityFeed>(getRefreshAiCapabilitiesUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRefreshAiCapabilitiesMutationKey = () => ['refreshAiCapabilities'] as const;
+
+export const getRefreshAiCapabilitiesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshAiCapabilities>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshAiCapabilities>>, TError,void, TContext> => {
+
+const mutationKey = getRefreshAiCapabilitiesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshAiCapabilities>>, void> = () => {
+
+
+          return  refreshAiCapabilities(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshAiCapabilitiesMutationResult = NonNullable<Awaited<ReturnType<typeof refreshAiCapabilities>>>
+
+    export type RefreshAiCapabilitiesMutationError = ErrorType<unknown>
+
+
+    export const useRefreshAiCapabilities = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshAiCapabilities>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshAiCapabilities>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshAiCapabilitiesMutationOptions(options));
     }
 
 export const getGetAiAnnouncementsUrl = () => {

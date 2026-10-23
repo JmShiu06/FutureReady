@@ -8,6 +8,7 @@ import { ErrorBlock, GapStatus, LoadingBlock, PriorityTag, useAsync } from '@/co
 import { OfficialOccupationsPanel, OccupationComparisonPanel, useOccupationEvidence } from '@/components/workspace/occupation-evidence';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
+import { PlanningPanel } from '@/components/workspace/planning-panel';
 
 const hiddenRecommendationRoleIds = new Set([
   'ai-operations',
@@ -26,6 +27,7 @@ export function CareerPathsTab() {
   const list = result.data ?? [];
   const recommendationCards = list.filter(x => !hiddenRecommendationRoleIds.has(x.role.id));
   return <>
+    <PlanningPanel />
     <div className="tab-intro">
       <p className="muted">Sample career paths ranked by <b>illustrative proficiency coverage</b>, with SDG relevance tags. Malaysian critical occupations below use a separate <b>O*NET documented overlap</b> count.</p>
       <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>

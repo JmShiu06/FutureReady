@@ -1,3 +1,4 @@
+import { aiSkillAdjustment, type CapabilityEffect } from './ai-capabilities';
 /** Transparent workshop assumptions, not an exposure dataset or a forecasting model. */
 export type PlanningScenario = 'moderate' | 'fast';
 export const planningScenarios = {
@@ -34,7 +35,7 @@ export function scenarioSkillBonus(name: string, scenario: PlanningScenario) {
 export function skillPlanningScore(name: string, importance: number, signalIndex: number, scenario: PlanningScenario) {
   return bounded(60 * importance / 5 + .2 * signalIndex + scenarioSkillBonus(name, scenario));
 }
-export function rankFutureRoles(roles: PlanningRole[], skills: string[], signals: PlanningSignal[], scenario: PlanningScenario) {
+export function rankFutureRoles(roles: PlanningRole[], skills: string[], signals: PlanningSignal[], scenario: PlanningScenario, effects: CapabilityEffect[] = []) {
   const names = new Set(skills.map(key));
   const maximum = Math.max(0, ...signals.map(s => s.latest));
   const p = planningScenarios[scenario];
@@ -47,11 +48,13 @@ export function rankFutureRoles(roles: PlanningRole[], skills: string[], signals
     const trendIndex = change === null ? 50 : bounded(50 + 50 * change);
     const baseline = bounded(.55 * overlap + .30 * signalIndex + .15 * trendIndex);
     const task = taskAssumptions[role.id];
-    const adjustment = task ? p.adaptationWeight * task.adaptation - p.automationWeight * task.routine : 0;
+    const aiAdjustment = role.documentedSkills.length ? role.documentedSkills.reduce((sum, s) => sum + aiSkillAdjustment(s.name, effects, scenario), 0) / role.documentedSkills.length : 0;
+    const adjustment = (task ? p.adaptationWeight * task.adaptation - p.automationWeight * task.routine : 0) + aiAdjustment;
     const missing = role.documentedSkills.filter(s => !names.has(key(s.name))).map(s => ({
-      ...s, priority: skillPlanningScore(s.name, s.importance, .7 * signalIndex + .3 * trendIndex, scenario),
+      ...s, aiAdjustment: aiSkillAdjustment(s.name, effects, scenario),
+      priority: bounded(skillPlanningScore(s.name, s.importance, .7 * signalIndex + .3 * trendIndex, scenario) + aiSkillAdjustment(s.name, effects, scenario)),
     })).sort((a, b) => b.priority - a.priority || a.name.localeCompare(b.name));
-    return { role, overlap, signalIndex, trendIndex, change, baseline, adjustment: Math.round(adjustment * 10) / 10,
+    return { role, overlap, signalIndex, trendIndex, change, baseline, aiAdjustment, adjustment: Math.round(adjustment * 10) / 10,
       suitability: bounded(baseline + adjustment), matched: matched.map(s => s.name), missing, signal, task };
   }).sort((a, b) => b.suitability - a.suitability || a.role.id.localeCompare(b.role.id));
 }
