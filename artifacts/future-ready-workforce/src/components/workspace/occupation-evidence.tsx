@@ -8,7 +8,6 @@ import { EmptyBlock, ErrorBlock, LoadingBlock, SectionTitle } from '@/components
 import { useState } from 'react';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
-import { SdgUseCase } from '@/components/shared/sdg-use-case';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { officialPlanId, occupationSnapshot } from '@/domain/official-roadmap';
 
@@ -214,7 +213,6 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
               <MatchScore metric="onet" variant="panel" value={o.overlap!.score} matched={o.overlap!.matchedSkills.length} considered={o.overlap!.skillsConsidered} testId="text-occupation-overlap" />
               <p className="small">{o.overlap!.matchedSkills.length} of {o.overlap!.skillsConsidered} documented skills appear in your profile by name.</p>
               <div className="gap-list">{o.documentedSkills.map(s => <div className="gap-row" key={s.elementId} data-testid={`row-onet-skill-${s.elementId}`}>
-                <SdgUseCase roleId={o.id} skill={s.name} />
                 <span><strong>{s.name}</strong><small>{s.domain} skill · Importance {s.importance.toFixed(2)} of 5 · Level {s.level.toFixed(2)} of 7{s.levelLowPrecision ? ' (low precision)' : ''}</small></span>
                 <span className={`tag ${s.inProfile ? 'tag-ok' : 'tag-miss'}`}>{s.inProfile ? 'In your profile' : 'Not in profile'}</span>
               </div>)}</div>

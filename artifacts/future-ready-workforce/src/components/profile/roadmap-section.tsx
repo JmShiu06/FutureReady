@@ -8,7 +8,7 @@ import { activeBaseline, roadmapMilestones } from '@/domain/learning';
 import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, PriorityTag, SectionTitle } from '@/components/workspace/ui';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
-import { learningResourceCatalog, scenarioSkillBonus, aiSkillAdjustment, type PlanningScenario } from '@workspace/workforce-evidence';
+import { learningResourceCatalog, scenarioSkillBonus, type PlanningScenario } from '@workspace/workforce-evidence';
 import { learningSchedule } from '@/domain/learning-schedule';
 import { SdgUseCase } from '@/components/shared/sdg-use-case';
 import {
@@ -17,12 +17,12 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export function RoadmapSection({ onReview }: { onReview: () => void }) {
-  const { state, profile, targetRoleId, saveProfile, setMilestoneComplete, resetActiveRoadmap, planningScenario: scenario, setPlanningScenario: setScenario, planningEffects, isSyntheticDemo } = useWorkspace();
+  const { state, profile, targetRoleId, saveProfile, setMilestoneComplete, resetActiveRoadmap } = useWorkspace();
   const [costFilter, setCostFilter] = useState<'all' | 'free' | 'low'>('all');
   const [hours, setHours] = useState(profile.learningHours === null ? '' : String(profile.learningHours));
   const [budget, setBudget] = useState(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
   const [msg, setMsg] = useState('');
-  const [goalWeeks, setGoalWeeks] = useState('');
+  const [scenario, setScenario] = useState<PlanningScenario>('moderate');
   useEffect(() => {
     setHours(profile.learningHours === null ? '' : String(profile.learningHours));
     setBudget(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
@@ -34,9 +34,9 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
   const built = !!activeBaseline(state);
   const milestones = useMemo(() => roadmapMilestones(state).sort((a, b) => {
     if (!occupation) return a.order - b.order;
-    const score = (m: typeof a) => 12 * (occupation.documentedSkills.find(s => s.name === m.skill)?.importance ?? 0) + scenarioSkillBonus(m.skill, scenario) + aiSkillAdjustment(m.skill, planningEffects, scenario);
+    const score = (m: typeof a) => 12 * (occupation.documentedSkills.find(s => s.name === m.skill)?.importance ?? 0) + scenarioSkillBonus(m.skill, scenario);
     return score(b) - score(a) || a.order - b.order;
-  }).map((m, i) => ({ ...m, order: i + 1 })), [state, occupation, scenario, planningEffects]);
+  }).map((m, i) => ({ ...m, order: i + 1 })), [state, occupation, scenario]);
   const shown = milestones.filter(m => costFilter === 'all' || (m.costMYR !== null && (costFilter === 'free' ? m.costMYR === 0 : m.costMYR <= 100)));
   const done = milestones.filter(m => state.completion[completionKey(state.audience, m.id)]).length;
   const totalCost = milestones.reduce((t, m) => t + (m.costMYR ?? 0), 0);
@@ -104,10 +104,6 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
           {occupation && <div className="field"><label htmlFor="roadmap-scenario">Planning scenario (app assumptions)</label>
             <select id="roadmap-scenario" className="fr-select" value={scenario} onChange={e => setScenario(e.target.value as PlanningScenario)} data-testid="select-roadmap-scenario"><option value="moderate">Moderate AI disruption</option><option value="fast">Fast AI disruption</option></select>
             <span className="small muted">Reorders gaps only; does not change saved completion or skill levels. Priority = 12 × O*NET importance + scenario skill bonus. Inspect assumptions in Market &amp; AI impact.</span></div>}
-          {isSyntheticDemo && <p className="disclaimer">ISOLATED SYNTHETIC ROADMAP · not written over your real saved progress.</p>}
-          <div className="field"><label htmlFor="roadmap-goal-weeks">Optional completion window (weeks)</label><input id="roadmap-goal-weeks" className="fr-input" type="number" min="1" max="104" value={goalWeeks} onChange={e => setGoalWeeks(e.target.value)} data-testid="input-roadmap-goal-weeks" /></div>
-          {Number(goalWeeks) > 0 && profile.learningHours !== null && milestones.filter(m => !state.completion[completionKey(state.audience, m.id)]).reduce((n, m) => n + (m.durationHours ?? 0), 0) > Number(goalWeeks) * profile.learningHours && <p role="alert" className="disclaimer" data-testid="roadmap-infeasible">Not feasible within {goalWeeks} weeks at {profile.learningHours} hours/week. Increase time, extend the window or choose a smaller learning goal; no completed steps are discarded.</p>}
-          <p className="small muted">Budget feasibility covers listed learning content only; device/internet and optional credentials are excluded. Unknown paid-course prices are not treated as affordable. AI evidence changes order through bounded skill weights; it does not remove steps or change proficiency.</p>
           <div className="row"><div className="field" style={{ flex: 1 }}><label htmlFor="rp-h">Hours / week</label><input id="rp-h" type="number" min={1} max={40} className="fr-input" value={hours} onChange={e => setHours(e.target.value)} data-testid="input-replan-hours" /></div>
             <div className="field" style={{ flex: 1 }}><label htmlFor="rp-b">Budget MYR</label><input id="rp-b" type="number" min={0} className="fr-input" value={budget} onChange={e => setBudget(e.target.value)} data-testid="input-replan-budget" /></div></div>
           <button className="btn btn-primary" onClick={apply} data-testid="button-apply-replan">Apply</button>

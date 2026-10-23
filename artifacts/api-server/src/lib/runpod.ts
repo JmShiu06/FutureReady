@@ -94,7 +94,7 @@ export function cleanFinalAnswer(message: Record<string, unknown>, finishReason:
 
 /** One server-only provider used by all explanation features. Never call from a browser. */
 export async function generateLlmExplanation(
-  input: { instruction: string; context: Record<string, unknown>; json?: boolean; maxTokens?: number; maxOutputCharacters?: number; requiredModel?: string },
+  input: { instruction: string; context: Record<string, unknown>; json?: boolean; maxTokens?: number; maxOutputCharacters?: number },
   options: { env?: RunpodEnvironment; fetcher?: Fetcher } = {},
 ): Promise<{ explanation: string }> {
   const env = options.env ?? process.env;
@@ -107,7 +107,6 @@ export async function generateLlmExplanation(
   if (!apiKey) throw new RunpodConfigurationError("Runpod is not configured.");
 
   const model = await resolveModel(baseUrl, apiKey, env, fetcher);
-  if (input.requiredModel && model !== input.requiredModel) throw new RunpodConfigurationError('Configured model does not match the disclosed skill-analysis model. No generation request was made.');
   let response: Response;
   try {
     response = await fetcher(`${baseUrl}/chat/completions`, {

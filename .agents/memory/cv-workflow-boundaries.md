@@ -33,11 +33,11 @@ The job-recommendation page uses the user's saved profile skills as input; it do
 
 **How to apply:** Keep CV extraction and profile editing on the profile workflow. The recommendations view should stay focused on roles and skill evidence; use only skills already saved in the active profile.
 
-New and explicitly reset profiles start blank. Keep real saved profiles, experience/interests, learning constraints and roadmap progress on reload; fictional examples belong only in placeholders or the isolated temporary demo.
+New and reset profiles start with blank About You fields. On every app reload, clear saved About You fields across audiences while keeping skills and roadmap progress. Put examples in light-gray placeholders, never in saved profile data.
 
-**Why:** The later Domain 1 completion brief explicitly requires preserving existing profiles/progress and a usable experience/interests-to-roadmap journey. Silently blanking saved context on reload conflicts with that requirement; the earlier refresh-reset rule is superseded for this workflow.
+**Why:** The user later explicitly changed the saved-profile behavior and requested that About You details reset whenever the website is refreshed.
 
-**How to apply:** Only explicit reset actions should clear a saved profile. Candidate profiles start/reset with no seeded skills: use manual or reviewed CV skills, not fictional defaults. An isolated synthetic demo must never persist over the real workspace; exiting/reloading restores the real saved profile and progress.
+**How to apply:** Apply the refresh reset when loading the workspace, preserving skills, targets, and completion. Candidate profiles now start/reset with no seeded skills: the user requested actual CV-derived skills instead of fictional defaults. Do not erase manual or reviewed CV skills merely because they resemble an example.
 
 The CV import review is one popup: open it automatically after extraction and keep detected skills, skill selection, warnings and self-assessed proficiency choices together. Do not show the review list inline on the profile page; leave a button to reopen it if dismissed.
 

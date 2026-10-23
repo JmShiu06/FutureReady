@@ -2,11 +2,8 @@ import { Router, type IRouter } from "express";
 import { GetAiAnnouncementsResponse, GetSkillFrequenciesResponse } from "@workspace/api-zod";
 import { aiAnnouncementService } from "../lib/aiAnnouncements";
 import { getSkillFrequencies } from "../lib/skillFrequencies";
-import { aiCapabilityFeed } from '../lib/aiCapabilityFeed';
 
 const router: IRouter = Router();
-router.get('/signals/ai-capabilities', async (_req, res) => { res.json(await aiCapabilityFeed.get()); });
-router.post('/signals/ai-capabilities/refresh', async (_req, res) => { res.json(await aiCapabilityFeed.get(true)); });
 
 router.get("/signals/ai-announcements", async (req, res): Promise<void> => {
   try {

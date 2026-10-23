@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { getOccupationSources, matchOccupations } from '../../../api-server/src/lib/occupationEvidence';
 import { defaultWorkspace, parseWorkspace } from './storage';
-import { documentedOverlap, occupationSnapshot, officialMilestones, officialPlanId, occupationRoadmapTarget } from './official-roadmap';
+import { documentedOverlap, occupationSnapshot, officialMilestones, officialPlanId } from './official-roadmap';
 import { activeBaseline, clearPlanData, confirmSkillUpdate, roadmapMilestones, resetActiveRoadmap, setMilestoneComplete, startRoadmap } from './learning';
 import { completionKey } from './services';
 import type { OccupationEvidenceResult } from '@workspace/api-client-react';
@@ -21,17 +21,6 @@ const begin = (audience: Audience = 'adult') => {
   state.audience = audience;
   return startRoadmap(state, id, new Date('2026-10-22T00:00:00Z'), snapshot);
 };
-
-test('ranked occupation bridge uses the canonical roadmap ID for every eligible role', () => {
-  for (const occupation of eligible) {
-    const target = occupationRoadmapTarget(occupation, evidence);
-    assert.equal(target.roleId, officialPlanId(occupation.id));
-    const state = startRoadmap(defaultWorkspace(), target.roleId, new Date(), target.occupation);
-    assert.equal(activeBaseline(state)?.occupation?.title, occupation.mycol.title);
-    assert.equal(state.targets.adult, target.roleId);
-    assert.ok(roadmapMilestones(state).length);
-  }
-});
 
 test('all eligible official occupation snapshots persist and preserve exact documented overlap formula', () => {
   for (const occupation of eligible) {
@@ -141,10 +130,6 @@ test('unavailable courses become explicit estimated practices, not invented cour
       assert.match(milestone.timeBasis!, /App-estimated/);
       assert.match(milestone.coverage!, /No verified course/);
       assert.ok(milestone.activity!.length > 80);
-    } else if (milestone.kind === 'practice') {
-      assert.match(milestone.timeBasis!, /App-estimated.*counted once/);
-      assert.match(milestone.prerequisites.join(' '), /Complete shared course/);
-      assert.match(milestone.title, /Apply shared learning/);
     } else assert.equal(milestone.kind, 'course');
     assert.equal(milestone.costMYR, 0);
     assert.ok(milestone.durationHours! > 0);

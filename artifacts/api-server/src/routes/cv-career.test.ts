@@ -47,7 +47,7 @@ it("returns six grounded sections, no-store and authoritative matches after cons
     assert.equal(input.json, true);
     assert.equal(input.maxTokens, 4000);
     assert.equal("sampleId" in input.context, false);
-    assert.deepEqual(input.context.reviewedCv, { skills: data.skills });
+    assert.deepEqual(input.context.reviewedCv, { skills: data.skills, languages: data.languages });
     return { explanation: JSON.stringify(sections) };
   }, async post => {
     const response = await post({ consent: true, data });

@@ -1,7 +1,5 @@
 import yauzl from "yauzl";
 import { validateDosmJobMarketInsightsSnapshot } from "../data/dosm-jmi-2026";
-import { loadTrendSnapshot, saveTrendSnapshot } from './trendSnapshotStore';
-import { GetDosmJobMarketInsightsResponse } from '@workspace/api-zod';
 type Observation = { quarter: string; jobOfferings: number; publicationDate: string; reportUrl: string; dataUrl: string };
 type DosmJobMarketInsightsResponse = Omit<ReturnType<typeof validateDosmJobMarketInsightsSnapshot>, "occupationGroups" | "totalByQuarter" | "sourceUrl" | "methodology"> & {
   sourceUrl: string; methodology: string;
@@ -91,25 +89,12 @@ export async function parseDosmWorkbook(buffer: Buffer, reportUrl: string, dataU
   };
 }
 
-export function createDosmJobMarketService(options: { fetchImpl?: typeof fetch; now?: () => Date; persist?: boolean } = {}) {
+export function createDosmJobMarketService(options: { fetchImpl?: typeof fetch; now?: () => Date } = {}) {
   const fetcher = options.fetchImpl ?? fetch;
   const now = options.now ?? (() => new Date());
   let cached: DosmJobMarketInsightsResponse = { ...validateDosmJobMarketInsightsSnapshot(), retrievedAt: null, isStale: true, warning: "Bundled reviewed snapshot. Refresh to retrieve the current official workbook." };
   let running: Promise<DosmJobMarketInsightsResponse> | undefined;
   let lastAttempt = 0;
-  let hydrated = false;
-  async function hydrate() {
-    if (hydrated || !options.persist) return;
-    hydrated = true;
-    try {
-      const saved = await loadTrendSnapshot('dosm-jmi');
-      if (saved && GetDosmJobMarketInsightsResponse.safeParse(saved).success) {
-        const candidate = saved as DosmJobMarketInsightsResponse;
-        const validUrls = candidate.totalByQuarter.every(q => [q.reportUrl, q.dataUrl].every(u => new URL(u).origin === ORIGIN));
-        if (validUrls) cached = { ...candidate, isStale: !candidate.retrievedAt || Date.now() - Date.parse(candidate.retrievedAt) > 6 * 3600000 };
-      }
-    } catch { cached = { ...cached, warning: 'Durable snapshot unavailable. Bundled reviewed snapshot retained.', isStale: true }; }
-  }
   async function download() {
     const time = now(); lastAttempt = time.getTime();
     try {
@@ -133,9 +118,7 @@ export function createDosmJobMarketService(options: { fetchImpl?: typeof fetch; 
           if (Number(response.headers.get("content-length")) > LIMIT) throw new Error("Workbook too large.");
           const buffer = Buffer.from(await response.arrayBuffer());
           const next = await parseDosmWorkbook(buffer, reportUrl, dataUrl, published.toISOString().slice(0, 10));
-          const validated = { ...next, retrievedAt: time.toISOString(), isStale: false, warning: null };
-          if (options.persist) await saveTrendSnapshot('dosm-jmi', validated);
-          cached = validated;
+          cached = { ...next, retrievedAt: time.toISOString(), isStale: false, warning: null };
           return cached;
         }
       }
@@ -147,15 +130,6 @@ export function createDosmJobMarketService(options: { fetchImpl?: typeof fetch; 
   }
   return {
     get: () => cached,
-    getLatest: async () => {
-      await hydrate();
-      if (cached.retrievedAt && now().getTime() - Date.parse(cached.retrievedAt) < 6 * 3600000) return cached;
-      if (!running && now().getTime() - lastAttempt >= 60000) {
-        running = download().finally(() => { running = undefined; });
-        try { await running; } catch { /* Explicit fallback warning is set by download. */ }
-      }
-      return cached;
-    },
     refresh: () => {
       if (running) return running;
       if (now().getTime() - lastAttempt < 60_000) return Promise.reject(new Error("Wait one minute before refreshing again."));
@@ -164,4 +138,4 @@ export function createDosmJobMarketService(options: { fetchImpl?: typeof fetch; 
     },
   };
 }
-export const dosmJobMarketService = createDosmJobMarketService({ persist: true });
+export const dosmJobMarketService = createDosmJobMarketService();

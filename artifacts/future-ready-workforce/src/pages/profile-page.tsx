@@ -29,7 +29,7 @@ const toForm = (p: DemoProfile): FormValues => ({ ...p, interestsText: p.interes
 const normaliseSkillName = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
 
 export default function ProfilePage() {
-  const { state, profile, saveProfile, isSyntheticDemo, startSyntheticDemo, exitSyntheticDemo } = useWorkspace();
+  const { state, profile, saveProfile } = useWorkspace();
   const { phase: cvPhase, draft: cvDraft } = useCvSession();
   const [analysisPromptOpen, setAnalysisPromptOpen] = useState(false);
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
@@ -102,19 +102,6 @@ export default function ProfilePage() {
     </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    <section className="panel panel-pad" style={{ marginBottom: 16 }}>
-      <SectionTitle title="Career context and learning constraints" />
-      <p className="small muted">Optional context stays in your browser and is not sent to AI. Experience and interests guide your own role choice; they are not verified job qualifications. You can use this form without a CV.</p>
-      <div className="grid-2">
-        <div className="field"><label htmlFor="profile-experience">Years of experience</label><input id="profile-experience" className="fr-input" type="number" min="0" max="60" value={form.watch('experienceYears') ?? ''} onChange={e => form.setValue('experienceYears', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })} data-testid="input-profile-experience" /></div>
-        <div className="field"><label htmlFor="profile-interests">Interests (comma-separated)</label><input id="profile-interests" className="fr-input" {...form.register('interestsText')} placeholder="Technology, people, healthcare" data-testid="input-profile-interests" /></div>
-        <div className="field"><label htmlFor="profile-hours">Learning hours per week</label><input id="profile-hours" className="fr-input" type="number" min="1" max="40" value={form.watch('learningHours') ?? ''} onChange={e => form.setValue('learningHours', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })} data-testid="input-profile-hours" /></div>
-        <div className="field"><label htmlFor="profile-budget">Learning-content budget (MYR)</label><input id="profile-budget" className="fr-input" type="number" min="0" value={form.watch('budgetMYR') ?? ''} onChange={e => form.setValue('budgetMYR', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })} data-testid="input-profile-budget" /></div>
-      </div>
-      <p className="small">Use Save profile below to keep these choices.</p>
-      <button type="button" className="btn btn-secondary" data-testid="button-synthetic-journey" onClick={() => { if (isSyntheticDemo) exitSyntheticDemo(); else startSyntheticDemo(); }}>{isSyntheticDemo ? 'Exit synthetic demo · restore my profile' : 'Try synthetic demo · keep my profile untouched'}</button>
-      {isSyntheticDemo && <p role="status" className="disclaimer">ISOLATED SYNTHETIC DEMO. Profile, role choice and progress are temporary; your real saved workspace is not overwritten.</p>}
-    </section>
     {cvPhase === 'ready' && <p className="muted small"><Link href="/market-and-ai-impact?tab=ai-impact" className="text-link" data-testid="link-profile-cv-review">Review your CV skills in Skill analysis</Link></p>}
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>

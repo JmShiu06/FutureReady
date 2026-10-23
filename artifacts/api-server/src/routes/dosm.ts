@@ -85,9 +85,9 @@ router.get("/dosm/occupation-employment-search", async (req, res): Promise<void>
   }
 });
 
-router.get("/dosm/job-market-insights", async (_req, res): Promise<void> => {
+router.get("/dosm/job-market-insights", (_req, res): void => {
   try {
-    const result = await dosmJobMarketService.getLatest();
+    const result = dosmJobMarketService.get();
     GetDosmJobMarketInsightsResponse.parse(result);
     res.json(result);
   } catch {

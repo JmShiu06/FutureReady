@@ -7,7 +7,7 @@ import { cvCertifications } from "../data/cvCertifications";
 
 export const syntheticReviewedCv = {
   skills: ["python", "sql"],
-  languages: [], extractionLimited: true,
+  languages: ["English"], extractionLimited: true,
 };
 export const syntheticSections = {
   skillAnalysis: "python. Meaning: programming language. Importance: automates work. Industries: technology and finance.\n\nsql. Meaning: database query language. Importance: retrieves data. Industries: banking and retail.",
@@ -23,8 +23,8 @@ it("uses only reviewed facts, unchanged match scores and catalogue resources", (
   const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
   const matches = matchCvCareerSkills(syntheticReviewedCv.skills).matches.slice(0, 3);
   assert.deepEqual(prepared.matches.map(match => match.score), matches.map(match => match.score));
-  assert.deepEqual(prepared.request.context.reviewedCv, { skills: syntheticReviewedCv.skills });
-  assert.deepEqual(Object.keys(prepared.request.context.reviewedCv), ["skills"]);
+  assert.deepEqual(prepared.request.context.reviewedCv, { skills: syntheticReviewedCv.skills, languages: syntheticReviewedCv.languages });
+  assert.deepEqual(Object.keys(prepared.request.context.reviewedCv).sort(), ["languages", "skills"]);
   assert.equal("sampleId" in prepared.request.context, false);
   assert.equal("score" in prepared.request.context.matches[0], false);
   assert.equal(JSON.stringify(syntheticReviewedCv), before);
@@ -48,7 +48,6 @@ it("rejects no consent, raw text, arbitrary fields, fabricated skills and oversi
 });
 
 it("rejects narrative/contact fields at the API boundary and rejects unsupported outputs", () => {
-  assert.throws(() => prepareCvCareerExplanation({ consent: true, data: { ...syntheticReviewedCv, languages: ['English'] } }), CvCareerInputError);
   assert.throws(() => prepareCvCareerExplanation({ consent: true, data: { ...syntheticReviewedCv, workExperience: ["Fictional reports"] } }), CvCareerInputError);
   const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
   for (const sections of [
@@ -68,12 +67,4 @@ it("rejects narrative/contact fields at the API boundary and rejects unsupported
   for (const match of prepared.matches) assert.ok(factual.sections.careerMatchAnalysis.includes(match.title));
   assert.doesNotMatch(factual.sections.strengths, /proficient expert/);
   assert.doesNotMatch(factual.sections.improvementSuggestions, /invented certification/);
-});
-
-it('rejects invented programmes/jobs and does not forward language or proficiency data', () => {
-  const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
-  for (const text of ['Take a course at Invented Academy.', 'Become an invented engineer.', 'Demand will grow by 300%.']) {
-    assert.throws(() => parseCvCareerExplanation(JSON.stringify({ ...syntheticSections, areasForGrowth: text }), prepared));
-  }
-  assert.deepEqual(Object.keys(prepared.request.context.reviewedCv), ['skills']);
 });

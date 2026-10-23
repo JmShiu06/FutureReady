@@ -4,10 +4,6 @@ import type { LearningMilestone, OfficialRoadmapOccupation, ProfileSkill, Roadma
 
 const normalize = (name: string) => name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
 export const officialPlanId = (id: string) => `official:${id}`;
-/** UI occupation IDs and saved roadmap IDs are not interchangeable. */
-export function occupationRoadmapTarget(o: OccupationEvidence, data: OccupationEvidenceResult) {
-  return { roleId: officialPlanId(o.id), occupation: occupationSnapshot(o, data) };
-}
 export function occupationSnapshot(o: OccupationEvidence, data: OccupationEvidenceResult): OfficialRoadmapOccupation {
   if (o.recommendationStatus !== 'eligible' || o.mapping.status !== 'verified' || !o.documentedSkills.length) {
     throw new Error('A roadmap requires reviewed occupation skill evidence.');
@@ -32,7 +28,6 @@ export function documentedOverlap(skills: ProfileSkill[], occupation: OfficialRo
 }
 export function officialMilestones(baseline: RoadmapBaseline): LearningMilestone[] {
   const occupation = baseline.occupation!;
-  const seenResources = new Map<string, string>();
   const names = new Set(baseline.skills.map(s => normalize(s.name)));
   // Name overlap, not an invented conversion from O*NET's 0–7 levels to self-ratings.
   return occupation.documentedSkills.filter(s => !names.has(normalize(s.name)))
@@ -44,24 +39,21 @@ export function officialMilestones(baseline: RoadmapBaseline): LearningMilestone
       const practice = practiceForSkill(skill.name);
       const context = roleSdgUseCases[occupation.id]?.context ?? 'a fictional example of the cited occupational duties';
       const hasResource = !!(resource || occupational);
-      const resourceUrl = resource?.url ?? occupational?.url;
-      const countedUnder = resourceUrl ? seenResources.get(resourceUrl) : undefined;
-      if (resourceUrl && !countedUnder) seenResources.set(resourceUrl, skill.name);
       return {
         id: `${officialPlanId(occupation.id)}:${skill.elementId}`, skill: skill.name,
-        title: countedUnder ? `Apply shared learning: ${skill.name}` : resource?.title ?? occupational?.title ?? `Self-directed practice: ${skill.name}`,
-        provider: countedUnder ? 'App-authored application exercise · reuses cited course' : resource?.provider ?? occupational?.provider ?? 'App-authored practice · not a course',
+        title: resource?.title ?? occupational?.title ?? `Self-directed practice: ${skill.name}`,
+        provider: resource?.provider ?? occupational?.provider ?? 'App-authored practice · not a course',
         verifiedUrl: resource?.url ?? occupational?.url ?? null, synthetic: false,
-        durationHours: countedUnder ? practice.hours : resource ? resource.duration_minutes / 60 : occupational?.hours ?? practice.hours,
+        durationHours: resource ? resource.duration_minutes / 60 : occupational?.hours ?? practice.hours,
         costMYR: 0,
-        kind: hasResource && !countedUnder ? 'course' as const : 'practice' as const,
-        activity: countedUnder ? `Reuse the course already studied under ${countedUnder}. Context: ${context}. ${practice.activity}` : hasResource ? `Study the linked material for ${skill.name}. Apply the ideas to ${context}; do not use real personal records.` : `Context: ${context}. ${practice.activity}`,
-        timeBasis: countedUnder ? `App-estimated application exercise only; shared course study time counted once under ${countedUnder}` : resource ? 'Provider-stated study time' : occupational?.timeBasis ?? practice.timeBasis,
+        kind: hasResource ? 'course' as const : 'practice' as const,
+        activity: hasResource ? `Study the linked material for ${skill.name}. Apply the ideas to ${context}; do not use real personal records.` : `Context: ${context}. ${practice.activity}`,
+        timeBasis: resource ? 'Provider-stated study time' : occupational?.timeBasis ?? practice.timeBasis,
         costCaveat: occupational?.costCaveat ?? (resource ? 'Free learning content at review; accounts, tools or optional credentials may have separate costs. Check the provider.' : 'No purchase required for this fictional exercise. Device/internet costs excluded. Paid course availability, coverage and price remain unknown.'),
         reviewedAt: occupational?.reviewedAt ?? (resource ? learningResourceCatalog.reviewed_at : practice.reviewedAt),
         coverage: occupational?.coverage ?? (resource ? `Reviewed exact-name coverage: ${resource.skills.join(', ')}.` : 'No verified course coverage for this skill in the catalogue. This bounded exercise does not establish mastery or award credentials.'),
         evidenceUrl: occupation.sourceUrl,
-        prerequisites: countedUnder ? [`Complete shared course study under ${countedUnder} first; this step counts only the separate application exercise.`] : resource
+        prerequisites: resource
           ? [...resource.prerequisites, ...resource.recommended_prerequisites, `Catalogue reviewed ${learningResourceCatalog.reviewed_at}; check current provider details.`]
           : occupational ? [...occupational.prerequisites] : ['Read the cited role/skill description; use only fictional data and an ordinary document or spreadsheet.'],
         priority: 'Medium', order: index + 1,

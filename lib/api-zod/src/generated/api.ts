@@ -127,7 +127,7 @@ export const generateCvCareerExplanationBodyDataSkillsItemMax = 60;
 
 export const generateCvCareerExplanationBodyDataSkillsMax = 50;
 
-export const generateCvCareerExplanationBodyDataLanguagesMax = 0;
+export const generateCvCareerExplanationBodyDataLanguagesMax = 12;
 
 
 
@@ -1135,41 +1135,6 @@ export const RefreshDosmLabourForceResponse = zod.object({
   "retrievedAt": zod.coerce.date(),
   "observationsLoaded": zod.number().int().min(1),
   "latestObservationDate": zod.coerce.date()
-})
-
-
-/**
- * @summary Get bounded public AI capability feed with last validated durable fallback
- */
-export const GetAiCapabilitiesResponse = zod.object({
-  "items": zod.array(zod.object({
-  "title": zod.string(),
-  "summary": zod.string(),
-  "url": zod.string().url(),
-  "publishedOn": zod.string(),
-  "capability": zod.enum(['coding', 'reasoning', 'safety'])
-})),
-  "retrievedAt": zod.string().nullable(),
-  "isStale": zod.boolean(),
-  "warning": zod.string().nullable(),
-  "changeSummary": zod.string(),
-  "sourceUrl": zod.string().url()
-})
-
-
-export const RefreshAiCapabilitiesResponse = zod.object({
-  "items": zod.array(zod.object({
-  "title": zod.string(),
-  "summary": zod.string(),
-  "url": zod.string().url(),
-  "publishedOn": zod.string(),
-  "capability": zod.enum(['coding', 'reasoning', 'safety'])
-})),
-  "retrievedAt": zod.string().nullable(),
-  "isStale": zod.boolean(),
-  "warning": zod.string().nullable(),
-  "changeSummary": zod.string(),
-  "sourceUrl": zod.string().url()
 })
 
 
