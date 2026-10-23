@@ -703,6 +703,32 @@ export interface ProfileSimilarityReport {
   source: CareerSource;
 }
 
+export type JobMappingStatus = typeof JobMappingStatus[keyof typeof JobMappingStatus];
+
+
+export const JobMappingStatus = {
+  verified: 'verified',
+  unverified: 'unverified',
+} as const;
+
+export type JobWorkMode = typeof JobWorkMode[keyof typeof JobWorkMode];
+
+
+export const JobWorkMode = {
+  'on-site': 'on-site',
+  hybrid: 'hybrid',
+  remote: 'remote',
+} as const;
+
+export type JobLevel = typeof JobLevel[keyof typeof JobLevel];
+
+
+export const JobLevel = {
+  entry: 'entry',
+  mid: 'mid',
+  senior: 'senior',
+} as const;
+
 export type JobEmploymentType = typeof JobEmploymentType[keyof typeof JobEmploymentType];
 
 
@@ -714,6 +740,21 @@ export const JobEmploymentType = {
 } as const;
 
 export interface Job {
+  occupationId: string;
+  occupationName: string;
+  mascoCode: string;
+  onetCode: string;
+  onetTitle: string;
+  mappingNote: string;
+  mappingStatus: JobMappingStatus;
+  workMode: JobWorkMode;
+  level: JobLevel;
+  sdgRoleId: string;
+  /**
+     * @items.minimum 1
+     * @items.maximum 17
+     */
+  sdgTags: number[];
   id: string;
   title: string;
   company: string;

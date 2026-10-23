@@ -1,0 +1,22 @@
+/* Listings: fictional badge, filters, external job-site links */
+.jl-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.jl-filters .select-field { min-width: 0; max-width: 220px; }
+.jl-check { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #503a2a; padding: 8px 10px; border: 1px solid #e3d8c9; border-radius: 8px; background: #fbf7f0; cursor: pointer; }
+.jl-check.disabled { opacity: .55; cursor: not-allowed; }
+.jl-check input { accent-color: #73513b; }
+.jl-fictional { display: inline-block; margin-bottom: 6px; padding: 4px 9px; border: 1px dashed #b99a7b; border-radius: 20px; background: #f6ecdf; color: #6a4a34; font: 600 11px var(--mono-font); letter-spacing: .2px; }
+.jl-occupation { color: #73513b; font: 500 10px var(--mono-font); margin: 3px 0 6px; }
+.jl-evidence { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 6px 12px; font-size: 11px; color: #594533; margin: 0; }
+.jl-evidence dt { color: #806b59; font: 500 9px var(--mono-font); text-transform: uppercase; letter-spacing: .6px; padding-top: 2px; }
+.jl-evidence dd { margin: 0; line-height: 1.5; }
+.ext-jobs { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e3d6c5; }
+.ext-jobs-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ext-jobs-secondary { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: #73513b; text-decoration: underline; text-underline-offset: 3px; }
+.ext-jobs-secondary:hover { color: #513725; }
+.ext-jobs-note { margin: 7px 0 0; color: #78634e; font-size: 10px; line-height: 1.5; }
+.ext-jobs.compact { margin-top: 10px; }
+.dosm-occupation-card .ext-jobs-title { margin: 8px 0 0; font-size: 10px; color: #594533; font-weight: 600; }
+@media (max-width: 620px) {
+  .jl-filters .select-field { max-width: none; flex: 1 1 45%; }
+  .jl-evidence { grid-template-columns: 1fr; }
+}

@@ -3,6 +3,8 @@ import { Link, useParams } from 'wouter';
 import { ArrowLeft, BriefcaseBusiness, Target } from 'lucide-react';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
+import { ExternalJobLinks } from '@/components/shared/external-job-links';
+import '@/components/job-listings.css';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { OccupationEvidenceDetail } from '@/components/workspace/occupation-evidence';
 import { useWorkspace } from '@/domain/workspace-context';
@@ -33,6 +35,7 @@ function SampleRoleDetail({ id }: { id: string }) {
         <BuildRoadmapButton roleId={role.id} testId="button-build-roadmap" />
         <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>
       </div>
+      <ExternalJobLinks occupationTitle={role.title} testIdSuffix={`role-${role.id}`} />
     </div>
     <div className="detail-layout">
       <div className="stack">

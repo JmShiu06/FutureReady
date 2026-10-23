@@ -9,6 +9,8 @@ import { useState } from 'react';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
 import { roleSupportsGoal } from '@workspace/workforce-evidence';
+import { ExternalJobLinks } from '@/components/shared/external-job-links';
+import '@/components/job-listings.css';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { officialPlanId, occupationSnapshot } from '@/domain/official-roadmap';
 
@@ -203,6 +205,7 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
         <Link href="/my-profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> Update my skills</Link>
         <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation-occupation">Open Skill analysis</Link>
       </div>
+      <ExternalJobLinks occupationTitle={o.mycol.title} testIdSuffix={`occupation-${o.id}`} />
     </div>
     <div className="detail-layout">
       <div className="stack">

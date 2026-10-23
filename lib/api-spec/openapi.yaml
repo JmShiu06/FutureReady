@@ -1590,6 +1590,19 @@ components:
     Job:
       type: object
       properties:
+        occupationId: { type: string }
+        occupationName: { type: string }
+        mascoCode: { type: string }
+        onetCode: { type: string }
+        onetTitle: { type: string }
+        mappingNote: { type: string }
+        mappingStatus: { type: string, enum: [verified, unverified] }
+        workMode: { type: string, enum: [on-site, hybrid, remote] }
+        level: { type: string, enum: [entry, mid, senior] }
+        sdgRoleId: { type: string }
+        sdgTags:
+          type: array
+          items: { type: integer, minimum: 1, maximum: 17 }
         id:
           type: string
         title:
@@ -1631,6 +1644,17 @@ components:
         demo:
           type: boolean
       required:
+        - occupationId
+        - occupationName
+        - mascoCode
+        - onetCode
+        - onetTitle
+        - mappingNote
+        - mappingStatus
+        - workMode
+        - level
+        - sdgRoleId
+        - sdgTags
         - id
         - title
         - company

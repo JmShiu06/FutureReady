@@ -6,8 +6,26 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { JobEmploymentType } from './jobEmploymentType';
+import type { JobLevel } from './jobLevel';
+import type { JobMappingStatus } from './jobMappingStatus';
+import type { JobWorkMode } from './jobWorkMode';
 
 export interface Job {
+  occupationId: string;
+  occupationName: string;
+  mascoCode: string;
+  onetCode: string;
+  onetTitle: string;
+  mappingNote: string;
+  mappingStatus: JobMappingStatus;
+  workMode: JobWorkMode;
+  level: JobLevel;
+  sdgRoleId: string;
+  /**
+     * @items.minimum 1
+     * @items.maximum 17
+     */
+  sdgTags: number[];
   id: string;
   title: string;
   company: string;

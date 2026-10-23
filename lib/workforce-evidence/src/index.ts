@@ -1,4 +1,5 @@
 /** Existing reviewed SDG mappings, shared by the UI and server. Relevance is not measured impact. */
+export { externalJobSearchLinks, externalJobSiteNote, fictionalListingLabel } from './job-search-links';
 export interface SdgMapping {
   goal: number; roleId: string; skills: string[]; explanation: string;
   status: 'source-supported' | 'unverified';

@@ -4,6 +4,7 @@ import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { GetJobResponse } from "@workspace/api-zod";
 import app from "../app";
+import { sampleJobs } from "../data/sampleJobs";
 
 let server: Server;
 let base: string;
@@ -27,15 +28,15 @@ describe("GET /api/jobs", () => {
     assert.equal(json.page, 1);
     assert.equal(json.limit, 2);
     assert.equal(json.jobs.length, 2);
-    assert.equal(json.total, 8);
+    assert.equal(json.total, 39);
     assert.ok(json.jobs.every((job: any) => job.demo === true));
     assert.ok(json.jobs.every((job: any) => job.externalUrl === null));
     assert.match(json.jobs[0].datePosted, /^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it("filters by location, employment type, remote status and salary", async () => {
+  it("filters by location, employment type and remote status without inventing salary values", async () => {
     const response = await fetch(
-      `${base}/filter?state=Johor&employmentType=part-time&remote=false&minSalary=2000`,
+      `${base}/filter?state=Johor&employmentType=full-time&remote=true`,
     );
     assert.equal(response.status, 200);
     const json = (await response.json()) as any;
@@ -44,15 +45,17 @@ describe("GET /api/jobs", () => {
       json.jobs.every(
         (job: any) =>
           job.state === "Johor" &&
-          job.employmentType === "part-time" &&
-          job.remote === false &&
-          job.salaryMin >= 2000,
+          job.employmentType === "full-time" &&
+          job.remote === true &&
+          job.salaryMin === null,
       ),
     );
+    const withSalary = await fetch(`${base}/filter?minSalary=1`);
+    assert.equal(((await withSalary.json()) as any).total, 0);
   });
 
   it("supports keyword search over title, company, and skills", async () => {
-    const response = await fetch(`${base}/search?q=python&sort=relevance`);
+    const response = await fetch(`${base}/search?q=critical%20thinking&sort=relevance`);
     assert.equal(response.status, 200);
     const json = (await response.json()) as any;
     assert.ok(json.jobs.length > 0);
@@ -61,7 +64,7 @@ describe("GET /api/jobs", () => {
         [job.title, job.company, ...job.requiredSkills]
           .join(" ")
           .toLowerCase()
-          .includes("python"),
+          .includes("critical thinking"),
       ),
     );
   });
@@ -108,7 +111,7 @@ describe("POST /api/jobs/match-score", () => {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        candidateSkills: [" sql ", "PYTHON", "Data Analysis", "power   bi"],
+        candidateSkills: sampleJobs.find(j => j.id === "demo-data-analyst")!.requiredSkills.slice(0, 4).map(s => ` ${s.toUpperCase().replace(/ /g, "   ")} `),
         jobIds: ["demo-data-analyst"],
       }),
     });
@@ -116,8 +119,9 @@ describe("POST /api/jobs/match-score", () => {
     const json = (await response.json()) as any;
     assert.equal(json.scores.length, 1);
     assert.equal(json.scores[0].score, 67);
-    assert.deepEqual(json.scores[0].matchedSkills, ["SQL", "Python", "Power BI", "Data Analysis"]);
-    assert.deepEqual(json.scores[0].missingSkills, ["Excel", "Communication"]);
+    const skills = sampleJobs.find(j => j.id === "demo-data-analyst")!.requiredSkills;
+    assert.deepEqual(json.scores[0].matchedSkills, skills.slice(0, 4));
+    assert.deepEqual(json.scores[0].missingSkills, skills.slice(4));
     assert.match(json.scoringNote, /not a probability/i);
   });
 

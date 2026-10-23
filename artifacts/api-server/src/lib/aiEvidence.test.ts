@@ -22,7 +22,7 @@ it("selects only provider-returned listing text, keeps demo provenance and never
   const example = await prepareAiContext({ feature: "job-fit", sampleId: "data-starter", jobId: "demo-data-analyst" });
   const listing = example.context.listing as { demo: boolean; description: string; company?: string; salaryMin?: number };
   assert.equal(listing.demo, true);
-  assert.match(listing.description, /Illustrative demo listing/);
+  assert.match(listing.description, /Sample listing \(fictional\)/);
   assert.equal(listing.company, undefined);
   assert.equal(listing.salaryMin, undefined);
   assert.match(example.evidence[0].note, /not a live vacancy/);

@@ -109,3 +109,10 @@ Do not reintroduce separate duplicate CV-analysis, job-recommendation, SDG-explo
 **Why:** The user explicitly requested five primary destinations to reduce repetition and navigation complexity while preserving existing capabilities.
 
 **How to apply:** Keep the demo disclaimer in the shared top banner rather than repeating it on every card or page; retain source-specific evidence caveats and CV privacy instructions. A single audience selector controls the shared workspace. Learning roadmap has its own primary destination, while Digital Twin progress remains profile-related. Route reorganizations must preserve old links and saved profile/roadmap state; API changes require explicit approval, and CV privacy boundaries remain in force.
+
+## Fictional job listings and evidence gaps
+Sample vacancies must remain explicitly fictional, with fictional employers and no invented salaries or application destinations. External buttons are occupation searches or clearly labelled provider homepages, not applications for the sample. Salary figures need a real published source, link and date.
+
+**Why:** The user requested expanded sample coverage without presenting invented ads, pay or application links as real. They explicitly approved updating old sample requirements to O*NET skill names while keeping the scoring formula unchanged.
+
+**How to apply:** Preserve existing match/ranking formulas, DOSM logic and SDG mappings. Reuse reviewed SDG duties or existing labelled hypothetical use cases rather than infer new associations from sector names. Catalogue coverage must not promote excluded occupations: the existing Financial Analyst snapshot has no occupational skill ratings, and the Marketing crosswalk is unverified. Any fictional requirements using standard skill names must be labelled as sample requirements, not imputed evidence, and ambiguous title associations must retain their limitations.

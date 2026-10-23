@@ -698,11 +698,24 @@ export const ListJobsQueryParams = zod.object({
   "sort": zod.enum(['relevance', 'recent']).default(listJobsQuerySortDefault)
 })
 
+export const listJobsResponseJobsItemSdgTagsItemMax = 17;
+
 export const listJobsResponseJobsItemExternalUrlRegExp = new RegExp('^https?:/');
 
 
 export const ListJobsResponse = zod.object({
   "jobs": zod.array(zod.object({
+  "occupationId": zod.string(),
+  "occupationName": zod.string(),
+  "mascoCode": zod.string(),
+  "onetCode": zod.string(),
+  "onetTitle": zod.string(),
+  "mappingNote": zod.string(),
+  "mappingStatus": zod.enum(['verified', 'unverified']),
+  "workMode": zod.enum(['on-site', 'hybrid', 'remote']),
+  "level": zod.enum(['entry', 'mid', 'senior']),
+  "sdgRoleId": zod.string(),
+  "sdgTags": zod.array(zod.number().int().min(1).max(listJobsResponseJobsItemSdgTagsItemMax)),
   "id": zod.string(),
   "title": zod.string(),
   "company": zod.string(),
@@ -761,11 +774,24 @@ export const SearchJobsQueryParams = zod.object({
   "sort": zod.enum(['relevance', 'recent']).default(searchJobsQuerySortDefault)
 })
 
+export const searchJobsResponseJobsItemSdgTagsItemMax = 17;
+
 export const searchJobsResponseJobsItemExternalUrlRegExp = new RegExp('^https?:/');
 
 
 export const SearchJobsResponse = zod.object({
   "jobs": zod.array(zod.object({
+  "occupationId": zod.string(),
+  "occupationName": zod.string(),
+  "mascoCode": zod.string(),
+  "onetCode": zod.string(),
+  "onetTitle": zod.string(),
+  "mappingNote": zod.string(),
+  "mappingStatus": zod.enum(['verified', 'unverified']),
+  "workMode": zod.enum(['on-site', 'hybrid', 'remote']),
+  "level": zod.enum(['entry', 'mid', 'senior']),
+  "sdgRoleId": zod.string(),
+  "sdgTags": zod.array(zod.number().int().min(1).max(searchJobsResponseJobsItemSdgTagsItemMax)),
   "id": zod.string(),
   "title": zod.string(),
   "company": zod.string(),
@@ -824,11 +850,24 @@ export const FilterJobsQueryParams = zod.object({
   "sort": zod.enum(['relevance', 'recent']).default(filterJobsQuerySortDefault)
 })
 
+export const filterJobsResponseJobsItemSdgTagsItemMax = 17;
+
 export const filterJobsResponseJobsItemExternalUrlRegExp = new RegExp('^https?:/');
 
 
 export const FilterJobsResponse = zod.object({
   "jobs": zod.array(zod.object({
+  "occupationId": zod.string(),
+  "occupationName": zod.string(),
+  "mascoCode": zod.string(),
+  "onetCode": zod.string(),
+  "onetTitle": zod.string(),
+  "mappingNote": zod.string(),
+  "mappingStatus": zod.enum(['verified', 'unverified']),
+  "workMode": zod.enum(['on-site', 'hybrid', 'remote']),
+  "level": zod.enum(['entry', 'mid', 'senior']),
+  "sdgRoleId": zod.string(),
+  "sdgTags": zod.array(zod.number().int().min(1).max(filterJobsResponseJobsItemSdgTagsItemMax)),
   "id": zod.string(),
   "title": zod.string(),
   "company": zod.string(),
@@ -864,10 +903,23 @@ export const GetJobParams = zod.object({
   "id": zod.coerce.string().min(1)
 })
 
+export const getJobResponseSdgTagsItemMax = 17;
+
 export const getJobResponseExternalUrlRegExp = new RegExp('^https?:/');
 
 
 export const GetJobResponse = zod.object({
+  "occupationId": zod.string(),
+  "occupationName": zod.string(),
+  "mascoCode": zod.string(),
+  "onetCode": zod.string(),
+  "onetTitle": zod.string(),
+  "mappingNote": zod.string(),
+  "mappingStatus": zod.enum(['verified', 'unverified']),
+  "workMode": zod.enum(['on-site', 'hybrid', 'remote']),
+  "level": zod.enum(['entry', 'mid', 'senior']),
+  "sdgRoleId": zod.string(),
+  "sdgTags": zod.array(zod.number().int().min(1).max(getJobResponseSdgTagsItemMax)),
   "id": zod.string(),
   "title": zod.string(),
   "company": zod.string(),

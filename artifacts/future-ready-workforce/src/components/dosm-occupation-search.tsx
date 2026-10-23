@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Info, Search, SlidersHorizontal, UsersRound } from "lucide-react";
 import { useGetDosmOccupationEmploymentSearch } from "@workspace/api-client-react";
+import { ExternalJobLinks } from "@/components/shared/external-job-links";
+import "@/components/job-listings.css";
 import { formatPeople } from "@/components/dosm-national-context";
 
 function useDebouncedValue(value: string, delay: number) {
@@ -163,11 +165,17 @@ export function DosmOccupationSearch() {
                         <details className="dosm-group-skill-sources">
                           <summary>Skill sources ({group.skillSourceUrls.length})</summary>
                           <ul>
-                            {group.skillSourceUrls.map((url, i) => <li key={url}><a className="text-link" href={url} target="_blank" rel="noreferrer" data-testid={`link-group-skill-source-${group.code}-${i}`}>{url}</a></li>)}
+                            {group.skillSourceUrls.map((url, i) => <li key={url}><a className="text-link" href={url} target="_blank" rel="noopener noreferrer" data-testid={`link-group-skill-source-${group.code}-${i}`}>{url}</a></li>)}
                           </ul>
                         </details>
                       )}
                     </div>
+                    {(matchedNames.length > 0 ? matchedNames : [group.label]).map((title, i) => (
+                      <div key={title} data-testid={`panel-real-jobs-${group.code}-${i}`}>
+                        <p className="ext-jobs-title">Real vacancies for {title}</p>
+                        <ExternalJobLinks occupationTitle={title} testIdSuffix={`dosm-${group.code}-${i}`} compact />
+                      </div>
+                    ))}
                     <p className="dosm-occupation-card-note">
                       This is not an estimate for the individual title. DOSM does not publish an unemployment count or employment rate for this occupation group.
                     </p>
@@ -190,21 +198,21 @@ export function DosmOccupationSearch() {
             <dl>
               <dt>Employment by occupation</dt>
               <dd>
-                <a className="text-link" href={query.data.occupationSource.sourceUrl} target="_blank" rel="noreferrer">
+                <a className="text-link" href={query.data.occupationSource.sourceUrl} target="_blank" rel="noopener noreferrer">
                   {query.data.occupationSource.sourceName}
                 </a>
                 {" · "}{query.data.occupationSource.table}. The table reports annual counts in thousands for {query.data.occupationSource.classification}; the latest year shown is {query.data.occupationSource.referenceYear}.
               </dd>
               <dt>Job-title lookup</dt>
               <dd>
-                <a className="text-link" href={query.data.titleSearchSource.url} target="_blank" rel="noreferrer">
+                <a className="text-link" href={query.data.titleSearchSource.url} target="_blank" rel="noopener noreferrer">
                   {query.data.titleSearchSource.edition} · {query.data.titleSearchSource.publisher}
                 </a>
                 {" · "}{query.data.titleSearchSource.recordsInSearchIndex} reviewed occupation records are searchable here, compared with {query.data.titleSearchSource.totalOccupationsListed} listed in the source. {query.data.titleSearchSource.scopeNote}
               </dd>
               <dt>Unemployment and rates</dt>
               <dd>
-                <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noreferrer">DOSM OpenDOSM monthly Labour Force Survey</a>
+                <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noopener noreferrer">DOSM OpenDOSM monthly Labour Force Survey</a>
                 {" · "}These are current Malaysia-wide totals. DOSM’s occupation table does not provide unemployment by occupation or a job-specific employment rate.
               </dd>
             </dl>
