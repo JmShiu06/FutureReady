@@ -21,19 +21,20 @@ export default function MarketAndAiImpactPage() {
   const tab: Tab = param === 'ai-impact' ? 'ai-impact' : 'market';
   return <>
     <PageHead eyebrow="Labour-market and AI indicators" title="Market & AI impact"
-      subtitle="Dated Malaysian labour-market indicators and a task-level look at where AI may assist. Each panel explains its source and limits; not every indicator measures AI's impact." />
+      subtitle="Explore dated Malaysian labour-market indicators, career suitability and skill analysis." />
     <UrlTabs tabs={tabs} active={tab} onSelect={k => navigate(`/market-and-ai-impact?tab=${k}`)} label="Market and AI impact sections" idPrefix="market" />
     <TabPanel idPrefix="market" tab={tab}>
       {tab === 'market' ? <>
-        <div className="tab-intro"><p className="muted small">Latest available DOSM national observations, AI announcements and skill frequencies. Not occupation vacancies or AI causation.</p>
+        <div className="tab-intro"><p className="muted small">Latest available DOSM national observations, AI announcements and skill frequencies.</p>
           <AiExplainButton request={{ feature: 'market-trends' }} label="Summarise market trends with AI" /></div>
-        <DosmNationalContext />
+        <DosmNationalContext showDefinition={false} />
         <PlanningPanel />
         <DosmDataPanels />
         <div className="stack" style={{ gap: 18, marginBottom: 22, minWidth: 0 }}>
           <AiAnnouncementsPanel />
           <SkillFrequencyPanel />
         </div>
+        <div id="planning-about-slot" data-testid="planning-about-slot" />
       </> : <AiImpactTab />}
     </TabPanel>
   </>;

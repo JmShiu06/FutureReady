@@ -22,7 +22,7 @@ function StatCard({ label, value, note }: { label: string; value: string; note?:
   );
 }
 
-export function DosmNationalContext() {
+export function DosmNationalContext({ showDefinition = true }: { showDefinition?: boolean }) {
   const query = useGetDosmOccupationEmploymentSearch({ q: undefined });
   const context = query.data?.nationalContext;
   const latest = context?.latestObservation;
@@ -53,9 +53,9 @@ export function DosmNationalContext() {
             <StatCard label="Unemployment rate" value={`${latest.unemploymentRate.toFixed(1)}%`} note="National labour force" />
             <StatCard label="Employment-to-population ratio" value={`${latest.employmentPopulationRatio.toFixed(1)}%`} note="National working-age population" />
           </div>
-          <p className="dosm-occupation-rate-explainer">
+          {showDefinition && <p className="dosm-occupation-rate-explainer">
             The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for any individual job.
-          </p>
+          </p>}
         </>
       )}
     </section>
