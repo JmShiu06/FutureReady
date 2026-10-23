@@ -63,8 +63,8 @@ Do not persist CV upload history just to drive recommendations. Use reviewed `cv
 
 **How to apply:** If a page needs to invite CV setup, show the profile link when no CV-derived skills are saved and keep the message accurate even if a past upload produced no saved skills.
 
-CV upload and skill review belong on My profile, but the AI Career Explanation panel does not. Reviewed-data consent and the career sections belong on the AI Explanation page. Improvement Suggestions and Areas for Growth belong on Learning roadmap, not duplicated in the career explanation.
+CV upload and skill review belong on My profile, but consented career analysis belongs on Skill analysis. Skill analysis should combine an overall skill profile, complementary strengths, career-specific insights, prioritised unevidenced skills and practical next steps. Learning roadmap may reuse the same transient learning guidance.
 
-**Why:** The user explicitly requested removing AI Career Explanation from My profile and moving those two cards to Learning roadmap.
+**Why:** After separating upload from analysis, the user explicitly requested a useful career-adviser experience with recommended next steps on Skill analysis, rather than dictionary definitions or generic fixed replacements.
 
-**How to apply:** Reuse the same transient, consented explanation across navigation without another AI call or persistent storage. Preserve existing roadmap milestones and profile skill review, and provide links between upload, explanation and learning guidance.
+**How to apply:** Reuse the same transient, consented explanation across navigation without another AI call or persistent storage. Preserve roadmap milestones and skill review. Be transparent that titles can share pooled skill references: equal scores are not independent evidence or hiring probabilities. Missing CV evidence is not proof of missing ability; never turn names alone into proficiency or experience claims.

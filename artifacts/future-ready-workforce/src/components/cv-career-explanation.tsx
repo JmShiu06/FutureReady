@@ -12,10 +12,10 @@ export const LIMITED_MESSAGE = 'Some information may be incomplete due to CV ext
 
 type ListField = keyof Omit<CvDraft, 'extractionLimited' | 'categories'>;
 const sectionDefs = [
-  { key: 'skillAnalysis', title: 'Skill analysis', icon: Sparkles },
-  { key: 'careerMatchAnalysis', title: 'Career match analysis', icon: Target },
-  { key: 'skillGapAnalysis', title: 'Skill gap analysis', icon: AlertTriangle },
-  { key: 'improvementSuggestions', title: 'Improvement suggestions', icon: TrendingUp },
+  { key: 'skillAnalysis', title: 'Overall Skill Profile', icon: Sparkles },
+  { key: 'careerMatchAnalysis', title: 'Career Match Insights', icon: Target },
+  { key: 'skillGapAnalysis', title: 'Priority Skill Gaps', icon: AlertTriangle },
+  { key: 'improvementSuggestions', title: 'Recommended Next Steps', icon: TrendingUp },
   { key: 'strengths', title: 'Strengths', icon: Check },
   { key: 'areasForGrowth', title: 'Areas for growth', icon: Lightbulb },
 ] as const;
@@ -88,21 +88,27 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
     <h3 id={titleId}>{view === 'learning' ? 'Your CV learning guidance' : 'Your CV skill analysis'}</h3>
     <p className="muted small">{view === 'learning'
       ? 'Improvement options use reviewed CV details and verified learning records. AI explains growth opportunities; suggestions do not verify qualifications or exam readiness.'
-      : 'Career alignment uses only selected CV skill names and dataset references. AI explains skill meanings and gaps; skill names do not verify proficiency, experience or qualifications.'}</p>
-    {warnings.length > 0 && <ul className="cvx-warnings" data-testid="list-cvx-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
+      : 'Explore how your selected skills work together, where they may transfer and what to practise next. Skill names alone do not verify proficiency, experience or qualifications.'}</p>
+    <p className="muted small">Scores measure skill-reference overlap, not hiring probability. Skills not mentioned in the CV are not necessarily skills you lack.</p>
+    {warnings.length > 0 && <details className="cvx-data-notes"><summary>Sources, shared references &amp; limitations</summary><ul className="cvx-warnings" data-testid="list-cvx-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul></details>}
     <div className="cvx-sections">
-      {sectionDefs.filter(({ key }) => cvExplanationSectionInView(key, view)).map(({ key, title, icon: Icon }, i) => <details className="cvx-card" key={key} open={i === 0} data-testid={`card-cvx-${key}`}>
+      {sectionDefs.filter(({ key }) => cvExplanationSectionInView(key, view) && key !== 'strengths').map(({ key, title, icon: Icon }) => <details className="cvx-card" key={key} open data-testid={`card-cvx-${key}`}>
         <summary><span className="cvx-card-icon"><Icon size={14} aria-hidden="true" /></span><strong>{title}</strong><ChevronDown size={15} className="cvx-chevron" aria-hidden="true" /></summary>
         <div className="cvx-card-body">
-          <Paragraphs text={sections[key]} />
+          {key !== 'careerMatchAnalysis' && <Paragraphs text={sections[key]} />}
+          {key === 'skillAnalysis' && <><h4>Potential strengths &amp; evidence limits</h4><Paragraphs text={sections.strengths} /></>}
+          {key === 'improvementSuggestions' && view === 'career' && <Paragraphs text={sections.areasForGrowth} />}
           {key === 'careerMatchAnalysis' && (matches.length === 0
             ? <p className="cvx-empty">No career matches were returned for these skills.</p>
             : <div className="cvx-matches">{matches.map(m => <article className="cvx-match" key={m.roleId} data-testid={`card-cvx-match-${m.roleId}`}>
               <h5>{m.title}</h5>
+              <Paragraphs text={sections.careerMatchAnalysis.split(/\n+/).find(p => p.trim().startsWith(`${m.title}:`))?.trim().slice(m.title.length + 1).trim() || 'This career insight was not provided. Review the reference evidence below.'} />
               {m.skillRoleFamily && <p className="muted small">Skill reference: {m.skillRoleFamily} (pooled evidence, not title-specific requirements).</p>}
               <MatchScore metric="cv" variant="bar" value={m.score} matched={m.matchedSkills.length} considered={m.matchedSkills.length + m.missingSkills.length} testId={`score-cvx-${m.roleId}`} />
+              <details><summary>View matched &amp; unevidenced skill lists</summary>
               {m.matchedSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Matched</span>{m.matchedSkills.map(s => <span className="cvx-chip ok" key={s}><Check size={11} aria-hidden="true" />{s}</span>)}</div>}
-              {m.missingSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Missing</span>{m.missingSkills.map(s => <span className="cvx-chip gap" key={s}><X size={11} aria-hidden="true" />{s}</span>)}</div>}
+              {m.missingSkills.length > 0 && <div className="cvx-chip-row"><span className="cvx-chip-label">Not evidenced in CV — not proof of missing ability</span>{m.missingSkills.map(s => <span className="cvx-chip gap" key={s}><X size={11} aria-hidden="true" />{s}</span>)}</div>}
+              </details>
             </article>)}</div>)}
           {key === 'improvementSuggestions' && resources.length > 0 && <ul className="cvx-resources">{resources.map(r => <li key={r.id}>
             <a href={r.url} target="_blank" rel="noopener noreferrer" data-testid={`link-cvx-resource-${r.id}`}>{r.title} <ExternalLink size={11} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>
@@ -111,7 +117,7 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
         </div>
       </details>)}
     </div>
-    {view === 'career' && <Link href="/learning-roadmap" className="text-link" data-testid="link-cvx-learning-roadmap">View improvement suggestions and areas for growth in Learning roadmap</Link>}
+    {view === 'career' && <Link href="/learning-roadmap" className="text-link" data-testid="link-cvx-learning-roadmap">Continue with your Learning roadmap</Link>}
   </section>;
 }
 
