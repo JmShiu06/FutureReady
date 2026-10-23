@@ -15,30 +15,12 @@
 .jobs-filter-heading { display: flex; justify-content: space-between; align-items: center; margin: 17px 0 12px; }
 .jobs-filter-heading > span { display: flex; gap: 7px; align-items: center; color: #594533; font: 600 10px var(--mono-font); letter-spacing: .3px; text-transform: uppercase; }
 .jobs-filter-heading .text-link { display: inline-flex; gap: 5px; align-items: center; font-size: 10px; }
-.jobs-filter-grid { display: grid; grid-template-columns: 1.35fr .8fr .8fr 1fr; gap: 15px; }
 .filter-block { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .jobs-filter-label { color: #725d49; font: 500 9px var(--mono-font); letter-spacing: .45px; text-transform: uppercase; }
-.salary-presets { display: flex; gap: 5px; }
-.salary-preset { min-height: 27px; padding: 0 8px; border: 1px solid #e5d9ca; border-radius: 6px; background: #fcf9f2; color: #65503e; font-size: 9px; white-space: nowrap; }
-.salary-preset:hover, .salary-preset.selected { border-color: #bfa385; background: #efe4d6; color: #644632; }
-.salary-range-fields { display: flex; align-items: center; gap: 6px; }
-.salary-range-fields label { min-width: 0; display: flex; align-items: center; gap: 5px; border: 1px solid #e5d9ca; background: #fcf9f2; border-radius: 6px; padding: 0 7px; color: #806b59; font: 8px var(--mono-font); }
-.salary-range-fields input { width: 55px; min-width: 0; height: 28px; border: 0; outline: 0; background: transparent; color: #594533; font: 10px var(--app-font-sans); }
 .range-dash { color: #806b59; font-size: 9px; }
 .jobs-filter-input { width: 100%; height: 34px; border: 1px solid #dfd1c0; border-radius: 7px; outline: 0; background: #fcf9f2; padding: 0 9px; color: #493628; font-size: 10px; }
 .jobs-filter-input:focus { border-color: #73513b; box-shadow: 0 0 0 2px rgba(115,81,59,.13); }
 .jobs-filter-input::placeholder { color: #806b59; }
-.jobs-filter-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e5d9ca; padding-top: 12px; margin-top: 13px; }
-.remote-toggle { display: inline-flex; align-items: center; gap: 7px; color: #594533; font-size: 10px; cursor: pointer; }
-.remote-toggle input { position: absolute; opacity: 0; }
-.toggle-visual { width: 27px; height: 16px; border-radius: 20px; background: #d4c8b9; position: relative; transition: background .18s; }
-.toggle-visual:after { content: ''; position: absolute; top: 3px; left: 3px; width: 10px; height: 10px; border-radius: 50%; background: #fcf9f2; transition: transform .18s; }
-.remote-toggle input:checked + .toggle-visual { background: #73513b; }
-.remote-toggle input:checked + .toggle-visual:after { transform: translateX(11px); }
-.remote-toggle input:focus-visible + .toggle-visual { outline: 2px solid #73513b; outline-offset: 2px; }
-.remote-toggle svg { color: #795d43; }
-.sort-control { display: flex; align-items: center; gap: 8px; color: #6c5744; font-size: 9px; }
-.sort-control select { border: 1px solid #dfd1c0; border-radius: 7px; height: 30px; padding: 0 25px 0 9px; background: #fcf9f2; color: #594533; font-size: 10px; }
 .jobs-results-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; margin: 0 2px 12px; }
 .jobs-results-heading .eyebrow { margin-bottom: 5px; }
 .jobs-results-heading h2 { font: 700 18px var(--display-font); color: #493628; }
@@ -127,16 +109,13 @@
 .jobs-details-skeleton i { width: 76%; height: 12px; }
 .jobs-details-skeleton i:first-child { width: 38%; height: 21px; }
 .jobs-details-skeleton i:last-child { width: 54%; }
-@media (max-width:1050px) { .jobs-filter-grid { grid-template-columns: 1.2fr 1fr 1fr; } }
 @media (max-width:780px) {
   .jobs-page-head { align-items: flex-start; }
-  .jobs-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .job-detail-columns { grid-template-columns: 1fr; }
   .job-detail-hero { align-items: flex-start; flex-wrap: wrap; }
   .job-detail-salary { margin-left: 73px; text-align: left; }
 }
 @media (max-width:480px) {
-  .jobs-filter-grid { grid-template-columns: 1fr; }
   .jobs-results-heading { align-items: flex-start; flex-direction: column; }
   .jobs-profile-note { text-align: left; }
   .job-card-main { gap: 9px; }
@@ -164,7 +143,6 @@
 .dosm-filter-fields select { width:100%; min-width:0; }
 @media (max-width:600px) { .dosm-filter-fields { grid-template-columns:minmax(0,1fr); } }
 .jobs-filter-count { position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 4px; border-radius:9px; background:#73513b; color:#fcf9f2; font:700 9px/18px var(--mono-font); text-align:center; }
-#jobs-filter-region[hidden] { display:none; }
 .dosm-group-skills { margin:10px 0; padding:10px 11px; border:1px solid #e5d9ca; border-radius:9px; background:#f8f2e9; }
 .dosm-group-skills h5 { margin:0 0 7px; color:#493628; font-size:11px; }
 .dosm-group-skill-list { display:flex; flex-wrap:wrap; gap:5px; margin:0; padding:0; list-style:none; }
