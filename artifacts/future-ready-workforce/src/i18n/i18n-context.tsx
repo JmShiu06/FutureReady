@@ -2,11 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import { Globe, Info } from 'lucide-react';
 import { LOCALES, LOCALE_LABELS, interpolate, matchBrowserLocale, readStoredLocale, safeLocalStorage, writeStoredLocale, type Locale } from './locales';
 import { translate, type MessageKey } from './messages';
+import { translateInterfaceCopy } from './messages-interface';
 import { RaccoonArt } from '@/components/brand/raccoon-art';
 import './i18n.css';
 
 type TFn = (key: MessageKey, vars?: Record<string, string | number>) => string;
-type I18nValue = { locale: Locale; setLocale: (l: Locale) => void; t: TFn; sessionOnly: boolean };
+type UiFn = (source: string, vars?: Record<string, string | number>) => string;
+type I18nValue = { locale: Locale; setLocale: (l: Locale) => void; t: TFn; ui: UiFn; sessionOnly: boolean };
 
 const I18nContext = createContext<I18nValue | null>(null);
 const makeT = (locale: Locale): TFn => (key, vars) => interpolate(translate(locale, key), vars);
@@ -24,7 +26,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setSessionOnly(!writeStoredLocale(safeLocalStorage(), next));
   }, []);
   const t = useMemo(() => makeT(locale), [locale]);
-  const value = useMemo(() => ({ locale, setLocale, t, sessionOnly }), [locale, setLocale, t, sessionOnly]);
+  const ui = useCallback((source: string, vars?: Record<string, string | number>) => translateInterfaceCopy(locale, source, vars), [locale]);
+  const value = useMemo(() => ({ locale, setLocale, t, ui, sessionOnly }), [locale, setLocale, t, ui, sessionOnly]);
 
   return <I18nContext.Provider value={value}>
     {children}

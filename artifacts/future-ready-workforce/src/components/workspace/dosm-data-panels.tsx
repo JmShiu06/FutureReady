@@ -84,7 +84,10 @@ function sourceLinks(
   );
 }
 
+import { useI18n } from '@/i18n/i18n-context';
+
 export function DosmDataPanels() {
+  const { ui } = useI18n();
   const [fromMonth, setFromMonth] = useState("");
   const [toMonth, setToMonth] = useState("");
   const [metric, setMetric] = useState<RateMetric>("unemploymentRate");
@@ -136,14 +139,13 @@ export function DosmDataPanels() {
               data-testid="button-refresh-dosm"
             >
               <RefreshCw size={14} className={refreshMutation.isPending ? "spin" : undefined} />
-              {refreshMutation.isPending ? "Refreshing…" : "Refresh monthly data"}
+              {refreshMutation.isPending ? ui('Refreshing…') : ui('Refresh monthly data')}
             </button>
           }
         />
 
         <p className="muted" style={{ marginTop: 0 }}>
-          Counts are reported in thousands of people; rates are percentages. This national series is
-          kept separate from occupation postings and other evidence panels. It is not skill demand.
+          {ui('Counts are reported in thousands of people; rates are percentages. This national series is kept separate from occupation postings and other evidence panels. It is not skill demand.')}
         </p>
 
         <div
@@ -151,7 +153,7 @@ export function DosmDataPanels() {
           style={{ gridTemplateColumns: "repeat(auto-fit,minmax(155px,1fr))", marginBottom: 14 }}
         >
           <div className="field">
-            <label htmlFor="dosm-from-month">From month</label>
+            <label htmlFor="dosm-from-month">{ui('From month')}</label>
             <input
               id="dosm-from-month"
               type="month"
@@ -162,7 +164,7 @@ export function DosmDataPanels() {
             />
           </div>
           <div className="field">
-            <label htmlFor="dosm-to-month">To month</label>
+            <label htmlFor="dosm-to-month">{ui('To month')}</label>
             <input
               id="dosm-to-month"
               type="month"
@@ -173,7 +175,7 @@ export function DosmDataPanels() {
             />
           </div>
           <div className="field">
-            <label htmlFor="dosm-rate-metric">Chart metric</label>
+            <label htmlFor="dosm-rate-metric">{ui('Chart metric')}</label>
             <select
               id="dosm-rate-metric"
               className="fr-select"
@@ -190,12 +192,12 @@ export function DosmDataPanels() {
 
         {invalidRange && (
           <div role="alert" className="state-box" style={{ marginBottom: 12 }}>
-            The start month must not be after the end month.
+            {ui('The start month must not be after the end month.')}
           </div>
         )}
         {refreshMutation.isError && (
           <div role="alert" className="state-box" style={{ marginBottom: 12 }}>
-            Refresh failed. Existing cached data was kept.{" "}
+            {ui('Refresh failed. Existing cached data was kept.')}{" "}
             {refreshMutation.error instanceof Error ? refreshMutation.error.message : ""}
           </div>
         )}
@@ -222,13 +224,13 @@ export function DosmDataPanels() {
             )}
 
             {displayedRows.length === 0 ? (
-              <EmptyBlock title="No observations in this month range.">
-                Choose a wider range or clear the month filters.
+              <EmptyBlock title={ui('No observations in this month range.')}>
+                {ui('Choose a wider range or clear the month filters.')}
               </EmptyBlock>
             ) : (
               <>
                 <p className="small muted" style={{ marginTop: 0 }} data-testid="text-dosm-reference-period">
-                  Reference period: latest observation {fmtMonth(labourForceQuery.data.metadata.latestObservationDate)} ·
+                  {ui('Reference period: latest observation')} {fmtMonth(labourForceQuery.data.metadata.latestObservationDate)} ·
                   Retrieved from OpenDOSM {fmtTimestamp(labourForceQuery.data.metadata.retrievedAt)} ·
                   Publication date: not provided by the API.
                 </p>
@@ -271,7 +273,7 @@ export function DosmDataPanels() {
                   <p className="small muted" style={{ margin: "8px 0 12px" }} data-testid="text-dosm-range-summary">
                     {displayedRows.length > 0
                       ? `Showing ${fmtMonth(displayedRows[0].date)}–${fmtMonth(displayedRows.at(-1)!.date)} · ${displayedRows.length} observed monthly records. Missing months are not estimated.`
-                      : "No observations are available for this range."}
+                      : ui('No observations are available for this range.')}
                     {periodIsLimited && availableStartMonth
                       ? ` The source starts in ${fmtMonth(`${availableStartMonth}-01`)}; only available history is shown.`
                       : ""}
@@ -317,13 +319,13 @@ export function DosmDataPanels() {
 
                 <div className="table-wrap">
                   <table data-testid="table-dosm-labour-force">
-                    <caption className="sr-only">DOSM monthly labour-force observations in the selected period</caption>
+                    <caption className="sr-only">{ui('DOSM monthly labour-force observations in the selected period')}</caption>
                     <thead>
                       <tr>
-                        <th>Observation month</th>
-                        <th>Labour force (thousands)</th>
-                        <th className="dosm-employed">Employed (thousands)</th>
-                        <th className="dosm-unemployed">Unemployed (thousands)</th>
+                        <th>{ui('Observation month')}</th>
+                        <th>{ui('Labour force (thousands)')}</th>
+                        <th className="dosm-employed">{ui('Employed (thousands)')}</th>
+                        <th className="dosm-unemployed">{ui('Unemployed (thousands)')}</th>
                         <th>Participation</th>
                         <th>Employment-to-population</th>
                         <th>Unemployment</th>
@@ -348,9 +350,9 @@ export function DosmDataPanels() {
             )}
 
             <details className="panel panel-pad" style={{ marginTop: 14, minWidth: 0 }} data-testid="panel-dosm-lfs-methodology">
-              <summary>Source, methodology & cautions</summary>
+              <summary>{ui('Source, methodology & cautions')}</summary>
               <dl className="evidence" style={{ marginTop: 12 }}>
-                <dt>Source</dt>
+                <dt>{ui('Source')}</dt>
                 <dd>
                   <a className="text-link" href={labourForceQuery.data.metadata.sourceUrl} target="_blank" rel="noreferrer">
                     {labourForceQuery.data.metadata.sourceName} · {labourForceQuery.data.metadata.datasetId}
@@ -367,7 +369,7 @@ export function DosmDataPanels() {
                 <dt>Latest source observation</dt><dd>{fmtMonth(labourForceQuery.data.metadata.latestObservationDate)}</dd>
                 <dt>Retrieved</dt><dd>{fmtTimestamp(labourForceQuery.data.metadata.retrievedAt)}</dd>
                 <dt>Methodology</dt><dd>{labourForceQuery.data.metadata.methodology}</dd>
-                <dt>Attribution</dt><dd>{labourForceQuery.data.metadata.attribution}</dd>
+                <dt>{ui('Attribution')}</dt><dd>{labourForceQuery.data.metadata.attribution}</dd>
               </dl>
               <ul className="warn-list">
                 {labourForceQuery.data.metadata.caveats.map(caveat => <li key={caveat}>{caveat}</li>)}
@@ -393,16 +395,17 @@ function MetricCard({ label, value, note }: { label: string; value: string; note
 }
 
 function JobMarketInsightsPanel() {
+  const { ui } = useI18n();
   const query = useGetDosmJobMarketInsights();
   return (
     <section className="panel panel-pad" style={{ minWidth: 0 }} data-testid="panel-dosm-job-market">
       <SectionTitle
         title="Online postings by major occupation group"
         note="DOSM JOB MARKET INSIGHTS · 2026 Q1 VS Q2"
-        info="These are online job offerings reported by DOSM from major private recruitment platforms. They are not all vacancies or an estimate of skill demand."
+        info={ui('These are online job offerings reported by DOSM from major private recruitment platforms. They are not all vacancies or an estimate of skill demand.')}
       />
       <p className="muted" style={{ marginTop: 0 }}>
-        Quarterly counts are shown as published. This reviewed workbook snapshot is not automatically refreshed.
+        {ui('Quarterly counts are shown as published. This reviewed workbook snapshot is not automatically refreshed.')}
       </p>
 
       {query.isPending && <LoadingBlock rows={2} />}
@@ -433,12 +436,12 @@ function JobMarketInsightsPanel() {
           </div>
           <div className="table-wrap">
             <table data-testid="table-dosm-job-market">
-              <caption className="sr-only">DOSM online job offerings by major occupation group, Q1 and Q2 2026</caption>
+              <caption className="sr-only">{ui('DOSM online job offerings by major occupation group, Q1 and Q2 2026')}</caption>
               <thead>
                 <tr>
-                  <th>Major occupation group</th>
-                  <th>2026 Q1 online offerings</th>
-                  <th>2026 Q2 online offerings</th>
+                  <th>{ui('Major occupation group')}</th>
+                  <th>{ui('2026 Q1 online offerings')}</th>
+                  <th>{ui('2026 Q2 online offerings')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -448,8 +451,8 @@ function JobMarketInsightsPanel() {
                   return (
                     <tr key={group.id} data-testid={`row-dosm-occupation-${group.id}`}>
                       <td>{group.label}</td>
-                      <td className="mono">{q1 ? formatCompactCount(q1.jobOfferings) : "Not reported"}</td>
-                      <td className="mono">{q2 ? formatCompactCount(q2.jobOfferings) : "Not reported"}</td>
+                      <td className="mono">{q1 ? formatCompactCount(q1.jobOfferings) : ui('Not reported')}</td>
+                      <td className="mono">{q2 ? formatCompactCount(q2.jobOfferings) : ui('Not reported')}</td>
                     </tr>
                   );
                 })}
@@ -458,18 +461,18 @@ function JobMarketInsightsPanel() {
           </div>
 
           <details className="panel panel-pad" style={{ marginTop: 14, minWidth: 0 }} data-testid="panel-dosm-jmi-methodology">
-            <summary>Source, methodology & cautions</summary>
+            <summary>{ui('Source, methodology & cautions')}</summary>
             <dl className="evidence" style={{ marginTop: 12 }}>
-              <dt>Source</dt><dd>{query.data.sourceName}</dd>
-              <dt>Measure</dt><dd>{query.data.measure}</dd>
+              <dt>{ui('Source')}</dt><dd>{query.data.sourceName}</dd>
+              <dt>{ui('Measure')}</dt><dd>{query.data.measure}</dd>
               <dt>Coverage</dt><dd>{query.data.coverage}</dd>
-              <dt>Classification</dt><dd>{query.data.classification}</dd>
+              <dt>{ui('Classification')}</dt><dd>{query.data.classification}</dd>
               <dt>Methodology</dt><dd>{query.data.methodology}</dd>
-              <dt>Snapshot reviewed</dt><dd>{fmtDate(query.data.reviewedAt)}</dd>
-              <dt>Attribution</dt><dd>{query.data.attribution}</dd>
-              <dt>Reuse terms</dt>
+              <dt>{ui('Snapshot reviewed')}</dt><dd>{fmtDate(query.data.reviewedAt)}</dd>
+              <dt>{ui('Attribution')}</dt><dd>{query.data.attribution}</dd>
+              <dt>{ui('Reuse terms')}</dt>
               <dd><a className="text-link" href={query.data.termsUrl} target="_blank" rel="noreferrer">Malaysian Government Open Data Terms of Use 1.0</a></dd>
-              <dt>Report and workbook sources</dt>
+              <dt>{ui('Report and workbook sources')}</dt>
               <dd>
                 {query.data.totalByQuarter.map(item => (
                   <span key={item.quarter}>

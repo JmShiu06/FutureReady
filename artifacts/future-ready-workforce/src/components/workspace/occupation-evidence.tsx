@@ -52,7 +52,7 @@ const relationLabel: Record<OccupationEvidence['mapping']['relation'], string> =
 };
 
 function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   return <div className="disclaimer" style={{ marginTop: 14 }} data-testid="text-occupation-attribution"><Info size={14} /><span>
     {t('detail.sourceLanguage')}{' '}
     {data.sources.onet.attribution}{' '}
@@ -63,6 +63,7 @@ function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
 }
 
 export function OfficialOccupationsPanel({ query, sdgGoal }: { query: OccupationEvidenceQuery; sdgGoal?: number }) {
+  const { ui } = useI18n();
   const { profile } = useWorkspace();
   const eligible = query.data?.occupations.filter(o => o.recommendationStatus === 'eligible' && (!sdgGoal || roleSupportsGoal(o.id, sdgGoal))) ?? [];
   const excluded = query.data?.occupations.filter(o => o.recommendationStatus === 'excluded') ?? [];
@@ -70,14 +71,14 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
     <SectionTitle title="Malaysian critical occupations" note="OFFICIAL EVIDENCE · MYCOL 2024/2025 + O*NET 31.0"
       info="MyCOL status is TalentCorp's classification. O*NET is United States occupational reference data. Neither is a hiring probability or a measure of local demand." />
     <p className="muted" style={{ marginTop: 0 }}>
-      Separate from the illustrative coverage above. Each occupation is on TalentCorp's MyCOL 2024/2025 list and mapped by review to an O*NET occupation.
+      {ui('Separate from the illustrative coverage above. Each occupation is on TalentCorp’s MyCOL 2024/2025 list and mapped by review to an O*NET occupation.')}
       The count shows how many skills O*NET documents for that occupation appear by name in your profile. DOSM statistics in Market & AI impact are not used here.
     </p>
-    <p className="muted small">SDG tags are separately reviewed thematic links, not official MyCOL classifications or measured impact. Expand a tag for UN targets, occupational duties, scope limits and citation dates. Other occupations remain unassessed.</p>
+    <p className="muted small">{ui('SDG tags are separately reviewed thematic links, not official MyCOL classifications or measured impact. Expand a tag for UN targets, occupational duties, scope limits and citation dates. Other occupations remain unassessed.')}</p>
     {query.isPending && <LoadingBlock rows={2} />}
     {query.isError && <ErrorBlock message="Official occupation evidence could not be loaded. Check that the API server is running." onRetry={query.retry} />}
     {query.data && <>
-      {profile.skills.length === 0 && <div className="state-box" style={{ marginBottom: 14 }}>Add skills to your profile to compare them with O*NET documented skills.</div>}
+      {profile.skills.length === 0 && <div className="state-box" style={{ marginBottom: 14 }}>{ui('Add skills to your profile to compare them with O*NET documented skills.')}</div>}
       <div className="grid-2">{eligible.map(o => <article key={o.id} className="role-card" data-testid={`card-occupation-${o.id}`}>
         <div className="spread"><strong>{o.mycol.title}</strong><span className="match-pill">{o.mycol.edition}</span></div>
         <span className="muted small">MASCO {o.mycol.masco4} → O*NET {o.onet.code} {o.onet.title} · {relationLabel[o.mapping.relation]}</span>
@@ -90,11 +91,11 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
         <p className="muted small" style={{ margin: 0 }} data-testid={`text-occupation-why-${o.id}`}>{o.explanation}</p>
         {o.mapping.status === 'verified' && o.documentedSkills.length > 0
           ? <BuildRoadmapButton roleId={officialPlanId(o.id)} occupation={occupationSnapshot(o, query.data!)} testId={`button-build-roadmap-${o.id}`} />
-          : <span className="small muted">Roadmap unavailable: no reviewed documented skill requirements.</span>}
-        <Link href={`/careers-and-jobs/roles/${o.id}`} className="text-link" data-testid={`link-occupation-${o.id}`}>Occupation evidence & sources <ArrowRight size={12} /></Link>
+          : <span className="small muted">{ui('Roadmap unavailable: no reviewed documented skill requirements.')}</span>}
+        <Link href={`/careers-and-jobs/roles/${o.id}`} className="text-link" data-testid={`link-occupation-${o.id}`}>{ui('Occupation evidence & sources')} <ArrowRight size={12} /></Link>
       </article>)}</div>
       {excluded.length > 0 && <div style={{ marginTop: 16 }} data-testid="list-occupations-excluded">
-        <div className="section-kicker">Not used for recommendations</div>
+        <div className="section-kicker">{ui('Not used for recommendations')}</div>
         <div className="gap-list">{excluded.map(o => <div className="gap-row" key={o.id} data-testid={`row-occupation-excluded-${o.id}`}>
           <span><strong>{o.mycol.title}</strong><small>MASCO {o.mycol.masco4} → O*NET {o.onet.code} {o.onet.title}</small></span>
           <span className="small muted" style={{ maxWidth: 360, textAlign: 'right' }}>{o.exclusionReason}</span>
@@ -106,6 +107,7 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
 }
 
 function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOccupation; index: number }) {
+  const { ui } = useI18n();
   const overlap = occupation.overlap;
   return <article className="role-card" data-testid={`card-compare-${index}`}>
     <div className="spread">
@@ -133,6 +135,7 @@ function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOc
 }
 
 export function OccupationComparisonPanel({ query }: { query: OccupationEvidenceQuery }) {
+  const { ui } = useI18n();
   const [firstId, setFirstId] = useState('');
   const [secondId, setSecondId] = useState('');
   const occupations = query.data?.occupations ?? [];
@@ -186,7 +189,7 @@ export function OccupationComparisonPanel({ query }: { query: OccupationEvidence
 }
 
 export function OccupationEvidenceDetail({ id }: { id: string }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const query = useOccupationEvidence();
   if (query.isError) return <ErrorBlock message={t('detail.officialError')} onRetry={query.retry} />;
   if (query.isPending || !query.data) return <LoadingBlock rows={4} />;

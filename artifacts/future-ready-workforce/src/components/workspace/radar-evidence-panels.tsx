@@ -31,7 +31,10 @@ const fmtDate = (date: string) =>
 const fmtTimestamp = (value: string) =>
   new Date(value).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" });
 
+import { useI18n } from '@/i18n/i18n-context';
+
 export function AiAnnouncementsPanel() {
+  const { ui } = useI18n();
   const queryClient = useQueryClient();
   const query = useGetAiAnnouncements();
   const refresh = useRefreshAiAnnouncements();
@@ -40,9 +43,9 @@ export function AiAnnouncementsPanel() {
   return (
     <section className="panel panel-pad" style={{ minWidth: 0 }} data-testid="panel-ai-announcements">
       <SectionTitle
-        title="AI-related government announcements"
+        title={ui('AI-related government announcements')}
         note="MINISTRY OF DIGITAL · QUALITATIVE CONTEXT"
-        info="Dated press releases that mention AI. They show policy and programme activity; they are not measurements of skill demand and are not turned into scores or forecasts."
+        info={ui('Dated press releases that mention AI. They show policy and programme activity; they are not measurements of skill demand and are not turned into scores or forecasts.')}
         action={
           <button
             className="btn btn-secondary btn-small"
@@ -61,8 +64,8 @@ export function AiAnnouncementsPanel() {
       />
       {refresh.isError && (
         <div role="alert" className="state-box" style={{ marginBottom: 12 }} data-testid="error-announcements-refresh">
-          Refresh failed. {announcementFailureDetails(refresh.error).message} Earlier retrieved data, if any, is kept below.
-          <p><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">Open the official Ministry of Digital announcements page</a></p>
+          {ui('Refresh failed.')} {ui(announcementFailureDetails(refresh.error).message)} {ui('Earlier retrieved data, if any, is kept below.')}
+          <p><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">{ui('Open the official Ministry of Digital announcements page')}</a></p>
         </div>
       )}
       {refresh.isSuccess && (
@@ -74,7 +77,7 @@ export function AiAnnouncementsPanel() {
       {query.isError && (
         <div data-testid="error-announcements-source">
           <ErrorBlock message={announcementFailureDetails(query.error).message} onRetry={() => { void query.refetch(); }} />
-          <p className="small"><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">Open the official Ministry of Digital announcements page</a></p>
+          <p className="small"><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">{ui('Open the official Ministry of Digital announcements page')}</a></p>
         </div>
       )}
       {data && (
@@ -85,8 +88,8 @@ export function AiAnnouncementsPanel() {
             </div>
           )}
           {data.items.length === 0 ? (
-            <EmptyBlock title="No AI-related announcements found on the current listing page.">
-              The page was read successfully, but no listed title mentions AI.
+            <EmptyBlock title={ui('No AI-related announcements found on the current listing page.')}>
+              {ui('The page was read successfully, but no listed title mentions AI.')}
             </EmptyBlock>
           ) : (
             <div className="table-wrap">
@@ -124,6 +127,7 @@ export function AiAnnouncementsPanel() {
 }
 
 export function SkillFrequencyPanel() {
+  const { ui } = useI18n();
   const query = useGetSkillFrequencies();
   const [role, setRole] = useState("");
   const data = query.data;
@@ -132,12 +136,12 @@ export function SkillFrequencyPanel() {
   return (
     <section className="panel panel-pad" style={{ minWidth: 0 }} data-testid="panel-skill-frequencies">
       <SectionTitle
-        title="Global skill mentions in job postings"
+        title={ui('Global skill mentions in job postings')}
         note="QARERA DATASET · SNAPSHOT, NOT A TREND"
-        info="Share of postings in a role family that mention each skill. This is a global snapshot for one period, not Malaysian demand and not growth."
+        info={ui('Share of postings in a role family that mention each skill. This is a global snapshot for one period, not Malaysian demand and not growth.')}
       />
       {query.isPending && <LoadingBlock rows={2} />}
-      {query.isError && <ErrorBlock message="Skill frequencies could not be loaded." onRetry={() => { void query.refetch(); }} />}
+      {query.isError && <ErrorBlock message={ui('Skill frequencies could not be loaded.')} onRetry={() => { void query.refetch(); }} />}
       {data && selected && (
         <>
           <div className="field" style={{ maxWidth: 320, marginBottom: 14 }}>

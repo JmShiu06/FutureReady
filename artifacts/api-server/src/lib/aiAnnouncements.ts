@@ -5,15 +5,27 @@ const SITE_ORIGIN = "https://www.digital.gov.my";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_HTML_BYTES = 2_000_000;
+const MAX_ERROR_BODY_BYTES = 4_096;
+const MAX_LOG_EXCERPT_CHARS = 300;
 const STALE_AFTER_DAYS = 14;
 const DEFAULT_RETRY_AFTER_SECONDS = 60;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export type AiAnnouncementFetchDiagnostics = {
+  requestUrl: string;
+  responseStatus: number | null;
+  responseHeaders: Record<string, string>;
+  contentType: string | null;
+  sanitizedExcerpt: string | null;
+  failureKind: "http_status" | "timeout" | "network" | "response_processing";
+};
 
 export class AiAnnouncementSourceUnavailableError extends Error {
   constructor(
     message: string,
     readonly retryAfterSeconds = DEFAULT_RETRY_AFTER_SECONDS,
     readonly sourceStatus?: number,
+    readonly diagnostics?: AiAnnouncementFetchDiagnostics,
   ) {
     super(message);
     this.name = "AiAnnouncementSourceUnavailableError";

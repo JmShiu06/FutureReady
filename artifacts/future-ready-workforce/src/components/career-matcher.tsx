@@ -8,6 +8,7 @@ import {
   type CareerMatch,
   type CareerMatchResult,
 } from '@workspace/api-client-react';
+import { useI18n } from '@/i18n/i18n-context';
 import './career-matcher.css';
 
 const MAX_SKILLS = 50;
@@ -55,6 +56,7 @@ export interface CareerMatcherProps {
 }
 
 export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnabled = true }: CareerMatcherProps) {
+  const { ui, t } = useI18n();
   const [phase, setPhase] = useState<Phase>('idle');
   const [fileMeta, setFileMeta] = useState<{ name: string; size: number } | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
@@ -257,8 +259,8 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnab
     {/* 01 Upload */}
     <section className="cm-step" aria-labelledby="cm-s1">
       {cvEnabled ? <>
-      <Step n={1} title="Upload your CV" sub="Your CV and document text are not saved." />
-      <span id="cm-s1" className="sr-only">Step 1, upload your CV</span>
+      <Step n={1} title={ui('Upload your CV')} sub={ui('Your CV and document text are not saved.')} />
+      <span id="cm-s1" className="sr-only">{ui('Step 1, upload your CV')}</span>
       <div
         className={`cm-drop${dragOver ? ' is-over' : ''}${phase === 'extracting' ? ' is-busy' : ''}`}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -268,64 +270,64 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnab
       >
         <input ref={inputRef} id="cm-cv-input" type="file" className="sr-only"
           accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,image/jpeg,image/png"
-          onChange={onFileChange} aria-label="Choose a CV file (PDF, DOCX, TXT, JPG, JPEG or PNG, up to 5 MB)" data-testid="input-cv-file" />
+          onChange={onFileChange} aria-label={ui('Choose a CV file (PDF, DOCX, TXT, JPG, JPEG or PNG, up to 5 MB)')} data-testid="input-cv-file" />
         {phase === 'extracting' ? <>
           <Loader2 size={22} className="spin cm-drop-icon" aria-hidden="true" />
-          <strong>Reading your CV</strong>
+          <strong>{ui('Reading your CV')}</strong>
           <span className="cm-drop-meta" data-testid="text-cv-filename">{fileMeta?.name} · {fileMeta && formatSize(fileMeta.size)}</span>
           <div className="cm-indeterminate" aria-hidden="true"><i /></div>
-          <button type="button" className="btn btn-quiet btn-small" onClick={reset} data-testid="button-cancel-extraction">Cancel</button>
+          <button type="button" className="btn btn-quiet btn-small" onClick={reset} data-testid="button-cancel-extraction">{ui('Cancel')}</button>
         </> : fileMeta ? <>
           <FileText size={22} className="cm-drop-icon" aria-hidden="true" />
           <strong data-testid="text-cv-filename">{fileMeta.name}</strong>
-          <span className="cm-drop-meta" data-testid="text-cv-filesize">{formatSize(fileMeta.size)}{origin === 'cv' ? ' · skills extracted' : ''}</span>
+            <span className="cm-drop-meta" data-testid="text-cv-filesize">{formatSize(fileMeta.size)}{origin === 'cv' ? ` · ${ui('skills extracted')}` : ''}</span>
           <div className="cm-row">
-            <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click(); } }} data-testid="button-replace-cv">Replace file</label>
-            <button type="button" className="cm-pill is-quiet" onClick={reset} data-testid="button-start-again"><RotateCcw size={12} /> Start again</button>
+            <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click(); } }} data-testid="button-replace-cv">{ui('Replace file')}</label>
+            <button type="button" className="cm-pill is-quiet" onClick={reset} data-testid="button-start-again"><RotateCcw size={12} /> {ui('Start again')}</button>
           </div>
         </> : <>
           <CloudUpload size={24} className="cm-drop-icon" aria-hidden="true" />
-          <strong>Drop your CV here</strong>
-          <span className="cm-drop-meta">PDF, DOCX, TXT, JPG, JPEG or PNG · up to 5 MB</span>
-          <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click(); } }} data-testid="button-choose-cv">Choose a file</label>
+          <strong>{ui('Drop your CV here')}</strong>
+          <span className="cm-drop-meta">{ui('PDF, DOCX, TXT, JPG, JPEG or PNG · up to 5 MB')}</span>
+          <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click(); } }} data-testid="button-choose-cv">{ui('Choose a file')}</label>
         </>}
       </div>
       {phase === 'extraction-error' && <div className="match-error cm-err" role="alert" data-testid="error-extraction">
-        <span>{error}</span>
+        <span>{ui(error)}</span>
         <div className="cm-row">
           {fileRef.current && <button type="button" className="btn btn-secondary btn-small" onClick={() => fileRef.current && runExtraction(fileRef.current)} data-testid="button-retry-extraction"><RotateCcw size={11} /> Retry</button>}
-          <label htmlFor="cm-cv-input" className="btn btn-quiet btn-small" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }} data-testid="button-choose-another">Choose another file</label>
-          <button type="button" className="btn btn-quiet btn-small" onClick={() => seed([], 'manual')} data-testid="button-manual-after-error">Enter skills manually</button>
+          <label htmlFor="cm-cv-input" className="btn btn-quiet btn-small" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }} data-testid="button-choose-another">{ui('Choose another file')}</label>
+          <button type="button" className="btn btn-quiet btn-small" onClick={() => seed([], 'manual')} data-testid="button-manual-after-error">{ui('Enter skills manually')}</button>
         </div>
       </div>}
       </> : <>
-        <Step n={1} title="Enter skills" sub="CV upload is disabled in this view. Enter skills manually or use your saved demo profile." />
-        <p className="cm-note" data-testid="text-cv-disabled"><Info size={12} /> CV upload and extraction are turned off here. No document is read.</p>
+        <Step n={1} title={ui('Enter skills')} sub={ui('CV upload is disabled in this view. Enter skills manually or use your saved demo profile.')} />
+        <p className="cm-note" data-testid="text-cv-disabled"><Info size={12} /> {ui('CV upload and extraction are turned off here. No document is read.')}</p>
       </>}
       {(phase === 'idle') && <div className="cm-row cm-alt">
-        <span>{cvEnabled ? 'No CV to hand?' : 'Start with:'}</span>
-        <button type="button" className="text-link" onClick={() => seed([], 'manual')} data-testid="button-manual-entry">Enter skills manually</button>
-        {savedSkills.length > 0 && <button type="button" className="text-link" onClick={() => seed(savedSkills, 'profile')} data-testid="button-use-saved-skills">Use saved profile skills ({savedSkills.length})</button>}
+        <span>{ui(cvEnabled ? 'No CV to hand?' : 'Start with:')}</span>
+        <button type="button" className="text-link" onClick={() => seed([], 'manual')} data-testid="button-manual-entry">{ui('Enter skills manually')}</button>
+        {savedSkills.length > 0 && <button type="button" className="text-link" onClick={() => seed(savedSkills, 'profile')} data-testid="button-use-saved-skills">{ui('Use saved profile skills (')} {savedSkills.length})</button>}
       </div>}
     </section>
 
     {/* 02 Review */}
     <section className={`cm-step${showReview ? '' : ' is-locked'}`}>
-      <Step n={2} title={cvEnabled ? 'Extract and review skills' : 'Review your skills'} sub="Keep what is true, remove what is not, add what is missing." />
+      <Step n={2} title={ui(cvEnabled ? 'Extract and review skills' : 'Review your skills')} sub={ui('Keep what is true, remove what is not, add what is missing.')} />
       {phase === 'extracting' && <div className="cm-skeleton" aria-hidden="true">{[64, 88, 52, 76, 60, 94].map((w, i) => <i key={i} style={{ width: w }} />)}</div>}
-      {!showReview && phase !== 'extracting' && <p className="cm-empty">{cvEnabled ? 'Detected skills will appear here for you to check.' : 'Your manually entered or saved demo skills will appear here for review.'}</p>}
+       {!showReview && phase !== 'extracting' && <p className="cm-empty">{ui(cvEnabled ? 'Detected skills will appear here for you to check.' : 'Your manually entered or saved demo skills will appear here for review.')}</p>}
       {showReview && <>
         <div className="cm-origin" data-testid="text-skill-origin">
-          {origin === 'cv' && <>Detected in your CV · {skills.length} skill{skills.length === 1 ? '' : 's'}</>}
-          {origin === 'profile' && <>Loaded from your saved profile (not CV detected) · {skills.length}</>}
-          {origin === 'manual' && <>Entered by you · {skills.length}</>}
+          {origin === 'cv' && <>{ui('Detected in your CV ·')} {skills.length} {ui(skills.length === 1 ? 'skill' : 'skills')}</>}
+          {origin === 'profile' && <>{ui('Loaded from your saved profile (not CV detected) ·')} {skills.length}</>}
+          {origin === 'manual' && <>{ui('Entered by you ·')} {skills.length}</>}
           <span className={tooMany ? 'cm-over' : ''}> / {MAX_SKILLS} max</span>
         </div>
-        {warnings.length > 0 && <ul className="cm-warn" data-testid="list-extraction-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
+         {warnings.length > 0 && <ul className="cm-warn" data-testid="list-extraction-warnings">{warnings.map(w => <li key={w}>{ui(w)}</li>)}</ul>}
         {origin === 'cv' && skills.length === 0 && <div className="cm-empty-box" data-testid="empty-extraction">
-          <strong>We did not find skills from the dataset in this CV.</strong>
-          <span>Add them yourself below, or try a different file.</span>
-          <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }}>Choose another file</label>
+           <strong>{ui('We did not find skills from the dataset in this CV.')}</strong>
+           <span>{ui('Add them yourself below, or try a different file.')}</span>
+           <label htmlFor="cm-cv-input" className="cm-pill" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }}>{ui('Choose another file')}</label>
         </div>}
         {skills.length > 0 && <ul className="cm-chips" key={animKey} data-testid="list-review-skills">
           {skills.map((s, i) => <li className="cm-chip" key={key(s)} style={{ animationDelay: `${Math.min(i * 22, 440)}ms` }} data-testid={`chip-skill-${i}`}>
@@ -333,44 +335,44 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnab
             <button type="button" aria-label={`Remove ${s}`} onClick={() => removeSkill(s)} data-testid={`button-remove-skill-${i}`}><X size={11} /></button>
           </li>)}
         </ul>}
-        {tooMany && <div className="match-error" role="alert" data-testid="error-too-many">You have {skills.length} skills. Remove {skills.length - MAX_SKILLS} to confirm (limit {MAX_SKILLS}).</div>}
+        {tooMany && <div className="match-error" role="alert" data-testid="error-too-many">{ui('You have {skills} skills. Remove {excess} to confirm (limit {limit}).', { skills: skills.length, excess: skills.length - MAX_SKILLS, limit: MAX_SKILLS })}</div>}
         <form className="cm-add" onSubmit={addDraft}>
-          <label htmlFor="cm-add-input" className="sr-only">Add a missing skill</label>
+           <label htmlFor="cm-add-input" className="sr-only">{ui('Add a missing skill')}</label>
           <input id="cm-add-input" className="select-field" list="cm-skill-options" value={draft} maxLength={MAX_LEN}
-            onChange={e => { setDraft(e.target.value); setInputError(''); }} placeholder="Add a missing skill, e.g. sql" data-testid="input-add-skill" />
+             onChange={e => { setDraft(e.target.value); setInputError(''); }} placeholder={ui('Add a missing skill, e.g. sql')} data-testid="input-add-skill" />
           <datalist id="cm-skill-options">{(catalogue.data?.skills ?? []).map(s => <option key={s} value={s} />)}</datalist>
           <button type="submit" className="btn btn-secondary btn-small" data-testid="button-add-skill-review"><Plus size={11} /> Add</button>
         </form>
-        {inputError && <div className="match-error" role="alert" data-testid="error-add-skill">{inputError}</div>}
-        <p className="cm-note"><Info size={12} /> {cvEnabled ? 'Extraction can make mistakes. Only confirmed skills are used for matching and saved to your profile.' : 'Check this list before confirming. Skills are used for this matching session only; your profile is unchanged.'}</p>
+         {inputError && <div className="match-error" role="alert" data-testid="error-add-skill">{ui(inputError)}</div>}
+         <p className="cm-note"><Info size={12} /> {ui(cvEnabled ? 'Extraction can make mistakes. Only confirmed skills are used for matching and saved to your profile.' : 'Check this list before confirming. Skills are used for this matching session only; your profile is unchanged.')}</p>
         <div className="cm-row">
           {phase === 'review'
-            ? <button type="button" className="btn btn-primary" disabled={!canConfirm} onClick={confirm} data-testid="button-confirm-skills"><Check size={13} /> Confirm {skills.length} skill{skills.length === 1 ? '' : 's'}</button>
-            : <span className="cm-confirmed" data-testid="status-skills-confirmed"><Check size={13} /> Skills confirmed. Editing will ask you to confirm again.</span>}
-          {cvEnabled && origin !== 'cv' && phase === 'review' && <label htmlFor="cm-cv-input" className="btn btn-quiet btn-small" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }}>Upload a CV instead</label>}
-          {origin !== 'cv' && <button type="button" className="btn btn-quiet btn-small" onClick={reset} data-testid="button-reset-review"><RotateCcw size={11} /> Start again</button>}
+             ? <button type="button" className="btn btn-primary" disabled={!canConfirm} onClick={confirm} data-testid="button-confirm-skills"><Check size={13} /> {ui('Confirm skills ({count})', { count: skills.length })}</button>
+             : <span className="cm-confirmed" data-testid="status-skills-confirmed"><Check size={13} /> {ui('Skills confirmed. Editing will ask you to confirm again.')}</span>}
+           {cvEnabled && origin !== 'cv' && phase === 'review' && <label htmlFor="cm-cv-input" className="btn btn-quiet btn-small" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.click(); }}>{ui('Upload a CV instead')}</label>}
+           {origin !== 'cv' && <button type="button" className="btn btn-quiet btn-small" onClick={reset} data-testid="button-reset-review"><RotateCcw size={11} /> {ui('Start again')}</button>}
         </div>
       </>}
     </section>
 
     {/* 03 Discover */}
     <section className={`cm-step${isConfirmed ? '' : ' is-locked'}`}>
-      <Step n={3} title="Discover matching careers" sub="Role families ranked by how many of their listed skills you share." />
+      <Step n={3} title={ui('Discover matching careers')} sub={ui('Role families ranked by how many of their listed skills you share.')} />
       <div className="cm-row">
         <button type="button" className="btn btn-primary" disabled={!isConfirmed || phase === 'matching'} onClick={runMatch} data-testid="button-find-matches">
-          {phase === 'matching' ? <><Loader2 size={13} className="spin" /> Matching</> : <>{phase === 'results' ? 'Run again' : 'Find matching careers'} <ArrowRight size={13} /></>}
+          {phase === 'matching' ? <><Loader2 size={13} className="spin" /> {ui('Matching')}</> : <>{phase === 'results' ? ui('Run again') : ui('Find matching careers')} <ArrowRight size={13} /></>}
         </button>
-        {isConfirmed && <Link href="/careers-and-jobs?tab=listings" className="btn btn-secondary" data-testid="link-continue-jobs">Continue to Job Search <ArrowRight size={13} /></Link>}
+        {isConfirmed && <Link href="/careers-and-jobs?tab=listings" className="btn btn-secondary" data-testid="link-continue-jobs">{ui('Continue to Job Search')} <ArrowRight size={13} /></Link>}
       </div>
-      {!isConfirmed && <p className="cm-empty">Confirm your reviewed skills to unlock matching.</p>}
+      {!isConfirmed && <p className="cm-empty">{ui('Confirm your reviewed skills to unlock matching.')}</p>}
       {phase === 'matching' && <div className="cm-result-skel" aria-hidden="true">{[0, 1, 2].map(i => <i key={i} />)}</div>}
       {phase === 'matching-error' && <div className="match-error cm-err" role="alert" data-testid="error-matching">
-        <span>{error}</span>
-        <button type="button" className="btn btn-secondary btn-small" onClick={runMatch} data-testid="button-retry-matching"><RotateCcw size={11} /> Retry matching</button>
+        <span>{ui(error)}</span>
+        <button type="button" className="btn btn-secondary btn-small" onClick={runMatch} data-testid="button-retry-matching"><RotateCcw size={11} /> {ui('Retry matching')}</button>
       </div>}
       {phase === 'results' && result && <>
         {result.matches.length === 0
-          ? <div className="cm-empty-box" data-testid="match-empty"><strong>None of these skills appear in the dataset's role skill lists.</strong><span>Try adding more specific tools or methods from your experience.</span></div>
+          ? <div className="cm-empty-box" data-testid="match-empty"><strong>{ui('None of these skills appear in the dataset’s role skill lists.')}</strong><span>{ui('Try adding more specific tools or methods from your experience.')}</span></div>
           : <ol className="cm-results" data-testid="list-career-matches">
             {result.matches.map((m, i) => {
               const open = openRole === m.roleFamily;
@@ -394,11 +396,11 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnab
               </li>;
             })}
           </ol>}
-        {result.unrecognizedSkills.length > 0 && <p className="cm-note" data-testid="text-unrecognized">Not found in the dataset (not scored): {result.unrecognizedSkills.join(', ')}</p>}
+        {result.unrecognizedSkills.length > 0 && <p className="cm-note" data-testid="text-unrecognized">{ui('Not found in the dataset (not scored):')} {result.unrecognizedSkills.join(', ')}</p>}
         <div className="cm-source" data-testid="text-source">
           <strong>{result.scoring.label}.</strong> {result.scoring.formula}. {result.scoring.note}{' '}
-          Source: {result.source.datasetName}, {result.source.publisher} ({result.source.license}). {result.source.geographyNote}{' '}
-          This is skill overlap, not a probability of being hired.
+          {ui('Source:')} {result.source.datasetName}, {result.source.publisher} ({result.source.license}). {ui(result.source.geographyNote)}{' '}
+          {ui('This is skill overlap, not a probability of being hired.')}
           {result.source.urls[0] && <> <a href={result.source.urls[0]} target="_blank" rel="noreferrer" className="text-link">View dataset</a></>}
         </div>
       </>}

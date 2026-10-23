@@ -30,6 +30,7 @@ function EvidenceTable({ rows }: { rows: [string, ReactNode][] }) {
   return <table className="pl-evidence-table"><tbody>{rows.map(([label, value]) => <tr key={label}><th scope="row">{label}</th><td>{value}</td></tr>)}</tbody></table>;
 }
 function RoleCard({ r, i, scenario }: { r: Row; i: number; scenario: PlanningScenario }) {
+  const { ui } = useI18n();
   const [open, setOpen] = useState(false);
   const fit = fitOf(r.suitability); const pid = `pl-ev-${r.role.id}`;
   const TrendIcon = r.change === null ? Minus : r.change >= 0 ? TrendingUp : TrendingDown;
@@ -72,7 +73,7 @@ function RoleCard({ r, i, scenario }: { r: Row; i: number; scenario: PlanningSce
           ['Matched names', r.matched.join(', ') || 'None'],
           ['Missing names', r.missing.map(s => s.name).join(', ') || 'None'],
         ]} />
-        <p className="small">A missing name does not establish lack of ability.</p>
+        <p className="small">{ui('A missing name does not establish lack of ability.')}</p>
       </details>
       <details><summary>SDG role use case</summary><SdgUseCase roleId={r.role.id} /></details>
       <details><summary>How score calculated</summary><ul>
@@ -83,7 +84,10 @@ function RoleCard({ r, i, scenario }: { r: Row; i: number; scenario: PlanningSce
   </article>;
 }
 
+import { useI18n } from '@/i18n/i18n-context';
+
 export function PlanningPanel() {
+  const { ui } = useI18n();
   const { profile } = useWorkspace();
   const [mode, setMode] = useState<'real' | 'a' | 'b'>('real');
   const { scenario, setScenario } = usePlanningScenario();
@@ -114,12 +118,12 @@ export function PlanningPanel() {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   useEffect(() => { setSlot(document.getElementById('planning-about-slot')); }, []);
   const updated = relTime(query.data?.retrievedAt);
-  const about = <details className="panel panel-pad pl-about" data-testid="planning-about-data"><summary>About this data &amp; limitations</summary>
-      <p className="small">DOSM broad-group online offerings, not all vacancies or skill growth. Evidence strength: official source, but limited relevance to a specific occupation/skill. National unemployment and static global skill frequencies are not inputs. HUMAN DECISION SUPPORT · NOT A FORECAST.</p>
-      <p className="small">Indicators on this page do not establish occupation vacancies or AI causation; not every indicator measures AI’s impact. The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for any individual job.</p>
-      <p className="small">Overlap = exact matched documented skill names ÷ documented skills × 100 (unchanged). Signal index = group’s latest offerings ÷ maximum of Managers/Professionals × 100. Trend index = clamp(50 + 50 × quarter-on-quarter fractional change, 0–100); an unavailable/zero prior count uses neutral 50, not inferred growth. Baseline = 0.55 × overlap + 0.30 × signal index + 0.15 × trend index. Scenario suitability = clamp(baseline + adaptation weight × assumed adaptation − automation weight × assumed routine share, 0–100). These weights are authored planning assumptions, not fitted forecasts or hiring probabilities.</p>
-      <p className="small">Missing-skill priority = clamp(12 × O*NET importance + 0.2 × (0.7 × signal index + 0.3 × trend index) + scenario bonus, 0–100). Systems/critical thinking/monitoring/programming/problem-solving bonus: Moderate 4, Fast 18. Listening/speaking/writing/negotiation/social perception/instructing: Moderate 8, Fast 5. Other skills: 0. This prioritises learning under assumptions; it does not infer skill-demand growth. Two-quarter posting changes may be seasonal or volatile and are not forecasts.</p>
-      <div className="grid-2">{Object.entries(planningScenarios).map(([id, p]) => <p key={id} className="small"><b>{p.label}</b>: adaptation weight {p.adaptationWeight}; automation weight {p.automationWeight}. No probabilities or forecast horizon are asserted.</p>)}</div>
+  const about = <details className="panel panel-pad pl-about" data-testid="planning-about-data"><summary>{ui('About this data & limitations')}</summary>
+      <p className="small">{ui('DOSM broad-group online offerings, not all vacancies or skill growth. Evidence strength: official source, but limited relevance to a specific occupation/skill.')} {ui('National unemployment and static global skill frequencies are not inputs.')} {ui('HUMAN DECISION SUPPORT · NOT A FORECAST.')}</p>
+      <p className="small">{ui('Indicators on this page do not establish occupation vacancies or AI causation; not every indicator measures AI’s impact. The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for any individual job.')}</p>
+      <p className="small">{ui('Overlap = exact matched documented skill names ÷ documented skills × 100 (unchanged). Signal index = group’s latest offerings ÷ maximum of Managers/Professionals × 100. Trend index = clamp(50 + 50 × quarter-on-quarter fractional change, 0–100); an unavailable/zero prior count uses neutral 50, not inferred growth. Baseline = 0.55 × overlap + 0.30 × signal index + 0.15 × trend index. Scenario suitability = clamp(baseline + adaptation weight × assumed adaptation − automation weight × assumed routine share, 0–100). These weights are authored planning assumptions, not fitted forecasts or hiring probabilities.')}</p>
+      <p className="small">{ui('Missing-skill priority = clamp(12 × O*NET importance + 0.2 × (0.7 × signal index + 0.3 × trend index) + scenario bonus, 0–100). Systems/critical thinking/monitoring/programming/problem-solving bonus: Moderate 4, Fast 18. Listening/speaking/writing/negotiation/social perception/instructing: Moderate 8, Fast 5. Other skills: 0. This prioritises learning under assumptions; it does not infer skill-demand growth. Two-quarter posting changes may be seasonal or volatile and are not forecasts.')}</p>
+      <div className="grid-2">{Object.entries(planningScenarios).map(([id, p]) => <p key={id} className="small"><b>{ui(p.label)}</b>: {ui('adaptation weight')} {p.adaptationWeight}; {ui('automation weight')} {p.automationWeight}. {ui('No probabilities or forecast horizon are asserted.')}</p>)}</div>
       {query.data && <p className="small"><a className="text-link" href={query.data.sourceUrl} target="_blank" rel="noreferrer" data-testid="link-planning-dosm">DOSM release</a> · {query.data.totalByQuarter.map(o => `${o.quarter}, workbook published ${o.publicationDate}`).join('; ')} · parser/source mapping review {query.data.reviewedAt}.</p>}
       {occupations.data && <p className="small"><a className="text-link" href={occupations.data.sources.mycol.reportUrl} target="_blank" rel="noreferrer" data-testid="link-planning-mycol">TalentCorp MyCOL scope</a> · <a className="text-link" href={occupations.data.sources.onet.databaseUrl} target="_blank" rel="noreferrer" data-testid="link-planning-onet">O*NET {occupations.data.sources.onet.release}</a> · US skill reference, not Malaysian demand.</p>}
       {!!signals.length && occupations.data && <>
@@ -142,10 +146,10 @@ export function PlanningPanel() {
       </select></div>
       <div className="field" style={{ flex: '0 0 auto' }}><span className="field-label" id="pl-scn-label">AI disruption</span>
         <div className="pl-seg" role="group" aria-labelledby="pl-scn-label" data-testid="select-planning-scenario">
-          <button type="button" disabled aria-disabled="true" aria-describedby="pl-low-note" title="Low is not modelled; only Moderate and Fast calculations exist." data-testid="button-scenario-low">Low</button>
+          <button type="button" disabled aria-disabled="true" aria-describedby="pl-low-note" title={ui('Low is not modelled; only Moderate and Fast calculations exist.')} data-testid="button-scenario-low">Low</button>
           {(['moderate', 'fast'] as const).map(s => <button key={s} type="button" aria-pressed={scenario === s} onClick={() => setScenario(s)} data-testid={`button-scenario-${s}`}>{s === 'moderate' ? 'Moderate' : 'Fast'}</button>)}
         </div>
-        <span id="pl-low-note" className="sr-only">Low disruption is not available: the planning model only defines Moderate and Fast scenarios.</span>
+        <span id="pl-low-note" className="sr-only">{ui('Low disruption is not available: the planning model only defines Moderate and Fast scenarios.')}</span>
       </div>
       {mode === 'real' && <div className="pl-refresh">
         <button type="button" className="pl-btn-link" disabled={refresh.isPending} data-testid="button-refresh-jmi" onClick={() => refresh.mutate(undefined, { onSuccess: data => client.setQueryData(getGetDosmJobMarketInsightsQueryKey(), data) })}><RefreshCw size={13} aria-hidden="true" />{refresh.isPending ? 'Retrieving official workbook…' : 'Refresh data'}</button>
@@ -161,13 +165,13 @@ export function PlanningPanel() {
     {ai.demo && <p className="disclaimer">Synthetic AI A · Demo: simulate a fast AI jump. Authored weights only; not observed research or a forecast. Does not change saved progress.</p>}
     <AiResearchEvidence />
     {mode !== 'real' ? <p role="status" className="disclaimer" data-testid="notice-synthetic-signals">SYNTHETIC DEMO ONLY. Both snapshots use the same fictional skills: {skills.join(', ')}. Counts are invented demonstration inputs, not Malaysian observations. Your saved profile and roadmap are unchanged.</p>
-      : <div className="pl-meta"><span>Official DOSM signals · decision support, not a forecast.</span><details className="pl-info"><summary data-testid="info-planning-dosm"><Info size={13} aria-hidden="true" />About these signals</summary><div className="pl-info-pop" role="note">DOSM broad-group online offerings, not all vacancies or skill growth. Evidence strength: official source, but limited relevance to a specific occupation/skill. {query.data?.warning} {query.data?.retrievedAt && `Retrieved ${query.data.retrievedAt}.`} Refresh replaces the two-quarter posting input and recalculates planning priorities; it does not change O*NET overlap, skills, or saved progress. National unemployment and static global skill frequencies are not inputs.</div></details></div>}
-    {refresh.isError && <p role="alert">Refresh failed; previous validated data retained. Retry after one minute.</p>}
+      : <div className="pl-meta"><span>{ui('Official DOSM signals · decision support, not a forecast.')}</span><details className="pl-info"><summary data-testid="info-planning-dosm"><Info size={13} aria-hidden="true" />{ui('About these signals')}</summary><div className="pl-info-pop" role="note">{ui('DOSM broad-group online offerings, not all vacancies or skill growth. Evidence strength: official source, but limited relevance to a specific occupation/skill.')} {query.data?.warning ? ui(query.data.warning) : null} {query.data?.retrievedAt && ui('Retrieved {date}.', { date: query.data.retrievedAt })} {ui('Refresh replaces the two-quarter posting input and recalculates planning priorities; it does not change O*NET overlap, skills, or saved progress.')} {ui('National unemployment and static global skill frequencies are not inputs.')}</div></details></div>}
+    {refresh.isError && <p role="alert">{ui('Refresh failed; previous validated data retained. Retry after one minute.')}</p>}
     {(occupations.status === 'loading' || (mode === 'real' && query.isPending)) && <LoadingBlock rows={2} />}
-    {occupations.status === 'error' && <ErrorBlock message="Occupation evidence unavailable." onRetry={occupations.retry} />}
-    {mode === 'real' && query.isError && <ErrorBlock message="DOSM signals unavailable; no synthetic fallback is substituted." onRetry={() => { void query.refetch(); }} />}
+    {occupations.status === 'error' && <ErrorBlock message={ui('Occupation evidence unavailable.')} onRetry={occupations.retry} />}
+    {mode === 'real' && query.isError && <ErrorBlock message={ui('DOSM signals unavailable; no synthetic fallback is substituted.')} onRetry={() => { void query.refetch(); }} />}
     {!!signals.length && occupations.data && <>
-      {!skills.length && <p className="small">No saved skills: these are exploration priorities with zero overlap, not personal recommendations. Add skills in My profile or choose the synthetic demo.</p>}
+      {!skills.length && <p className="small">{ui('No saved skills: these are exploration priorities with zero overlap, not personal recommendations. Add skills in My profile or choose the synthetic demo.')}</p>}
       <div className="pl-grid">{visible.map((r, i) => <RoleCard key={r.role.id} r={r} i={i} scenario={scenario} />)}</div>
       {rows.length > 5 && <div className="pl-more"><button type="button" className="btn btn-secondary" aria-expanded={showAll} onClick={() => setShowAll(v => !v)} data-testid="button-show-more-occupations">{showAll ? 'Show fewer occupations' : `Show more occupations (${rows.length - 5})`}</button></div>}
     </>}

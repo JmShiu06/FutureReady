@@ -12,9 +12,10 @@ const heat = (v: number) => v === 0 ? '#f6efe7' : v < 2 ? '#f8dcc4' : v < 3 ? '#
 const assess = (r: AggregateRecord) => assessRole(r, demoRoles.find(d => d.id === r.targetRoleId) ?? demoRoles[0]);
 
 function Distribution({ records }: { records: AggregateRecord[] }) {
+  const { ui } = useI18n();
   const scores = records.map(r => assess(r).readiness);
   return <div data-testid="chart-distribution">{buckets.map(([label, lo, hi]) => { const n = scores.filter(s => s >= lo && s <= hi).length; return <div key={label} className="dist-row"><span>{label}</span><div className="bar-track"><i style={{ width: `${records.length ? 100 * n / records.length : 0}%` }} /></div><b className="mono">{n}</b></div>; })}
-    <p className="muted small">Illustrative coverage toward each record's target role (assessRole). Counts only, no individuals.</p></div>;
+    <p className="muted small">{ui('Illustrative coverage toward each record’s target role (assessRole). Counts only, no individuals.')}</p></div>;
 }
 
 function commonGaps(records: AggregateRecord[]) {
@@ -23,7 +24,10 @@ function commonGaps(records: AggregateRecord[]) {
   return [...c].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
+import { useI18n } from '@/i18n/i18n-context';
+
 function HrView() {
+  const { ui } = useI18n();
   const [dept, setDept] = useState('');
   const groups = Array.from(new Set(aggregateRecords.map(r => r.group)));
   const records = aggregateRecords.filter(r => !dept || r.group === dept);
@@ -32,7 +36,7 @@ function HrView() {
   const shown = dept ? [dept] : groups;
   const avg = (g: string, s: string) => meanSkillGap(records.filter(r => r.group === g), s);
   return <>
-    <PageHead eyebrow="HR & L&D · aggregate team view" title="Where should learning investment go?" subtitle="Aggregated synthetic records. No hiring decisions, no ranking of individual employees." />
+    <PageHead eyebrow={ui('HR & L&D · aggregate team view')} title={ui('Where should learning investment go?')} subtitle={ui('Aggregated synthetic records. No hiring decisions, no ranking of individual employees.')} />
     <div className="panel panel-pad" style={{ marginBottom: 18 }}><div className="field" style={{ maxWidth: 300 }}><label htmlFor="dept">Department</label><select id="dept" className="fr-select" value={dept} onChange={e => setDept(e.target.value)} data-testid="select-department"><option value="">All departments</option>{groups.map(g => <option key={g}>{g}</option>)}</select></div></div>
     {records.length === 0 ? <EmptyBlock title="No records for this department." /> : <>
       <div className="panel panel-pad" style={{ marginBottom: 18 }}>
@@ -53,13 +57,14 @@ function HrView() {
 }
 
 function EducationView() {
+  const { ui } = useI18n();
   const [prog, setProg] = useState('');
   const programmes = Array.from(new Set(aggregateRecords.map(r => r.programme)));
   const records = aggregateRecords.filter(r => !prog || r.programme === prog);
   const gaps = commonGaps(records);
   const matrix = useMemo(() => (prog ? [prog] : programmes).map(p => ({ p, cells: demoRoles.map(role => { const rs = aggregateRecords.filter(r => r.programme === p); return rs.length ? Math.round(rs.reduce((t, r) => t + assessRole(r, role).readiness, 0) / rs.length) : 0; }) })), [prog, programmes]);
   return <>
-    <PageHead eyebrow="University & TVET · cohort view" title="Explore curriculum through sample gaps." subtitle="Synthetic cohort aggregates. Not an assessment of any individual graduate." />
+    <PageHead eyebrow={ui('University & TVET · cohort view')} title={ui('Explore curriculum through sample gaps.')} subtitle={ui('Synthetic cohort aggregates. Not an assessment of any individual graduate.')} />
     <div className="panel panel-pad" style={{ marginBottom: 18 }}><div className="field" style={{ maxWidth: 300 }}><label htmlFor="prog">Programme / cohort</label><select id="prog" className="fr-select" value={prog} onChange={e => setProg(e.target.value)} data-testid="select-programme"><option value="">All programmes</option>{programmes.map(g => <option key={g}>{g}</option>)}</select></div></div>
     {records.length === 0 ? <EmptyBlock title="No records for this programme." /> : <>
       <div className="dashboard-grid">
@@ -77,10 +82,11 @@ function EducationView() {
 }
 
 export default function TeamPage() {
+  const { ui } = useI18n();
   const { state } = useWorkspace();
   if (state.audience !== 'hr' && state.audience !== 'education') return <Redirect to="/" />;
   return <>
     {state.audience === 'education' ? <EducationView /> : <HrView />}
-    <div className="disclaimer"><ShieldCheck size={14} /><span>Use real data only with consent, governance and safeguards.</span></div>
+    <div className="disclaimer"><ShieldCheck size={14} /><span>{ui('Use real data only with consent, governance and safeguards.')}</span></div>
   </>;
 }

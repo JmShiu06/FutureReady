@@ -7,7 +7,7 @@ Offer language choice at first visit for English, Bahasa Melayu, Simplified Chin
 
 **Why:** The user explicitly selected English/Malay/Simplified Chinese and added Korean, Tamil, Japanese, Indonesian and “fanti chinese” (Traditional Chinese).
 
-**How to apply:** Remember only the browser's language preference and allow later changes. Localize interface text without translating saved user input, detected names, canonical matching vocabulary, source citations or published figures.
+**How to apply:** Remember only the browser's language preference and allow later changes. Translate all app-authored interface text, including titles, descriptions, warnings and cautions. Keep saved user input, detected names, canonical names, citations, published figures and existing AI-generated output unchanged; translating AI output requires a new generation and explicit consent.
 
 Careers & jobs Listings should use one shared search and filter area for sample listings and DOSM occupation context, with distinct result tabs rather than competing search/filter boxes.
 

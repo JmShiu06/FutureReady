@@ -9,7 +9,10 @@ import { usePathwayProgress } from '@/hooks/use-pathway-progress';
 import type { RoadmapBaseline } from '@/domain/types';
 import { MatchScore } from '@/components/shared/match-score';
 
+import { useI18n } from '@/i18n/i18n-context';
+
 function Proposal({ milestoneId, skill, required, title }: { milestoneId: string; skill: string; required: number; title: string }) {
+  const { ui } = useI18n();
   const { state, confirmSkillUpdate } = useWorkspace();
   const current = currentLevel(state, skill);
   const suggested = proposedLevel(current, required);
@@ -35,6 +38,7 @@ function Proposal({ milestoneId, skill, required, title }: { milestoneId: string
 }
 
 function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
+  const { ui } = useI18n();
   const pathway = usePathwayProgress();
   const { state, profile } = useWorkspace();
   const occupation = baseline.occupation!;
@@ -45,21 +49,21 @@ function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
   const confirmations = state.confirmations.filter(c => c.audience === state.audience && c.roleId === state.targets[state.audience]);
   return <section data-testid="section-twin-progress">
     <div className="eyebrow">Digital twin · official occupation plan</div>
-    <h2>Your progress against {occupation.title}</h2>
+    <h2>{ui('Your progress against {role}', { role: occupation.title })}</h2>
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
-      <SectionTitle title="Documented skill overlap" note="NAME OVERLAP · NOT PROFICIENCY" />
+      <SectionTitle title={ui('Documented skill overlap')} note={ui('NAME OVERLAP · NOT PROFICIENCY')} />
       <div className="side-by-side">
         <div><p className="small muted">Starting</p><MatchScore metric="onet" variant="bar" value={start.score} matched={start.matched} considered={start.total} testId="text-start-overlap" /></div>
         <div><p className="small muted">Current</p><MatchScore metric="onet" variant="bar" value={current.score} matched={current.matched} considered={current.total} testId="text-current-overlap" /></div>
       </div>
-      <p className="muted small">The original name-overlap formula is unchanged. A higher self-rating for an existing skill does not increase this score. Completing activities alone never changes skills or overlap. No O*NET rating is a 1–5 proficiency target.</p>
+      <p className="muted small">{ui('The original name-overlap formula is unchanged. A higher self-rating for an existing skill does not increase this score. Completing activities alone never changes skills or overlap. No O*NET rating is a 1–5 proficiency target.')}</p>
       <p data-testid="text-twin-summary">{pathway.done} of {pathway.total} steps done · {pathway.percent}% · {confirmations.length} confirmed skill updates · {current.total - current.matched} documented skills not in profile</p>
       <p className="small muted">Started {new Date(baseline.startedAt).toLocaleDateString()} · evidence snapshot: O*NET {occupation.release}.</p>
     </div>
     <div className="panel panel-pad" style={{ marginBottom: 18 }}>
       <SectionTitle title="Review skill updates" note="SELF-RATING · YOU DECIDE" />
-      <p className="muted small">After practice, review your own proficiency. The offered next level is only a self-rating suggestion, not an O*NET requirement or a course award.</p>
-      {completed.length === 0 ? <p className="muted">Complete a roadmap milestone to review a possible skill level change.</p>
+      <p className="muted small">{ui('After practice, review your own proficiency. The offered next level is only a self-rating suggestion, not an O*NET requirement or a course award.')}</p>
+      {completed.length === 0 ? <p className="muted">{ui('Complete a roadmap milestone to review a possible skill level change.')}</p>
         : <div className="stack">{completed.map(m => <Proposal key={m.id} milestoneId={m.id} skill={m.skill} title={m.title} required={5} />)}</div>}
     </div>
     <div className="panel panel-pad">
@@ -79,6 +83,7 @@ function OfficialTwinProgress({ baseline }: { baseline: RoadmapBaseline }) {
 }
 
 export function TwinSection() {
+  const { ui } = useI18n();
   const pathway = usePathwayProgress();
   const { state } = useWorkspace();
   const report = progressReport(state);
@@ -90,8 +95,8 @@ export function TwinSection() {
   return <>
     <section aria-labelledby="progress-title" data-testid="section-twin-progress">
       <div className="eyebrow">Digital twin · actual progress</div>
-      <h2 id="progress-title" style={{ margin: '2px 0 4px' }}>Your progress against {role?.title ?? 'a target role'}</h2>
-      {!report ? <EmptyBlock title="No roadmap to compare yet.">Choose “Build my learning roadmap” in Careers & jobs to record a starting point.</EmptyBlock> : <>
+      <h2 id="progress-title" style={{ margin: '2px 0 4px' }}>{ui('Your progress against {role}', { role: role?.title ?? 'a target role' })}</h2>
+      {!report ? <EmptyBlock title={ui('No roadmap to compare yet.')}>{ui('Choose “Build my learning roadmap” in Careers & jobs to record a starting point.')}</EmptyBlock> : <> 
         <div className="dashboard-grid" style={{ margin: '12px 0 18px' }}>
           <div className="panel panel-pad">
             <SectionTitle title="Readiness" note="ILLUSTRATIVE SKILL COVERAGE" />
@@ -101,7 +106,7 @@ export function TwinSection() {
             </div>
             <Bar value={report.current.readiness} label={`Current readiness ${report.current.readiness}%`} />
             <p style={{ margin: '10px 0 0' }}>Change: <b className={report.changePoints > 0 ? 'delta-up' : ''} data-testid="text-progress-change">{sign(report.changePoints)} percentage points</b></p>
-            <div className="disclaimer"><Info size={14} /><span>Change = current coverage minus coverage when the roadmap was started, using the same 0–100 skill-coverage score. It reflects skill levels in your saved profile (confirmed learning updates and any profile edits), not completed activities alone. It is not a job or employment probability.</span></div>
+            <div className="disclaimer"><Info size={14} /><span>{ui('Change = current coverage minus coverage when the roadmap was started, using the same 0–100 skill-coverage score. It reflects skill levels in your saved profile (confirmed learning updates and any profile edits), not completed activities alone. It is not a job or employment probability.')}</span></div>
           </div>
           <div className="panel panel-pad">
             <SectionTitle title="Summary" />
@@ -111,7 +116,7 @@ export function TwinSection() {
         </div>
         <div className="panel panel-pad" style={{ marginBottom: 18 }}>
           <SectionTitle title="Review skill updates" note="YOU DECIDE" />
-          {completed.length === 0 ? <p className="muted">Complete a roadmap milestone to review a possible skill level change. Completion alone never changes your levels.</p>
+          {completed.length === 0 ? <p className="muted">{ui('Complete a roadmap milestone to review a possible skill level change. Completion alone never changes your levels.')}</p>
             : <div className="stack">{completed.map(m => <Proposal key={m.id} milestoneId={m.id} skill={m.skill} title={m.title} required={report.role.requiredSkills.find(r => r.name === m.skill)?.level ?? 5} />)}</div>}
         </div>
         <div className="panel panel-pad" style={{ marginBottom: 18 }}>

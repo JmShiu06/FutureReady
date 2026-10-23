@@ -4,6 +4,7 @@ import { useGetDosmOccupationEmploymentSearch } from "@workspace/api-client-reac
 import { ExternalJobLinks } from "@/components/shared/external-job-links";
 import "@/components/job-listings.css";
 import { formatPeople } from "@/components/dosm-national-context";
+import { useI18n } from "@/i18n/i18n-context";
 
 function useDebouncedValue(value: string, delay: number) {
   const [debounced, setDebounced] = useState(value);
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function DosmOccupationSearch({ keyword: sharedKeyword, onKeywordChange, children }: Props = {}) {
+  const { ui, locale } = useI18n();
   const [localKeyword, setLocalKeyword] = useState("");
   const keyword = sharedKeyword ?? localKeyword;
   const setKeyword = onKeywordChange ?? setLocalKeyword;
@@ -86,41 +88,41 @@ export function DosmOccupationSearch({ keyword: sharedKeyword, onKeywordChange, 
       {children}
       <div id="dosm-occupation-filters" className="dosm-filter-panel" hidden={!filtersOpen}>
         <div className="jobs-filter-heading">
-          <span>Filter occupation results</span>
-          {activeFilters > 0 && <button type="button" className="text-link" onClick={clearFilters} data-testid="button-clear-occupation-filters">Clear filters</button>}
+          <span>{ui('Filter occupation results')}</span>
+          {activeFilters > 0 && <button type="button" className="text-link" onClick={clearFilters} data-testid="button-clear-occupation-filters">{ui('Clear occupation filters')}</button>}
         </div>
         <div className="dosm-filter-fields">
           <label className="filter-block">
-            <span className="jobs-filter-label">Occupation group</span>
+            <span className="jobs-filter-label">{ui('Occupation group')}</span>
             <select className="jobs-filter-input" value={groupCode} onChange={event => setGroupCode(event.target.value)} data-testid="select-occupation-group">
-              <option value="">All occupation groups</option>
+              <option value="">{ui('All occupation groups')}</option>
               {allGroups.map(group => <option value={group.code} key={group.code}>{group.label}</option>)}
             </select>
           </label>
           <label className="filter-block">
-            <span className="jobs-filter-label">General skill</span>
+            <span className="jobs-filter-label">{ui('General skills for this group')}</span>
             <select className="jobs-filter-input" value={skill} onChange={event => setSkill(event.target.value)} data-testid="select-occupation-skill">
-              <option value="">All general skills</option>
+              <option value="">{ui('All general skills')}</option>
               {skillOptions.map(name => <option value={name} key={name}>{name}</option>)}
             </select>
           </label>
         </div>
-        <p className="small muted">Filters combine with your search and apply only to occupation results. Skills match the reviewed group summaries shown below, not every skill required for a job.</p>
-        {catalogue.isError && <p className="small" role="alert">Full filter options could not be loaded. <button type="button" className="text-link" onClick={() => { void catalogue.refetch(); }}>Retry filter options</button></p>}
+        <p className="small muted">{ui('Filters combine with your search and apply only to occupation results. Skills match the reviewed group summaries shown below, not every skill required for a job.')}</p>
+        {catalogue.isError && <p className="small" role="alert">{ui('Full filter options could not be loaded.')} <button type="button" className="text-link" onClick={() => { void catalogue.refetch(); }}>{ui('Retry filter options')}</button></p>}
       </div>
       {activeFilters > 0 && !filtersOpen && <p className="small muted">{activeFilters} occupation {activeFilters === 1 ? "filter" : "filters"} active · <button type="button" className="text-link" onClick={clearFilters}>Clear occupation filters</button></p>}
 
       <div className="dosm-occupation-scope" role="note">
         <Info size={16} aria-hidden="true" />
         <span>
-          DOSM reports employed people by broad occupation group, not by individual job title. Search titles are from the project’s reviewed MyCOL subset; the number on a result is for the entire DOSM group.
+          {ui('DOSM reports employed people by broad occupation group, not by individual job title. Search titles are from the project’s reviewed MyCOL subset; the number on a result is for the entire DOSM group.')}
         </span>
       </div>
 
-      {query.isPending && <p className="small muted" role="status">Loading verified DOSM labour-market data…</p>}
+      {query.isPending && <p className="small muted" role="status">{ui('Loading verified DOSM labour-market data…')}</p>}
       {query.isError && (
         <div className="dosm-occupation-error" role="alert">
-          <span>Official DOSM labour-market data could not be loaded.</span>
+          <span>{ui('Official DOSM labour-market data could not be loaded.')}</span>
           <button className="text-link" onClick={() => { void query.refetch(); }} data-testid="button-retry-dosm-occupation">Retry</button>
         </div>
       )}
@@ -129,10 +131,10 @@ export function DosmOccupationSearch({ keyword: sharedKeyword, onKeywordChange, 
         <>
           <div className="dosm-occupation-results-heading">
             <div>
-              <h3>{combinedSearch ? "DOSM occupation context" : debouncedKeyword ? `Results for “${debouncedKeyword}”` : "Search results"}</h3>
-              <span role="status" aria-live="polite">{hasCriteria ? `${groups.length} occupation ${groups.length === 1 ? "group" : "groups"} matched${activeFilters ? " with filters" : ""}` : "Enter a keyword or choose a filter to find an occupation group"}</span>
+              <h3>{combinedSearch ? ui('DOSM occupation context') : debouncedKeyword ? ui('Results for “{keyword}”', { keyword: debouncedKeyword }) : ui('Search results')}</h3>
+              <span role="status" aria-live="polite">{hasCriteria ? `${groups.length} ${ui(groups.length === 1 ? '{count} occupation group matched' : '{count} occupation groups matched', { count: groups.length })}${activeFilters ? ui(' with filters') : ''}` : ui('Enter a keyword or choose a filter to find an occupation group')}</span>
             </div>
-            <span className="dosm-occupation-data-year">DOSM employment · {query.data.occupationSource.referenceYear}</span>
+            <span className="dosm-occupation-data-year">DOSM {ui('employment')} · {query.data.occupationSource.referenceYear}</span>
           </div>
 
           {hasCriteria && groups.length > 0 && (

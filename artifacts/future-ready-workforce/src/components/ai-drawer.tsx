@@ -6,6 +6,7 @@ import { AiExplanationPanel, aiFeatureTitles } from '@/components/ai-explanation
 import { useWorkspace } from '@/domain/workspace-context';
 import { AiModelLabel } from '@/components/ai-model-label';
 import type { ProfileSkill } from '@/domain/types';
+import { useI18n } from '@/i18n/i18n-context';
 
 export type AiRequest = {
   feature: AiExplanationInput['feature'];
@@ -29,6 +30,7 @@ const focusableSelector = 'a[href], button:not([disabled]), select:not([disabled
 
 /** One drawer hosted by the app shell. Content is the existing synthetic-only explanation panel. */
 export function AiDrawerProvider({ children }: { children: ReactNode }) {
+  const { ui } = useI18n();
   const [request, setRequest] = useState<AiRequest | null>(null);
   const [nonce, setNonce] = useState(0);
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -82,10 +84,10 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
       <div ref={dialogRef} className="ai-drawer" role="dialog" aria-modal="true" aria-labelledby="ai-drawer-title" onKeyDown={onKeyDown} data-testid="drawer-ai">
         <header className="ai-drawer-head">
           <div>
-            <div className="eyebrow">Explain with AI</div>
-            <h2 id="ai-drawer-title"><Sparkles size={16} aria-hidden="true" /> {aiFeatureTitles[request.feature]}</h2>
+            <div className="eyebrow">{ui('Explain with AI')}</div>
+            <h2 id="ai-drawer-title"><Sparkles size={16} aria-hidden="true" /> {ui(aiFeatureTitles[request.feature])}</h2>
           </div>
-          <button type="button" className="icon-button" onClick={close} aria-label="Close AI explanation" data-autofocus data-testid="button-close-ai-drawer"><X size={16} /></button>
+          <button type="button" className="icon-button" onClick={close} aria-label={ui('Close AI explanation')} data-autofocus data-testid="button-close-ai-drawer"><X size={16} /></button>
         </header>
         <div className="ai-drawer-body">
           <AiModelLabel testId="label-ai-model-drawer" />

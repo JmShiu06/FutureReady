@@ -47,7 +47,7 @@ export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onAp
   onApplySkills?: (skills: ProfileSkill[]) => string | undefined;
 }) {
   const selectId = useId();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const scope = feature === 'cv-analysis' ? t('ai.scope.cvSkill', { name: cvDetectedSkill ?? '' }) : feature === 'market-trends' ? t('ai.scope.market') : t('ai.scope.sample');
   const [sampleId, setSampleId] = useState<NonNullable<AiExplanationInput['sampleId']>>('data-starter');
   const [result, setResult] = useState<AiExplanation | null>(null);
@@ -93,24 +93,24 @@ export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onAp
     }
   };
 
-  return <section className={embedded ? 'ai-demo-panel ai-demo-embedded' : 'panel panel-pad ai-demo-panel'} aria-label={`${aiFeatureTitles[feature]} AI explanation`} data-testid={`panel-ai-${feature}`}>
-    {!embedded && <h2 className="ai-demo-title"><Sparkles size={17} aria-hidden="true" /> {aiFeatureTitles[feature]} · AI explanation</h2>}
+  return <section className={embedded ? 'ai-demo-panel ai-demo-embedded' : 'panel panel-pad ai-demo-panel'} aria-label={`${ui(aiFeatureTitles[feature])} ${ui('AI explanation')}`} data-testid={`panel-ai-${feature}`}>
+    {!embedded && <h2 className="ai-demo-title"><Sparkles size={17} aria-hidden="true" /> {ui(aiFeatureTitles[feature])} · {ui('AI explanation')}</h2>}
     <p className="muted small">{feature === 'cv-analysis'
-      ? 'Only this detected skill name is sent to the AI service. Your CV file, extracted text, proficiency and other profile data are not sent. The explanation is general and does not verify your skill level.'
-      : 'Only server-owned fictional learner data and selected public evidence go to the AI service—not your saved profile or CV. AI cannot change matches, official data, skill levels, roadmap progress, or team records. Profile suggestions require separate confirmation.'}</p>
-    {feature === 'cv-analysis' && cvDetectedSkill && <div className="ai-context-note"><strong>Detected skill:</strong> {cvDetectedSkill}</div>}
-    <p className="ai-context-note"><strong>Evidence used:</strong> {contexts[feature]}</p>
+      ? ui('Only this detected skill name is sent to the AI service. Your CV file, extracted text, proficiency and other profile data are not sent. The explanation is general and does not verify your skill level.')
+      : ui('Only server-owned fictional learner data and selected public evidence go to the AI service—not your saved profile or CV. AI cannot change matches, official data, skill levels, roadmap progress, or team records. Profile suggestions require separate confirmation.')}</p>
+    {feature === 'cv-analysis' && cvDetectedSkill && <div className="ai-context-note"><strong>{ui('Detected skill:')}</strong> {cvDetectedSkill}</div>}
+    <p className="ai-context-note"><strong>{ui('Evidence used:')}</strong> {ui(contexts[feature])}</p>
     <AiConsentModel scope={scope} testId={`text-ai-consent-model-${feature}`} />
     <div className="ai-demo-controls">
       {!['market-trends', 'sdg-contribution', 'cv-analysis'].includes(feature) && <>
-      <label htmlFor={selectId}>Fictional sample</label>
+      <label htmlFor={selectId}>{ui('Fictional sample')}</label>
       <select id={selectId} value={sampleId} disabled={loading} onChange={event => {
         setSampleId(event.target.value as NonNullable<AiExplanationInput['sampleId']>);
         setResult(null);
         setError('');
       }} data-testid={`select-ai-sample-${feature}`}>
-        <option value="data-starter">Data starter — Python, Excel, data visualization</option>
-        <option value="operations-starter">Operations starter — coordination, research, storytelling</option>
+        <option value="data-starter">{ui('Data starter')} — Python, Excel, data visualization</option>
+        <option value="operations-starter">{ui('Operations starter')} — coordination, research, storytelling</option>
       </select>
       </>}
       <button type="button" className="btn btn-secondary" disabled={loading || (feature === 'cv-analysis' && !cvDetectedSkill)} onClick={() => void explain()} data-testid={`button-ai-demo-${feature}`}>
@@ -120,20 +120,20 @@ export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onAp
     <div aria-live="polite" aria-busy={loading}>
       {loading && <p className="muted small" role="status">Waiting for the AI service. Your existing results remain available.</p>}
       {result && <div className="ai-generated-explanation" data-testid={`result-ai-${feature}`}>
-        <strong>{result.sampleLabel} · AI-generated final answer</strong>
+        <strong>{result.sampleLabel} · {ui('AI-generated final answer')}</strong>
         <AiModelLabel output={result.aiModel} testId={`label-ai-model-result-${feature}`} />
         <p style={{ whiteSpace: 'pre-line' }}>{result.explanation}</p>
         {result.suggestions && onApplySkills && <AiSkillSuggestions suggestions={result.suggestions} onApply={onApplySkills} />}
-        {result.evidence && result.evidence.length > 0 && <ul className="ai-evidence-list" aria-label="Server-selected evidence">
+        {result.evidence && result.evidence.length > 0 && <ul className="ai-evidence-list" aria-label={ui('Server-selected evidence')}>
           {result.evidence.map((item, index) => <li key={`${item.title}-${index}`}>
             {item.url ? <a href={item.url} className="text-link" target="_blank" rel="noreferrer">{item.title}</a> : <strong>{item.title}</strong>}
             {item.date && <> · {item.date}</>}<p>{item.note}</p>
           </li>)}
         </ul>}
-        <details><summary>Context, figures and limitations (not generated by AI)</summary><ul>{result.contextSummary.map(item => <li key={item}>{item}</li>)}</ul></details>
-        <span>Model reasoning traces are rejected. General explanation only—not verified evidence, a hiring decision, or a forecast.</span>
+        <details><summary>{ui('Context, figures and limitations (not generated by AI)')}</summary><ul>{result.contextSummary.map(item => <li key={item}>{item}</li>)}</ul></details>
+        <span>{ui('Model reasoning traces are rejected. General explanation only—not verified evidence, a hiring decision, or a forecast.')}</span>
       </div>}
     </div>
-    {error && <div className="ai-generated-error" role="alert"><p>{error}</p><button type="button" className="btn btn-secondary" disabled={loading} onClick={() => void explain()} data-testid={`button-ai-retry-${feature}`}>Retry AI request</button></div>}
+    {error && <div className="ai-generated-error" role="alert"><p>{error}</p><button type="button" className="btn btn-secondary" disabled={loading} onClick={() => void explain()} data-testid={`button-ai-retry-${feature}`}>{ui('Retry AI request')}</button></div>}
   </section>;
 }

@@ -16,7 +16,10 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
+import { useI18n } from '@/i18n/i18n-context';
+
 export function RoadmapSection({ onReview }: { onReview: () => void }) {
+  const { ui } = useI18n();
   const { state, profile, targetRoleId, saveProfile, setMilestoneComplete, resetActiveRoadmap } = useWorkspace();
   const [costFilter, setCostFilter] = useState<'all' | 'free' | 'low'>('all');
   const [hours, setHours] = useState(profile.learningHours === null ? '' : String(profile.learningHours));
@@ -55,33 +58,33 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
 
   return <>
     <div className="panel panel-pad" style={{ marginBottom: 18 }} data-testid="panel-roadmap-target">
-      <SectionTitle title="Roadmap target" note={built ? 'BUILT FROM CAREERS & JOBS' : 'NOT BUILT YET'}
+      <SectionTitle title={ui('Roadmap target')} note={built ? 'BUILT FROM CAREERS & JOBS' : 'NOT BUILT YET'}
         action={built ? <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button type="button" className="btn btn-secondary btn-small" data-testid="button-reset-roadmap"><RotateCcw size={14} /> Reset roadmap</button>
+            <button type="button" className="btn btn-secondary btn-small" data-testid="button-reset-roadmap"><RotateCcw size={14} /> {ui('Reset roadmap')}</button>
           </AlertDialogTrigger>
           <AlertDialogContent className="roadmap-reset-dialog" data-testid="dialog-reset-roadmap">
             <AlertDialogHeader>
-              <AlertDialogTitle>Reset this roadmap?</AlertDialogTitle>
+              <AlertDialogTitle>{ui('Reset this roadmap?')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This removes this roadmap and its milestone completion and confirmation history. Your saved profile skills, learning hours and budget will stay unchanged. Other audiences’ roadmaps are not affected. This cannot be undone.
+                {ui('This removes this roadmap and its milestone completion and confirmation history. Your saved profile skills, learning hours and budget will stay unchanged. Other audiences’ roadmaps are not affected. This cannot be undone.')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel data-testid="button-cancel-reset-roadmap">Keep roadmap</AlertDialogCancel>
-              <AlertDialogAction onClick={resetActiveRoadmap} data-testid="button-confirm-reset-roadmap">Reset roadmap</AlertDialogAction>
+              <AlertDialogCancel data-testid="button-cancel-reset-roadmap">{ui('Keep roadmap')}</AlertDialogCancel>
+              <AlertDialogAction onClick={resetActiveRoadmap} data-testid="button-confirm-reset-roadmap">{ui('Reset roadmap')}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog> : undefined} />
       {built
-        ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{occupation?.title ?? role?.title}</strong> <span className="muted">· Only an explicit Build or Resume action changes this target. Browsing <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Careers & jobs</Link> never does.</span></p>
-        : <p className="muted" style={{ margin: 0 }}>No roadmap yet. Explore a role in <Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-roadmap-careers">Careers & jobs</Link> and choose “Build my learning roadmap”.</p>}
+        ? <p style={{ margin: 0 }}><strong data-testid="text-roadmap-target">{occupation?.title ?? role?.title}</strong> <span className="muted">· {ui('Only an explicit Build or Resume action changes this target. Browsing')} <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Careers & jobs</Link> {ui('never does.')}</span></p>
+        : <p className="muted" style={{ margin: 0 }}>{ui('No roadmap yet. Explore a role in')} <Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-roadmap-careers">Careers & jobs</Link> {ui('and choose “Build my learning roadmap”.')}</p>}
       {occupation && <div className="stack" style={{ marginTop: 12 }} data-testid="text-official-roadmap-evidence">
         <span className="small">{occupation.edition} · MASCO {occupation.masco4} → O*NET {occupation.onetCode} {occupation.onetTitle} · release {occupation.release}</span>
-        <p className="muted small">Plan saved from documented skills absent by name at build time, ordered by O*NET importance. O*NET levels (0–7) are not proficiency targets (1–5). Existing skills are not assessed for mastery. Milestones remain fixed after profile edits.</p>
+        <p className="muted small">{ui('Plan saved from documented skills absent by name at build time, ordered by O*NET importance. O*NET levels (0–7) are not proficiency targets (1–5). Existing skills are not assessed for mastery. Milestones remain fixed after profile edits.')}</p>
         <span className="muted small">{occupation.selectionRule} {occupation.mappingLimitations}</span>
         <a href={occupation.sourceUrl} target="_blank" rel="noreferrer" className="text-link" data-testid="link-roadmap-onet">O*NET skill evidence (CC BY 4.0)</a>
-        <span className="muted small">Learning catalogue reviewed {learningResourceCatalog.reviewed_at}. Only exact reviewed skill coverage is used; a Programming requirement does not establish a Python course match.</span>
+        <span className="muted small">{ui('Learning catalogue reviewed')} {learningResourceCatalog.reviewed_at}. {ui('Only exact reviewed skill coverage is used; a Programming requirement does not establish a Python course match.')}</span>
       </div>}
       {savedPlans.length > 0 && <details style={{ marginTop: 12 }} data-testid="details-saved-roadmaps"><summary>Saved roadmaps for this audience</summary>
         <div className="stack" style={{ marginTop: 10 }}>{savedPlans.map(([key, saved]) => {
@@ -92,11 +95,11 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
     </div>
     <div className="dashboard-grid">
       <div className="panel panel-pad">
-        <SectionTitle title="Progress" note={`${done} OF ${milestones.length} MILESTONES`} />
-        <ChiliProgressBar value={milestones.length ? 100 * done / milestones.length : 0} label="Roadmap completion" valueText={`${done} of ${milestones.length} milestones complete`} testId="progress-roadmap" />
+        <SectionTitle title={ui('Progress')} note={`${done} OF ${milestones.length} MILESTONES`} />
+        <ChiliProgressBar value={milestones.length ? 100 * done / milestones.length : 0} label={ui('Roadmap completion')} valueText={`${done} of ${milestones.length} milestones complete`} testId="progress-roadmap" />
         <p className="muted" style={{ marginTop: 10 }} data-testid="text-plan-cost">{occupation ? 'Known resource cost' : 'Total sample cost'} MYR {totalCost} · {unknownCosts ? `${unknownCosts} activities have unknown cost; a full budget comparison is unavailable.` : budgetSummary}</p>
         <p className="muted small">Priority skills: {milestones.map(m => m.skill).join(', ') || 'none'}</p>
-        <p className="muted small" data-testid="text-roadmap-rule">Completing a milestone tracks progress only; it never changes skill levels. Review and confirm a level change in <button className="record-btn" onClick={onReview} data-testid="button-open-twin">Digital Twin &amp; Progress</button>.</p>
+        <p className="muted small" data-testid="text-roadmap-rule">{ui('Completing a milestone tracks progress only; it never changes skill levels. Review and confirm a level change in')} <button className="record-btn" onClick={onReview} data-testid="button-open-twin">{ui('Digital Twin & Progress')}</button>.</p>
       </div>
       <div className="panel panel-pad">
         <SectionTitle title="Replan" note="HOURS AND BUDGET" />
@@ -114,8 +117,8 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
     <div className="row" style={{ margin: '18px 0 12px' }}>
       {(['all', 'free', 'low'] as const).map(f => <button key={f} className={`btn btn-small ${costFilter === f ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCostFilter(f)} aria-pressed={costFilter === f} data-testid={`button-cost-${f}`}>{f === 'all' ? 'All' : f === 'free' ? 'Free' : 'Low cost (MYR 100 or less)'}</button>)}
     </div>
-    {!built ? <EmptyBlock title="Your roadmap will appear here.">Milestones are created from the gaps of the role you choose in Careers & jobs.</EmptyBlock>
-      : milestones.length === 0 ? <EmptyBlock title="No gaps for this target.">{occupation ? 'Every selected documented skill was in your starting profile by name. This is not a proficiency assessment.' : 'You met every sample requirement when you started.'} <Link href="/careers-and-jobs?tab=career-paths" className="text-link">Choose another career</Link></EmptyBlock>
+    {!built ? <EmptyBlock title={ui('Your roadmap will appear here.')}>{ui('Milestones are created from the gaps of the role you choose in Careers & jobs.')}</EmptyBlock>
+      : milestones.length === 0 ? <EmptyBlock title="No gaps for this target.">{ui(occupation ? 'Every selected documented skill was in your starting profile by name. This is not a proficiency assessment.' : 'You met every sample requirement when you started.')} <Link href="/careers-and-jobs?tab=career-paths" className="text-link">{ui('Choose another career')}</Link></EmptyBlock>
       : shown.length === 0 ? <EmptyBlock title="No milestones match this cost filter." />
       : <div className="dashboard-grid">
         <div className="stack">{shown.map(m => { const key = completionKey(state.audience, m.id); const isDone = !!state.completion[key]; return <div key={m.id} className={`milestone${isDone ? ' done' : ''}`} data-testid={`card-milestone-${m.order}`}>
@@ -135,7 +138,7 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
           {profile.learningHours === null
             ? <p className="muted">Set weekly learning hours in Replan to calculate a schedule.</p>
              : schedule.map(s => <div key={s.week} className="week-row"><span className="mono">Wk {s.week}</span><span>{s.activities.map(a => `${a.skill} (${a.hours.toFixed(1)}h)`).join('; ')}</span></div>)}
-           <div className="disclaimer"><Info size={14} /><span>Remaining activities are packed in order into your weekly capacity. Course times are provider estimates; practice times are app estimates. Completed steps are omitted. Unknown-duration activities are not scheduled.</span></div></div>
+           <div className="disclaimer"><Info size={14} /><span>{ui('Remaining activities are packed in order into your weekly capacity. Course times are provider estimates; practice times are app estimates. Completed steps are omitted. Unknown-duration activities are not scheduled.')}</span></div></div>
       </div>}
   </>;
 }
