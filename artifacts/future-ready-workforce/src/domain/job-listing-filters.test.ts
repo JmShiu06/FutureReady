@@ -1,7 +1,7 @@
 import { it } from 'node:test';
 import assert from 'node:assert/strict';
 import { sampleJobs } from '../../../api-server/src/data/sampleJobs';
-import { emptyListingFilters, filterListings, orderListingsByMatch, matchesQuery, readListingSearch, listingSearchParams, listingReturnHref } from './job-listing-filters';
+import { emptyListingFilters, filterListings, orderListingsByMatch, matchesQuery, readListingSearch, listingSearchParams, listingReturnHref, filterDosmGroups, matchDosmKeyword, groupOccupationOptions, mascoGroupCode, hasSearchCriteria } from './job-listing-filters';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SampleListingBadge, ExternalJobLinks } from '../components/shared/external-job-links';
@@ -9,11 +9,13 @@ import { SampleListingBadge, ExternalJobLinks } from '../components/shared/exter
 it('round-trips every listing control and page through detail and return links', () => {
   const state = {
     filters: {
-      q: ' Data & nursing + café / 科技 ', occupation: 'occupation-2521',
+      q: ' Data & nursing + café / 科技 ', occupation: 'occupation-2521', group: '', skill: 'Critical Thinking',
       location: 'Kuala Lumpur', workMode: 'hybrid', level: 'mid', sdg: '9',
     },
     matchOnly: true,
     page: 3,
+    submitted: true,
+    view: 'dosm' as const,
   };
   const search = listingSearchParams(state).toString();
   const detail = new URL(`/careers-and-jobs/listings/sample-1?${search}`, 'https://example.test');
@@ -27,7 +29,7 @@ it('round-trips every listing control and page through detail and return links',
 });
 
 it('default and reset URLs clear filters, matching and pagination without retaining profile data', () => {
-  const defaults = { filters: emptyListingFilters, matchOnly: false, page: 1 };
+  const defaults = { filters: emptyListingFilters, matchOnly: false, page: 1, submitted: false, view: 'listings' as const };
   assert.deepEqual(readListingSearch(''), defaults);
   assert.equal(listingReturnHref(''), '/careers-and-jobs?tab=listings');
   assert.equal(listingSearchParams(defaults).toString(), 'tab=listings');
@@ -59,7 +61,7 @@ it('combines every requested filter without mutating the catalogue or any scores
   const original = JSON.stringify(sampleJobs);
   const job = sampleJobs.find(j => j.sdgTags.length && j.workMode === 'remote')!;
   const filtered = filterListings(sampleJobs, {
-    q: job.requiredSkills[0], occupation: job.occupationId, location: job.state!,
+    ...emptyListingFilters, q: job.requiredSkills[0], occupation: job.occupationId, location: job.state!,
     workMode: job.workMode, level: job.level, sdg: String(job.sdgTags[0]),
   });
   assert.ok(filtered.some(j => j.id === job.id));
@@ -95,4 +97,61 @@ it('matches my skills uses server scores globally before pagination and excludes
   assert.equal(sorted.slice(0, 12)[11].id, sampleJobs[27].id);
   assert.deepEqual(sampleJobs.map(j => j.id), original);
   assert.equal(orderListingsByMatch(sampleJobs, new Map()).length, 0);
+});
+
+const groups = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => ({
+  code: String(n), label: `Group ${n}`, employedThousands: 100 + n * 7.3, generalSkills: n === 9 ? ['Rare Skill'] : [],
+  skillSourceUrls: [], skillsCoverage: '', matchedOccupationTitles: [], matchedJobTitles: [],
+}));
+
+it('submitted/results-tab state round-trips, old q URLs count as searched, and reset clears everything', () => {
+  assert.equal(readListingSearch('tab=listings').submitted, false);
+  assert.equal(readListingSearch('tab=listings&q=data').submitted, true);
+  assert.equal(readListingSearch('occupation=x').submitted, true);
+  const blank = { filters: emptyListingFilters, matchOnly: false, page: 1, submitted: true, view: 'listings' as const };
+  assert.equal(listingSearchParams(blank).toString(), 'tab=listings&submitted=1');
+  assert.deepEqual(readListingSearch(listingSearchParams(blank)), blank);
+  const grouped = { ...blank, filters: { ...emptyListingFilters, group: '2', skill: 'Writing' }, view: 'dosm' as const };
+  assert.deepEqual(readListingSearch(listingSearchParams(grouped)), grouped);
+  assert.equal(readListingSearch('group=12').filters.group, '');
+  assert.equal(readListingSearch('group=2&occupation=o').filters.group, '');
+  assert.equal(listingReturnHref('q=data&results=dosm&skill=Writing&profile=secret'), '/careers-and-jobs?tab=listings&q=data&skill=Writing&results=dosm');
+  assert.equal(hasSearchCriteria(emptyListingFilters, false), false);
+});
+
+it('group and skill filters narrow samples by MASCO first digit and exact skill names', () => {
+  const g = mascoGroupCode(sampleJobs[0].mascoCode)!;
+  const byGroup = filterListings(sampleJobs, { ...emptyListingFilters, group: g });
+  assert.ok(byGroup.length > 0 && byGroup.every(j => j.mascoCode[0] === g));
+  const skill = sampleJobs[0].requiredSkills[0];
+  const bySkill = filterListings(sampleJobs, { ...emptyListingFilters, skill });
+  assert.ok(bySkill.length > 0 && bySkill.every(j => j.requiredSkills.includes(skill)));
+  assert.equal(filterListings(sampleJobs, { ...emptyListingFilters, skill: skill.toLowerCase() }).length, 0);
+  assert.equal(mascoGroupCode('Data scenario'), null);
+  assert.equal(mascoGroupCode('25'), null);
+  const options = groupOccupationOptions([...sampleJobs, { ...sampleJobs[0], occupationId: 'synthetic', occupationName: 'Scenario', mascoCode: 'n/a' }], { [g]: 'Professionals' });
+  assert.equal(options.at(-1)!.code, null);
+  assert.deepEqual(options.at(-1)!.occupations.map(o => o.id), ['synthetic']);
+  assert.ok(options.find(o => o.code === g)!.label === 'Professionals');
+});
+
+it('DOSM groups follow shared filters, ignore sample-only scope and never change counts', () => {
+  const before = JSON.stringify(groups);
+  const job = sampleJobs.find(j => j.sdgTags.length)!;
+  const code = mascoGroupCode(job.mascoCode)!;
+  const opts = (f: object, matchOnly = false, scores?: Map<string, never>) => ({ filters: { ...emptyListingFilters, ...f }, matchOnly, scores });
+  assert.deepEqual(filterDosmGroups(groups, sampleJobs, opts({ group: '3' })).map(g => g.code), ['3']);
+  assert.deepEqual(filterDosmGroups(groups, sampleJobs, opts({ occupation: job.occupationId })).map(g => g.code), [code]);
+  assert.equal(filterDosmGroups(groups, sampleJobs, opts({ location: 'Nowhere', workMode: 'remote', level: 'senior' })).length, 9);
+  assert.ok(filterDosmGroups(groups, sampleJobs, opts({ skill: 'Rare Skill' })).some(g => g.code === '9'));
+  assert.ok(filterDosmGroups(groups, sampleJobs, opts({ skill: job.requiredSkills[0] })).some(g => g.code === code));
+  assert.ok(filterDosmGroups(groups, sampleJobs, opts({ sdg: String(job.sdgTags[0]) })).every(g => sampleJobs.some(j => j.mascoCode[0] === g.code && j.sdgTags.includes(job.sdgTags[0]))));
+  const scores = new Map([[job.id, { jobId: job.id, score: 33.3, matchedSkills: [], missingSkills: [], skillsConsidered: 6 }]]);
+  assert.deepEqual(filterDosmGroups(groups, sampleJobs, { filters: emptyListingFilters, matchOnly: true, scores }).map(g => g.code), [code]);
+  const kw = matchDosmKeyword(groups, [], sampleJobs, 'data');
+  assert.ok(kw.length > 0 && kw.every(g => g.matchedVia.length > 0));
+  assert.ok(matchDosmKeyword(groups, [], sampleJobs, '2521').some(g => g.code === '2' && g.matchedVia.includes('MASCO code')));
+  assert.equal(matchDosmKeyword(groups, null, sampleJobs, '').length, 9);
+  for (const g of kw) assert.equal(g.employedThousands, groups.find(x => x.code === g.code)!.employedThousands);
+  assert.equal(JSON.stringify(groups), before);
 });

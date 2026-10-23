@@ -22,3 +22,52 @@
   .jl-filters .select-field { max-width: none; flex: 1 1 45%; }
   .jl-evidence { grid-template-columns: 1fr; }
 }
+
+/* Unified search: one bar, one panel, two tabs */
+.jx-search { padding: 22px; margin: 18px 0 18px; background: linear-gradient(145deg, hsl(40 48% 98%), hsl(38 40% 95%) 60%); }
+.jx-bar { display: flex; gap: 8px; align-items: stretch; }
+.jx-input { flex: 1; min-width: 0; }
+.jx-submit { min-height: 48px; padding: 0 18px; font-size: 13px; border-radius: 10px; }
+.jx-bar .jobs-filter-toggle { width: 48px; height: auto; min-height: 48px; }
+.jx-chips-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; min-height: 8px; }
+.jx-chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; min-width: 0; }
+.jx-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 5px 6px 5px 11px; border-radius: 999px; background: #efe2d1; border: 1px solid #dcc8b1; color: #503a2a; font-size: 12px; font-weight: 600; overflow-wrap: anywhere; animation: arrive .22s ease both; }
+.jx-chip button { display: grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 50%; background: #e2cfb8; color: #5b3d2b; flex: none; }
+.jx-chip button:hover { background: #d5bc9f; }
+.jx-clear { font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.jx-panel { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e0cfbb; }
+.jx-panel[hidden] { display: none; }
+.jx-field { display: grid; gap: 5px; min-width: 0; }
+.jx-field .select-field { width: 100%; min-width: 0; font-size: 13px; padding: 10px 11px; }
+.jx-field em { font-style: normal; color: #9a7f66; font-weight: 500; margin-left: 4px; text-transform: none; letter-spacing: 0; }
+.jx-match { align-self: end; min-height: 41px; font-size: 13px; }
+.jx-wide { grid-column: 1 / -1; }
+.jx-welcome { text-align: center; padding: 36px 22px; }
+.jx-welcome p { max-width: 520px; margin: 6px auto 0; color: #6c5947; font-size: 13px; line-height: 1.6; }
+.jx-empty-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.jx-example { border: 1px dashed #b99a7b; background: #fbf4ea; color: #5b3d2b; border-radius: 999px; padding: 7px 16px; font: 600 12px var(--mono-font); transition: transform .18s, background .18s; }
+.jx-example:hover { background: #f0e1cd; transform: translateY(-1px); }
+.jx-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 12px; background: #eee3d5; margin-bottom: 14px; }
+.jx-tab-wrap { display: inline-flex; align-items: center; gap: 2px; }
+.jx-tab { border: 0; background: transparent; color: #6f5947; padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; }
+.jx-tab.active { background: #fcf8f1; color: #4b3424; box-shadow: 0 2px 8px rgba(74,51,34,.09); }
+.jx-count { font: 500 12px var(--mono-font); color: #8a6c52; }
+.jx-tip { position: relative; display: inline-flex; }
+.jx-tip-btn { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: #73513b; }
+.jx-tip-btn:hover, .jx-tip-btn:focus-visible { background: #e3d2bd; }
+.jx-tip-text { position: absolute; z-index: 20; top: calc(100% + 6px); right: -8px; width: min(300px, 80vw); padding: 11px 13px; border-radius: 10px; background: #4b3424; color: #fbf3e8; font-size: 12px; line-height: 1.5; box-shadow: 0 10px 26px rgba(74,51,34,.2); opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .16s, transform .16s; }
+.jx-tip:hover .jx-tip-text, .jx-tip-btn:focus-visible + .jx-tip-text, .jx-tip-text.open { opacity: 1; transform: translateY(0); }
+.jx-note { display: block; margin: 0 0 12px; }
+.jx-scope-note { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; padding: 10px 12px; border: 1px solid hsl(41 71% 82%); border-radius: 9px; background: hsl(43 100% 97%); color: hsl(31 39% 31%); font-size: 13px; }
+.jx-scope-note svg { flex: none; margin-top: 2px; }
+.dosm-matched-via { margin: 6px 0 0; color: #8a6c52; font: 500 11px var(--mono-font); }
+@media (max-width: 760px) {
+  .jx-search { padding: 16px; }
+  .jx-bar { flex-wrap: wrap; }
+  .jx-input { flex-basis: 100%; }
+  .jx-submit { flex: 1; }
+  .jx-tabs { display: grid; grid-template-columns: 1fr; }
+  .jx-tab { text-align: left; }
+  .jx-tab-wrap .jx-tab { flex: 1; }
+  .jx-tip-text { right: 0; }
+}
