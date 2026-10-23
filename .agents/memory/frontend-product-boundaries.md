@@ -72,6 +72,13 @@ An opt-in fictional explanation beside a deterministic feature does not make its
 
 **How to apply:** Describe exactly what context reaches the shared service. Prompt improvements alone do not authorize sending real CVs, saved learning histories or profile data; report those inference flows as unconnected until explicitly approved and implemented.
 
+## GLM provider approval boundary
+GLM was approved only for synthetic/demo contexts initially. Existing consent for Qwen does not authorize sending reviewed CV details, detected CV skills or personal profiles to GLM. Qwen remains the default; GLM must be explicitly selected server-side. A paid live test requires separate explicit authorization.
+
+**Why:** The user approved adding an alternative provider while explicitly reserving personal-data review and any further paid live testing.
+
+**How to apply:** Preserve Qwen's existing reviewed-CV consent flow, but fail closed for personal-data paths when GLM is selected. Do not silently fall back to another provider. Do not treat a successful user-provided Playground example as proof of app connectivity.
+
 ## Roadmap and confirmation rules (My Profile)
 - Only the "Build my learning roadmap" action sets the roadmap target; Career Explorer browsing never does.
 - Roadmap milestones derive from a baseline snapshot taken at build time, so confirmed level changes never shrink the roadmap or lose progress.
