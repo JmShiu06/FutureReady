@@ -4,7 +4,7 @@ import { TwinSection } from '@/components/profile/twin-section';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowRight, Check, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowRight, Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { ProfileCvImport } from '@/components/profile-cv-import';
 import { useCvSession } from '@/domain/cv-session';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
@@ -48,6 +48,14 @@ export default function ProfilePage() {
     const next = mergeCvSkills(form.getValues('skills'), imported, detectedNames);
     skills.replace(next.skills);
     setSaved(`${imported.length} new CV skill${imported.length === 1 ? '' : 's'} applied${next.removed.length ? `; ${next.removed.length} skill${next.removed.length === 1 ? '' : 's'} from an earlier CV not found in this one removed` : ''}. Manual skills and skills found again kept their ratings. Save your skills to keep them.`);
+  };
+  const resetSkills = () => {
+    if (!window.confirm('Clear all skills from this profile? Your CV and other profile details will stay unchanged. Click Save profile afterwards to keep the change.')) return;
+    skills.replace([]);
+    setNewSkill('');
+    setNewCategory('Custom');
+    setSkillError('');
+    setSaved('Skills cleared. Click Save profile to keep this change.');
   };
   const addSkill = () => {
     const name = newSkill.trim().replace(/\s+/g, ' ');
@@ -96,6 +104,7 @@ export default function ProfilePage() {
           <SectionTitle
             title="Skills"
             note={`${skills.fields.length} OF 50 · LEVELS 1–5`}
+            action={<button type="button" className="btn btn-secondary btn-small" onClick={resetSkills} disabled={skills.fields.length === 0} data-testid="button-reset-skills"><RotateCcw size={12} /> Reset skills</button>}
             info="Set each level yourself: 1 is new to it and 5 means you can teach it. CV verification only confirms a skill name; it never sets proficiency."
           />
           {skills.fields.length === 0 && <p className="muted" data-testid="text-no-skills">No skills detected from CV. Upload a CV above or add a skill manually below.</p>}
