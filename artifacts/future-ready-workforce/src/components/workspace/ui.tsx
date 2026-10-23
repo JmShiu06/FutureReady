@@ -56,9 +56,9 @@ export function EvidencePanel({ evidence, testId = 'panel-evidence' }: { evidenc
 }
 
 export function LoadingBlock({ rows = 3 }: { rows?: number }) {
-  return <div className="stack loading-block" role="status" aria-label="Loading">
-    <span className="loading-block-cue"><RaccoonLoader /></span>
-    {Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: 70 }} />)}
+  return <div className="stack loading-block" role="status" aria-busy="true">
+    <div className="loading-block-cue"><RaccoonLoader /><p className="loading-block-text">Our little raccoon is getting things ready…</p></div>
+    {Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: 70 }} aria-hidden="true" />)}
   </div>;
 }
 

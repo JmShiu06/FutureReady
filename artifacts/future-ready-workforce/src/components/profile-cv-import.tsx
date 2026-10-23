@@ -241,7 +241,7 @@ export function ProfileCvImport({
       <div>
         <div className="profile-cv-result-title">
           <strong>{reviewSkills.length ? 'Skills ready to review' : 'CV review ready'}</strong>
-          <RaccoonLoader size="small" className="raccoon-loader-greet" />
+          <Check size={14} aria-hidden="true" />
         </div>
         <span>{reviewSkills.length} skill{reviewSkills.length === 1 ? '' : 's'} detected</span>
       </div>

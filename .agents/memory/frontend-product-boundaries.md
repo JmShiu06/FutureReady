@@ -91,6 +91,18 @@ Use the first hand-drawn raccoon face from the supplied sticker sheet as the off
 
 **How to apply:** Keep functional icons simple outlines. Use individual transparent assets rather than the full sheet, with small responsive placements that never overlap text or controls. Preserve the warm cream-and-brown palette.
 
+For loading feedback, use the user's uploaded star-hugging raccoon illustration unchanged, with its actual five paw prints lighting up separately from left to right. Do not replace it with a redrawn mascot.
+
+**Why:** The user explicitly supplied the hand-drawn artwork as a brand asset and requested individual paw lights, rather than whole-image brightness changes.
+
+**How to apply:** Use it only during genuine asynchronous waits, never add display delays, keep button indicators compact, and disable animation for reduced motion. Retain texture and outlines if removing the paper background would damage them.
+
+Normalize the extracted paw masks independently without changing the raccoon artwork: the first paw in the source is much darker than the other four.
+
+**Why:** A uniform opacity conversion makes the later paw lights nearly invisible even when their active colour is dark. The relevant difference is in mask opacity, not the chosen CSS colour.
+
+**How to apply:** Preserve each hand-drawn silhouette and antialiased edge, remove paper from the mask, and verify inactive as well as active prints remain visible.
+
 ## Consolidated workspace boundaries
 Do not reintroduce separate duplicate CV-analysis, job-recommendation, SDG-explorer or AI-panel workspaces when extending the app. Keep CV upload and analysis on My profile, career workflows together, SDG relevance on career cards, and explanations in one shared drawer. The Dashboard is a summary with onward links, not a second copy of detailed tools.
 
