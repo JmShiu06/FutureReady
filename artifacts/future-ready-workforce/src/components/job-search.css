@@ -156,6 +156,13 @@
 .jobs-filter-toggle { position:relative; flex:none; width:45px; height:45px; display:grid; place-items:center; border:1px solid #dfd1c0; border-radius:9px; background:#fcf9f2; color:#73513b; }
 .jobs-filter-toggle:hover, .jobs-filter-toggle.open { background:#efe4d6; border-color:#bfa385; }
 .jobs-filter-toggle:focus-visible { outline:2px solid #73513b; outline-offset:2px; }
+.dosm-search-controls { display:flex; align-items:flex-start; gap:10px; }
+.dosm-search-controls .dosm-occupation-input { flex:1; min-width:0; }
+.dosm-filter-panel { margin-bottom:16px; padding:14px; border:1px solid #dfd1c0; border-radius:12px; background:#fcf9f2; }
+.dosm-filter-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.dosm-filter-fields .filter-block { min-width:0; }
+.dosm-filter-fields select { width:100%; min-width:0; }
+@media (max-width:600px) { .dosm-filter-fields { grid-template-columns:minmax(0,1fr); } }
 .jobs-filter-count { position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 4px; border-radius:9px; background:#73513b; color:#fcf9f2; font:700 9px/18px var(--mono-font); text-align:center; }
 #jobs-filter-region[hidden] { display:none; }
 .dosm-group-skills { margin:10px 0; padding:10px 11px; border:1px solid #e5d9ca; border-radius:9px; background:#f8f2e9; }
