@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'wouter';
+import { Link, useParams, useSearch } from 'wouter';
 import { ArrowLeft, BriefcaseBusiness, Layers, MapPin } from 'lucide-react';
 import { getGetJobQueryKey, useCalculateJobMatchScores, useGetJob } from '@workspace/api-client-react';
 import type { JobMatchScore } from '@workspace/api-client-react';
@@ -7,6 +7,7 @@ import { fictionalListingLabel } from '@workspace/workforce-evidence';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
 import { ExternalJobLinks, SampleListingBadge } from '@/components/shared/external-job-links';
+import { listingReturnHref } from '@/domain/job-listing-filters';
 import '@/components/job-listings.css';
 
 type Props = { profileSkills: string[] };
@@ -14,6 +15,7 @@ const modeLabel: Record<string, string> = { 'on-site': 'On-site', hybrid: 'Hybri
 const levelLabel: Record<string, string> = { entry: 'Entry level', mid: 'Mid level', senior: 'Senior level' };
 
 export function JobDetailsPage({ profileSkills }: Props) {
+  const backHref = listingReturnHref(useSearch());
   const params = useParams<{ id: string }>();
   const id = params.id ?? '';
   const query = useGetJob(id, { query: { queryKey: getGetJobQueryKey(id), enabled: Boolean(id), staleTime: 30_000 } });
@@ -43,12 +45,12 @@ export function JobDetailsPage({ profileSkills }: Props) {
 
   if (query.isLoading) return <div className="jobs-page" data-testid="page-job-details"><div className="jobs-details-skeleton panel"><i /><i /><i /><i /><i /></div></div>;
   if (query.isError || !job) return <div className="jobs-page" data-testid="page-job-details">
-    <Link href="/careers-and-jobs?tab=listings" className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link>
+    <Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link>
     <div className="jobs-state panel jobs-error" role="alert" data-testid="status-job-detail-error"><span className="jobs-state-icon">!</span><h3>{query.isError ? 'This listing could not be loaded.' : 'This sample listing is not available.'}</h3><p>Try returning to the listings and opening another one.</p><button className="btn btn-primary" onClick={() => query.refetch()} data-testid="button-retry-job-detail">Try again</button></div>
   </div>;
 
   return <div className="jobs-page" data-testid="page-job-details">
-    <div className="job-detail-topline"><Link href="/careers-and-jobs?tab=listings" className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link></div>
+    <div className="job-detail-topline"><Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link></div>
     <section className="job-detail-hero">
       <div className="job-detail-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>
       <div className="job-detail-heading">

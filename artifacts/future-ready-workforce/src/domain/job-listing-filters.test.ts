@@ -1,10 +1,51 @@
 import { it } from 'node:test';
 import assert from 'node:assert/strict';
 import { sampleJobs } from '../../../api-server/src/data/sampleJobs';
-import { emptyListingFilters, filterListings, orderListingsByMatch, matchesQuery } from './job-listing-filters';
+import { emptyListingFilters, filterListings, orderListingsByMatch, matchesQuery, readListingSearch, listingSearchParams, listingReturnHref } from './job-listing-filters';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SampleListingBadge, ExternalJobLinks } from '../components/shared/external-job-links';
+
+it('round-trips every listing control and page through detail and return links', () => {
+  const state = {
+    filters: {
+      q: ' Data & nursing + café / 科技 ', occupation: 'occupation-2521',
+      location: 'Kuala Lumpur', workMode: 'hybrid', level: 'mid', sdg: '9',
+    },
+    matchOnly: true,
+    page: 3,
+  };
+  const search = listingSearchParams(state).toString();
+  const detail = new URL(`/careers-and-jobs/listings/sample-1?${search}`, 'https://example.test');
+  const back = new URL(listingReturnHref(detail.search), detail);
+  assert.equal(back.pathname, '/careers-and-jobs');
+  assert.equal(back.searchParams.get('tab'), 'listings');
+  assert.deepEqual(readListingSearch(detail.search), state);
+  assert.deepEqual(readListingSearch(back.search), state);
+  // The listing URL remains a complete source of state for browser Back and reload.
+  assert.deepEqual(readListingSearch(search), state);
+});
+
+it('default and reset URLs clear filters, matching and pagination without retaining profile data', () => {
+  const defaults = { filters: emptyListingFilters, matchOnly: false, page: 1 };
+  assert.deepEqual(readListingSearch(''), defaults);
+  assert.equal(listingReturnHref(''), '/careers-and-jobs?tab=listings');
+  assert.equal(listingSearchParams(defaults).toString(), 'tab=listings');
+  const incoming = 'tab=listings&q=data&page=2&candidateSkills=PrivateSkill&scores=99&returnTo=https://evil.test';
+  const returned = listingReturnHref(incoming);
+  assert.equal(returned, '/careers-and-jobs?tab=listings&q=data&page=2');
+  const withExtraFields = { ...defaults, candidateSkills: ['PrivateSkill'], scores: [99] };
+  assert.equal(listingSearchParams(withExtraFields).toString(), 'tab=listings');
+});
+
+it('rejects malformed page state and treats only the explicit match flag as enabled', () => {
+  for (const value of ['', '0', '-1', '1.5', 'NaN', 'Infinity', '2foo', '9007199254740992']) {
+    assert.equal(readListingSearch(`page=${value}`).page, 1, value);
+  }
+  assert.equal(readListingSearch('page=4').page, 4);
+  assert.equal(readListingSearch('matchOnly=true').matchOnly, false);
+  assert.equal(readListingSearch('matchOnly=1').matchOnly, true);
+});
 
 it('finds several data, nurse and cyber samples plus occupation names, MASCO codes and skill names', () => {
   for (const q of ['data', 'nurse', 'cyber', '2521', 'Nursing Professionals', 'Critical Thinking'])

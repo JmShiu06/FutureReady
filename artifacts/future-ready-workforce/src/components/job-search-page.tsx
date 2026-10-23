@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'wouter';
+import { Link, useSearchParams } from 'wouter';
 import { ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, Layers, MapPin, Search, X } from 'lucide-react';
 import { getListJobsQueryKey, useCalculateJobMatchScores, useListJobs } from '@workspace/api-client-react';
 import type { JobMatchScore, ListJobsParams } from '@workspace/api-client-react';
 import { MatchScore } from '@/components/shared/match-score';
 import { DosmOccupationSearch } from '@/components/dosm-occupation-search';
 import { ExternalJobLinks, SampleListingBadge } from '@/components/shared/external-job-links';
-import { emptyListingFilters, filterListings, orderListingsByMatch, jobLocation, type ListingFilters } from '@/domain/job-listing-filters';
+import { emptyListingFilters, filterListings, orderListingsByMatch, jobLocation, readListingSearch, listingSearchParams, type ListingFilters, type ListingSearchState } from '@/domain/job-listing-filters';
 import '@/components/job-listings.css';
 
 type Props = { profileSkills: string[] };
@@ -16,10 +16,23 @@ const modeLabel: Record<string, string> = { 'on-site': 'On-site', hybrid: 'Hybri
 const levelLabel: Record<string, string> = { entry: 'Entry level', mid: 'Mid level', senior: 'Senior level' };
 
 export function JobSearchPage({ profileSkills }: Props) {
-  const [filters, setFilters] = useState<ListingFilters>(emptyListingFilters);
-  const [matchOnly, setMatchOnly] = useState(false);
-  const [page, setPage] = useState(1);
-  const update = (patch: Partial<ListingFilters>) => { setFilters(f => ({ ...f, ...patch })); setPage(1); };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchState = useMemo(() => readListingSearch(searchParams), [searchParams]);
+  const { filters, page } = searchState;
+  const matchOnly = searchState.matchOnly && profileSkills.length > 0;
+  const changeSearch = (change: (state: ListingSearchState) => ListingSearchState) => {
+    setSearchParams(previous => listingSearchParams(change(readListingSearch(previous))), { replace: true });
+  };
+  const setPage = (page: number) => changeSearch(state => ({ ...state, page }));
+  const setMatchOnly = (matchOnly: boolean) => changeSearch(state => ({ ...state, matchOnly, page: 1 }));
+  const update = (patch: Partial<ListingFilters>) => changeSearch(state => ({ ...state, filters: { ...state.filters, ...patch }, page: 1 }));
+
+  // A saved preference must not enable matching without skills in the active profile.
+  useEffect(() => {
+    if (!profileSkills.length && searchState.matchOnly) {
+      setSearchParams(previous => listingSearchParams({ ...readListingSearch(previous), matchOnly: false }), { replace: true });
+    }
+  }, [profileSkills.length, searchState.matchOnly, setSearchParams]);
 
   const jobsQuery = useListJobs(LIST_PARAMS, { query: { queryKey: getListJobsQueryKey(LIST_PARAMS), staleTime: 30_000 } });
   const allJobs = useMemo(() => jobsQuery.data?.jobs ?? [], [jobsQuery.data]);
@@ -41,7 +54,6 @@ export function JobSearchPage({ profileSkills }: Props) {
     const token = ++requestRef.current;
     if (!profileSkills.length || !allJobs.length) {
       setScoreState({ key: scoreKey, status: 'idle', scores: new Map() });
-      if (!profileSkills.length) setMatchOnly(false);
       return;
     }
     setScoreState({ key: scoreKey, status: 'pending', scores: new Map() });
@@ -66,7 +78,7 @@ export function JobSearchPage({ profileSkills }: Props) {
   const current = Math.min(page, pages);
   const visible = results.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   const activeCount = Object.values(filters).filter(Boolean).length + Number(matchOnly);
-  const reset = () => { setFilters(emptyListingFilters); setMatchOnly(false); setPage(1); };
+  const reset = () => changeSearch(() => ({ filters: emptyListingFilters, matchOnly: false, page: 1 }));
   const matchWaiting = matchOnly && scoreState.status === 'pending';
 
   return <div className="jobs-page" data-testid="page-job-search">
@@ -95,7 +107,7 @@ export function JobSearchPage({ profileSkills }: Props) {
           <option value="">Any SDG</option>{sdgs.map(n => <option key={n} value={String(n)}>SDG {n}</option>)}
         </select>
         <label className={`jl-check${profileSkills.length ? '' : ' disabled'}`} title={profileSkills.length ? 'Show listings that share at least one skill with your profile, highest overlap first' : 'Add skills to your profile first'}>
-          <input type="checkbox" checked={matchOnly} disabled={!profileSkills.length} onChange={e => { setMatchOnly(e.target.checked); setPage(1); }} data-testid="checkbox-matches-my-skills" />
+          <input type="checkbox" checked={matchOnly} disabled={!profileSkills.length} onChange={e => setMatchOnly(e.target.checked)} data-testid="checkbox-matches-my-skills" />
           Matches my skills
         </label>
         {activeCount > 0 && <button className="text-link" onClick={reset} data-testid="button-reset-filters">Reset filters ({activeCount})</button>}
@@ -125,7 +137,7 @@ export function JobSearchPage({ profileSkills }: Props) {
     {!matchWaiting && visible.length > 0 && <div className="jobs-list" data-testid="list-jobs">
       {visible.map((job, index) => {
         const score = scoreState.scores.get(job.id);
-        const href = `/careers-and-jobs/listings/${encodeURIComponent(job.id)}`;
+        const href = `/careers-and-jobs/listings/${encodeURIComponent(job.id)}?${listingSearchParams({ filters, matchOnly, page: current })}`;
         return <article className="job-card panel" key={job.id} style={{ animationDelay: `${Math.min(index * 40, 180)}ms` }} data-testid={`card-job-${job.id}`}>
           <div className="job-card-main">
             <div className="job-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>

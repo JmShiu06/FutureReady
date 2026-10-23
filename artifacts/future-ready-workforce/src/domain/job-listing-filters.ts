@@ -5,6 +5,42 @@ export type ListingFilters = {
 };
 export const emptyListingFilters: ListingFilters = { q: '', occupation: '', location: '', workMode: '', level: '', sdg: '' };
 
+export type ListingSearchState = { filters: ListingFilters; matchOnly: boolean; page: number };
+
+/** Read only listing controls, never profile skills or scores. */
+export function readListingSearch(search: string | URLSearchParams): ListingSearchState {
+  const params = new URLSearchParams(search);
+  const rawPage = params.get('page') ?? '';
+  const page = /^[1-9]\d*$/.test(rawPage) ? Number(rawPage) : 1;
+  return {
+    filters: {
+      q: params.get('q') ?? '',
+      occupation: params.get('occupation') ?? '',
+      location: params.get('location') ?? '',
+      workMode: params.get('workMode') ?? '',
+      level: params.get('level') ?? '',
+      sdg: params.get('sdg') ?? '',
+    },
+    matchOnly: params.get('matchOnly') === '1',
+    page: Number.isSafeInteger(page) ? page : 1,
+  };
+}
+
+/** Explicit allowlist keeps profile data and arbitrary return URLs out of navigation. */
+export function listingSearchParams({ filters, matchOnly, page }: ListingSearchState) {
+  const params = new URLSearchParams({ tab: 'listings' });
+  for (const key of Object.keys(emptyListingFilters) as (keyof ListingFilters)[]) {
+    if (filters[key]) params.set(key, filters[key]);
+  }
+  if (matchOnly) params.set('matchOnly', '1');
+  if (Number.isSafeInteger(page) && page > 1) params.set('page', String(page));
+  return params;
+}
+
+export function listingReturnHref(search: string | URLSearchParams) {
+  return `/careers-and-jobs?${listingSearchParams(readListingSearch(search))}`;
+}
+
 export const jobLocation = (job: Job) => job.state ?? job.location;
 
 /** Case-insensitive match on title, occupation name, MASCO code and O*NET skill names. */
