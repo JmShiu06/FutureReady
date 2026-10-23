@@ -76,7 +76,10 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
   activeRequests++;
   try {
     const result = await provider(prepared.request, { signal: controller.signal });
-    if (!res.destroyed) res.json(parseCvCareerExplanation(result.explanation, prepared));
+    if (!res.destroyed) res.json({
+      ...parseCvCareerExplanation(result.explanation, prepared),
+      ...(result.provider ? { provider: { id: result.provider.id } } : {}),
+    });
   } catch (error) {
     if (!res.destroyed) res.status(error instanceof GlmPrivacyError ? 403 : error instanceof RunpodConfigurationError ? 503 : 502).json({
       error: error instanceof GlmPrivacyError ? error.message : "The AI career explanation is unavailable or could not be validated. Your CV review and profile are unchanged. Please retry.",
@@ -126,6 +129,7 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
       const result = await provider({ instruction: example.instruction, context: example.context, json: example.json }, { signal: controller.signal });
       const parsed = parseFeatureAnswer(result.explanation, example);
       return CreateAiExplanationResponse.parse({
+        ...(result.provider ? { provider: { id: result.provider.id } } : {}),
         explanation: parsed.explanation,
         ...(parsed.suggestions ? { suggestions: parsed.suggestions } : {}),
         sampleLabel: example.sampleLabel, contextSummary: parsed.contextSummary,

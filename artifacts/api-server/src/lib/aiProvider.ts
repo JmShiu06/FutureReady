@@ -1,5 +1,6 @@
 import { generateLlmExplanation, RunpodConfigurationError } from "./runpod";
 import { generateGlmExplanation, GlmPrivacyError } from "./glm";
+import type { AiProviderMetadata } from "@workspace/api-zod";
 
 type Input = Parameters<typeof generateLlmExplanation>[0];
 type Options = Parameters<typeof generateLlmExplanation>[1] & { signal?: AbortSignal };
@@ -10,11 +11,17 @@ export function assertCvProviderAllowed(env: Record<string, string | undefined> 
 }
 
 /** Server configuration only: never accept a provider choice or credentials in request bodies. */
-export async function generateAiExplanation(input: Input, options: Options = {}): Promise<{ explanation: string }> {
+export async function generateAiExplanation(input: Input, options: Options = {}): Promise<{ explanation: string; provider?: AiProviderMetadata }> {
   const env = options.env ?? process.env;
   switch (env.AI_PROVIDER?.trim() || "qwen") {
-    case "qwen": return generateLlmExplanation(input, options);
-    case "glm": return generateGlmExplanation(input, options);
+    case "qwen": {
+      const result = await generateLlmExplanation(input, options);
+      return { explanation: result.explanation, provider: { id: "qwen" } };
+    }
+    case "glm": {
+      const result = await generateGlmExplanation(input, options);
+      return { explanation: result.explanation, provider: { id: "glm" } };
+    }
     default: throw new RunpodConfigurationError("Unsupported AI_PROVIDER. Choose qwen or glm in the server configuration.");
   }
 }

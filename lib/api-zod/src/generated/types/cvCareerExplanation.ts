@@ -5,11 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AiProviderMetadata } from './aiProviderMetadata';
 import type { CvCareerExplanationMatchesItem } from './cvCareerExplanationMatchesItem';
 import type { CvCareerExplanationResourcesItem } from './cvCareerExplanationResourcesItem';
 import type { CvCareerExplanationSections } from './cvCareerExplanationSections';
 
 export interface CvCareerExplanation {
+  provider?: AiProviderMetadata;
   sections: CvCareerExplanationSections;
   matches: CvCareerExplanationMatchesItem[];
   resources: CvCareerExplanationResourcesItem[];

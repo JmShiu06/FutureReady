@@ -965,6 +965,8 @@ components:
       type: object
       required: [sections, matches, resources, warnings]
       properties:
+        provider:
+          $ref: "#/components/schemas/AiProviderMetadata"
         sections:
           type: object
           additionalProperties: false
@@ -1062,6 +1064,8 @@ components:
       type: object
       required: [explanation, sampleLabel, contextSummary, synthetic, finalAnswerOnly]
       properties:
+        provider:
+          $ref: "#/components/schemas/AiProviderMetadata"
         explanation:
           type: string
           minLength: 1
@@ -1086,6 +1090,15 @@ components:
           maxItems: 4
           items:
             $ref: "#/components/schemas/AiSkillSuggestion"
+    AiProviderMetadata:
+      type: object
+      additionalProperties: false
+      required: [id]
+      description: Server-owned identity of the provider that completed this request. Optional on older responses; never inferred from generated text.
+      properties:
+        id:
+          type: string
+          enum: [qwen, glm]
     AiEvidence:
       type: object
       required: [title, note]

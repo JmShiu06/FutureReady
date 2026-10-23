@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation, useSearch } from 'wouter';
 import { Sparkles, X } from 'lucide-react';
-import type { AiExplanationInput } from '@workspace/api-client-react';
+import type { AiExplanation, AiExplanationInput } from '@workspace/api-client-react';
+import { AiProviderIndicator } from '@/components/ai-provider-indicator';
 import { AiExplanationPanel, aiFeatureTitles } from '@/components/ai-explanation-panel';
 import { useWorkspace } from '@/domain/workspace-context';
 import type { ProfileSkill } from '@/domain/types';
@@ -30,6 +31,7 @@ const focusableSelector = 'a[href], button:not([disabled]), select:not([disabled
 export function AiDrawerProvider({ children }: { children: ReactNode }) {
   const [request, setRequest] = useState<AiRequest | null>(null);
   const [nonce, setNonce] = useState(0);
+  const [provider, setProvider] = useState<AiExplanation['provider']>(undefined);
   const returnFocus = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [location] = useLocation();
@@ -47,6 +49,7 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
     });
   }, [request]);
   const open = useCallback((next: AiRequest) => {
+    setProvider(undefined);
     if (document.activeElement instanceof HTMLElement) returnFocus.current = document.activeElement;
     setRequest(next);
     setNonce(n => n + 1);
@@ -81,13 +84,13 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
       <div ref={dialogRef} className="ai-drawer" role="dialog" aria-modal="true" aria-labelledby="ai-drawer-title" onKeyDown={onKeyDown} data-testid="drawer-ai">
         <header className="ai-drawer-head">
           <div>
-            <div className="eyebrow">Explain with AI · Qwen3</div>
+            <div className="eyebrow">Explain with AI · <AiProviderIndicator provider={provider} surface="drawer" /></div>
             <h2 id="ai-drawer-title"><Sparkles size={16} aria-hidden="true" /> {aiFeatureTitles[request.feature]}</h2>
           </div>
           <button type="button" className="icon-button" onClick={close} aria-label="Close AI explanation" data-autofocus data-testid="button-close-ai-drawer"><X size={16} /></button>
         </header>
         <div className="ai-drawer-body">
-          <AiExplanationPanel key={nonce} embedded feature={request.feature} jobId={request.jobId} goal={request.goal} cvDetectedSkill={request.cvDetectedSkill} onApplySkills={request.onApplySkills} />
+          <AiExplanationPanel key={nonce} embedded feature={request.feature} jobId={request.jobId} goal={request.goal} cvDetectedSkill={request.cvDetectedSkill} onApplySkills={request.onApplySkills} onProviderChange={setProvider} />
         </div>
       </div>
     </div>}

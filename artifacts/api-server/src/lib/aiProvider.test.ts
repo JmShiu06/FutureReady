@@ -13,28 +13,32 @@ const input = { instruction: "Explain supplied facts.", context: { synthetic: tr
 it("defaults to Qwen even when a GLM key exists, preserving the existing request", async () => {
   for (const AI_PROVIDER of [undefined, "", "qwen"]) {
     let calls = 0;
-    await generateAiExplanation(input, { env: { ...qwen, GLM_API_KEY: "offline-glm-key", AI_PROVIDER }, fetcher: async (url, init) => {
+    const result = await generateAiExplanation(input, { env: { ...qwen, GLM_API_KEY: "offline-glm-key", AI_PROVIDER }, fetcher: async (url, init) => {
       calls++;
       assert.equal(url, `${qwen.RUNPOD_LLM_BASE_URL}/chat/completions`);
       assert.equal((init?.headers as Record<string, string>).Authorization, "Bearer offline-qwen-key");
       assert.equal(JSON.parse(String(init?.body)).model, qwen.RUNPOD_LLM_MODEL);
-      return Response.json({ choices: [{ finish_reason: "stop", message: { content: "Synthetic answer." } }] });
+      return Response.json({ provider: { id: "glm" }, choices: [{ finish_reason: "stop", message: { content: "I claim to be GLM-5.3." } }] });
     } });
     assert.equal(calls, 1);
+    assert.deepEqual(result.provider, { id: "qwen" });
+    assert.doesNotMatch(JSON.stringify(result.provider), /offline-|Bearer|https:|key|token|authorization/i);
   }
 });
 
 it("selects GLM only through explicit server configuration and never falls back", async () => {
   const env = { ...qwen, AI_PROVIDER: "glm", GLM_API_KEY: "offline-glm-key" };
   let calls = 0;
-  await generateAiExplanation(input, { env, fetcher: async url => {
+  const result = await generateAiExplanation(input, { env, fetcher: async url => {
     calls++;
     assert.equal(url, `${GLM_ENDPOINT}/run`);
-    return Response.json({ id: "offline-job", status: "COMPLETED", output: [{ result: { choices: [{
-      finish_reason: "stop", message: { role: "assistant", content: "Synthetic answer." },
+    return Response.json({ provider: { id: "qwen" }, id: "offline-job", status: "COMPLETED", output: [{ result: { choices: [{
+      finish_reason: "stop", message: { role: "assistant", content: "I claim to be Qwen3." },
     }] } }] });
   } });
   assert.equal(calls, 1);
+  assert.deepEqual(result.provider, { id: "glm" });
+  assert.doesNotMatch(JSON.stringify(result.provider), /offline-|Bearer|https:|key|token|authorization/i);
   calls = 0;
   await assert.rejects(generateAiExplanation(input, { env, fetcher: async () => { calls++; return new Response(null, { status: 401 }); } }));
   assert.equal(calls, 1);

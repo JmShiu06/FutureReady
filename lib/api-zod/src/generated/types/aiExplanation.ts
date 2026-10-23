@@ -6,9 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AiEvidence } from './aiEvidence';
+import type { AiProviderMetadata } from './aiProviderMetadata';
 import type { AiSkillSuggestion } from './aiSkillSuggestion';
 
 export interface AiExplanation {
+  provider?: AiProviderMetadata;
   /**
      * @minLength 1
      * @maxLength 4000

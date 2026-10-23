@@ -309,7 +309,23 @@ export type CvCareerExplanationResourcesItem = {
   cost: string;
 };
 
+export type AiProviderMetadataId = typeof AiProviderMetadataId[keyof typeof AiProviderMetadataId];
+
+
+export const AiProviderMetadataId = {
+  qwen: 'qwen',
+  glm: 'glm',
+} as const;
+
+/**
+ * Server-owned identity of the provider that completed this request. Optional on older responses; never inferred from generated text.
+ */
+export interface AiProviderMetadata {
+  id: AiProviderMetadataId;
+}
+
 export interface CvCareerExplanation {
+  provider?: AiProviderMetadata;
   sections: CvCareerExplanationSections;
   matches: CvCareerExplanationMatchesItem[];
   resources: CvCareerExplanationResourcesItem[];
@@ -399,6 +415,7 @@ export interface AiSkillSuggestion {
 }
 
 export interface AiExplanation {
+  provider?: AiProviderMetadata;
   /**
      * @minLength 1
      * @maxLength 4000
