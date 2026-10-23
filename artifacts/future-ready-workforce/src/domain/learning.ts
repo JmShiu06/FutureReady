@@ -1,6 +1,8 @@
 import { demoRoles } from './demo-data';
 import { assessRole, buildRoadmap, completionKey, normalizeSkill } from './services';
 import { officialMilestones, officialPlanId } from './official-roadmap';
+import { portfolioMilestoneId } from './reskilling-pathway';
+import { pathwaySamples, sampleStartingSkills } from './pathway-samples';
 import type { Audience, CareerAssessment, CareerRole, LearningMilestone, OfficialRoadmapOccupation, Proficiency, RoadmapBaseline, SkillConfirmation, WorkspaceState } from './types';
 
 /**
@@ -35,9 +37,23 @@ export function startRoadmap(state: WorkspaceState, roleId: string, now = new Da
   };
 }
 
+/** Explicit sample selection creates only a starting snapshot; existing saved plans and profile stay intact. */
+export function startSampleRoadmap(state: WorkspaceState, occupation: OfficialRoadmapOccupation, presetId: string, now = new Date()): WorkspaceState {
+  const preset = pathwaySamples.find(s => s.id === presetId);
+  if (!preset) throw new Error('Choose a synthetic sample profile.');
+  const roleId = officialPlanId(occupation.id);
+  const existing = state.baselines[planKey(state.audience, roleId)];
+  const next = startRoadmap(state, roleId, now, occupation);
+  if (existing) return next;
+  return { ...next, baselines: { ...next.baselines, [planKey(state.audience, roleId)]: {
+    ...next.baselines[planKey(state.audience, roleId)], skills: sampleStartingSkills(presetId), sampleLabel: preset.label,
+  } } };
+}
+
 /** Idempotent: repeating the same call changes nothing, so double clicks cannot create duplicate completions. */
 export function setMilestoneComplete(state: WorkspaceState, key: string, done: boolean, now = new Date()): WorkspaceState {
-  if (!roadmapMilestones(state).some(m => completionKey(state.audience, m.id) === key)) return state;
+  const isPortfolio = !!activeBaseline(state) && key === completionKey(state.audience, portfolioMilestoneId(state.targets[state.audience]));
+  if (!isPortfolio && !roadmapMilestones(state).some(m => completionKey(state.audience, m.id) === key)) return state;
   if (!!state.completion[key] === done) return state;
   const completion = { ...state.completion };
   const completedAt = { ...state.completedAt };
@@ -110,6 +126,7 @@ export function resetActiveRoadmap(state: WorkspaceState): WorkspaceState {
     ? officialMilestones(baseline)
     : buildRoadmap({ ...state.profiles[audience], skills: baseline.skills }, roleId);
   const activeCompletionKeys = new Set(milestones.map(m => completionKey(audience, m.id)));
+  activeCompletionKeys.add(completionKey(audience, portfolioMilestoneId(roleId)));
   const keepActive = <T,>(record: Record<string, T>) =>
     Object.fromEntries(Object.entries(record).filter(([key]) => !activeCompletionKeys.has(key)));
   const baselines = { ...state.baselines };

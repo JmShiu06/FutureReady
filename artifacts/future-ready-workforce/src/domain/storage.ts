@@ -32,7 +32,7 @@ const occupationSchema = z.object({
   })).min(1).max(100).refine(skills => new Set(skills.map(s => s.elementId)).size === skills.length
     && new Set(skills.map(s => s.name.toLowerCase())).size === skills.length),
 });
-const baselineSchema = z.object({ skills: z.array(skillSchema).max(50), startedAt: isoText, occupation: occupationSchema.optional() });
+const baselineSchema = z.object({ skills: z.array(skillSchema).max(50), startedAt: isoText, occupation: occupationSchema.optional(), sampleLabel: boundedText.optional() });
 const confirmationSchema = z.object({
   id: z.string().min(1).max(200), audience: z.enum(audiences), roleId: z.string().min(1).max(80),
   milestoneId: z.string().min(1).max(200), skill: z.string().min(1).max(60),

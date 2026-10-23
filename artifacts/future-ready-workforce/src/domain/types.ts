@@ -57,7 +57,7 @@ export interface OfficialRoadmapOccupation {
   sourceUrl: string; release: string; selectionRule: string; mappingLimitations: string;
   documentedSkills: { elementId: string; name: string; importance: number; level: number; levelLowPrecision: boolean }[];
 }
-export interface RoadmapBaseline { skills: ProfileSkill[]; startedAt: string; occupation?: OfficialRoadmapOccupation }
+export interface RoadmapBaseline { skills: ProfileSkill[]; startedAt: string; occupation?: OfficialRoadmapOccupation; sampleLabel?: string }
 /** A user-confirmed proficiency change. Kept apart from milestone completion; one per milestone. */
 export interface SkillConfirmation {
   id: string; audience: Audience; roleId: string; milestoneId: string; skill: string;

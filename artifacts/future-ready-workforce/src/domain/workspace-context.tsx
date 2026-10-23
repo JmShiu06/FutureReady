@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { WorkspaceContext, type WorkspaceContextValue } from './workspace-store';
 export { useWorkspace } from './workspace-store';
 import { blankProfile, migrateLegacySkills } from './demo-data';
-import { clearPlanData, confirmSkillUpdate as applyConfirmation, resetActiveRoadmap as applyResetActiveRoadmap, setMilestoneComplete, startRoadmap as applyStartRoadmap } from './learning';
+import { clearPlanData, confirmSkillUpdate as applyConfirmation, resetActiveRoadmap as applyResetActiveRoadmap, setMilestoneComplete, startRoadmap as applyStartRoadmap, startSampleRoadmap as applySampleRoadmap } from './learning';
 import { audiences, defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
 import type { Audience, DemoProfile, OfficialRoadmapOccupation, WorkspaceState } from './types';
 
@@ -69,6 +69,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       ...clearPlanData(s, s.audience), profiles: { ...s.profiles, [s.audience]: blankProfile(s.audience) },
     })),
     startRoadmap: (roleId, occupation) => update(s => applyStartRoadmap(s, roleId, new Date(), occupation)),
+    startSampleRoadmap: (occupation, presetId) => update(s => applySampleRoadmap(s, occupation, presetId)),
     resetActiveRoadmap: () => update(s => applyResetActiveRoadmap(s)),
     setMilestoneComplete: (key, done) => update(s => setMilestoneComplete(s, key, done)),
     confirmSkillUpdate: (milestoneId, toLevel) => {

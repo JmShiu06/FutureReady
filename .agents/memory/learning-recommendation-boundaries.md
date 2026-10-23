@@ -41,3 +41,10 @@ A general O*NET skill such as Programming does not establish that a Python-speci
 **Why:** The independently reviewed catalogue currently verifies narrow technical skill coverage, not broad occupational capability. Expanding coverage requires additional review, not a silent alias.
 
 **How to apply:** Use direct reviewed skill coverage only. If none exists, show an unavailable resource with unknown cost and duration, rather than generating course details or substituting fictional sample courses.
+
+## Pathway time estimates
+Use sequential whole-week allowances for the personalised pathway: round each course's hours divided by weekly availability up, then add the step allowances. Do not silently substitute packed-week scheduling.
+
+**Why:** The pathway's requested contract explicitly rounds each step up. Packing spare capacity across steps gives a different, shorter total than the visible step estimates. A missing verified duration also means a complete finish date cannot honestly be promised.
+
+**How to apply:** Keep total hours distinct from summed step weeks. Clearly mark known-only estimates when resources are missing, and distinguish app-estimated portfolio practice from provider-stated course time.

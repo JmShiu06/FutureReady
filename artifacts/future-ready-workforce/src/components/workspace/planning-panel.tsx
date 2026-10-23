@@ -10,6 +10,7 @@ import { useAsync, LoadingBlock, ErrorBlock } from './ui';
 import { SdgUseCase } from '@/components/shared/sdg-use-case';
 import { officialMilestones, occupationSnapshot } from '@/domain/official-roadmap';
 import { learningSchedule } from '@/domain/learning-schedule';
+import { usePlanningScenario } from '@/hooks/use-planning-scenario';
 
 
 type Row = ReturnType<typeof rankFutureRoles>[number];
@@ -83,7 +84,7 @@ function RoleCard({ r, i, scenario }: { r: Row; i: number; scenario: PlanningSce
 export function PlanningPanel() {
   const { profile } = useWorkspace();
   const [mode, setMode] = useState<'real' | 'a' | 'b'>('real');
-  const [scenario, setScenario] = useState<PlanningScenario>('moderate');
+  const { scenario, setScenario } = usePlanningScenario();
   const query = useGetDosmJobMarketInsights();
   const refresh = useRefreshDosmJobMarketInsights();
   const client = useQueryClient();

@@ -4,7 +4,7 @@ import { useWorkspace } from '@/domain/workspace-context';
 import { audienceLabels } from '@/domain/demo-data';
 import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { PageHead } from '@/components/workspace/ui';
-import { RoadmapSection } from '@/components/profile/roadmap-section';
+import { PersonalisedPathway } from '@/components/learning/personalised-pathway';
 import { AiExplainButton } from '@/components/ai-drawer';
 import { CvLearningGuidance } from '@/components/cv-career-explanation';
 
@@ -18,8 +18,10 @@ export default function LearningRoadmapPage() {
         <AiExplainButton request={{ feature: 'learning-roadmap' }} label="Explain my learning plan with AI" />
         <button type="button" className="btn btn-quiet" onClick={() => navigate('/my-profile?section=twin')} data-testid="button-roadmap-open-twin"><FlaskConical size={14} /> Digital twin & progress</button>
       </div>} /></div>
-    <div className="row" style={{ justifyContent: 'flex-end', marginTop: -6, marginBottom: 8 }}><RaccoonArt name="reading" size={84} className="roadmap-raccoon" /></div>
-    <CvLearningGuidance />
-    <div data-testid="panel-profile-roadmap"><RoadmapSection onReview={() => navigate('/my-profile?section=twin')} /></div>
+    <div data-testid="panel-profile-roadmap"><PersonalisedPathway /></div>
+    <div className="pw-noprint">
+      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 10, marginBottom: 8 }}><RaccoonArt name="reading" size={84} className="roadmap-raccoon" /></div>
+      <CvLearningGuidance />
+    </div>
   </>;
 }

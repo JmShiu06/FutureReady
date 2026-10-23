@@ -6,6 +6,7 @@ export interface WorkspaceContextValue {
   setAudience(audience: Audience): void; saveProfile(profile: DemoProfile): void;
   resetProfile(): void;
   startRoadmap(roleId: string, occupation?: OfficialRoadmapOccupation): void; resetActiveRoadmap(): void; setMilestoneComplete(key: string, done: boolean): void;
+  startSampleRoadmap(occupation: OfficialRoadmapOccupation, presetId: string): void;
   confirmSkillUpdate(milestoneId: string, toLevel: number): string;
 }
 // Keep context identity independent of provider/component hot replacement.
