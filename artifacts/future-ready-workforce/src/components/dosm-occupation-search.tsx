@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Info, Search, UsersRound } from "lucide-react";
 import { useGetDosmOccupationEmploymentSearch } from "@workspace/api-client-react";
+import { formatPeople } from "@/components/dosm-national-context";
 
 function useDebouncedValue(value: string, delay: number) {
   const [debounced, setDebounced] = useState(value);
@@ -11,34 +12,11 @@ function useDebouncedValue(value: string, delay: number) {
   return debounced;
 }
 
-function formatPeople(thousands: number) {
-  return Math.round(thousands * 1_000).toLocaleString("en-MY");
-}
-
-function formatMonth(date: string) {
-  const month = date.slice(0, 7);
-  const parsed = new Date(`${month}-01T12:00:00`);
-  return Number.isNaN(parsed.getTime())
-    ? month
-    : parsed.toLocaleDateString("en-MY", { month: "long", year: "numeric" });
-}
-
-function StatCard({ label, value, note }: { label: string; value: string; note?: string }) {
-  return (
-    <div className="dosm-occupation-stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {note && <small>{note}</small>}
-    </div>
-  );
-}
-
 export function DosmOccupationSearch() {
   const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebouncedValue(keyword.trim(), 300);
   const query = useGetDosmOccupationEmploymentSearch({ q: debouncedKeyword || undefined });
   const groups = query.data?.occupationGroups ?? [];
-  const latest = query.data?.nationalContext.latestObservation;
 
   return (
     <section className="dosm-occupation-search panel" aria-labelledby="dosm-occupation-title" data-testid="panel-dosm-occupation-search">
@@ -83,30 +61,8 @@ export function DosmOccupationSearch() {
         </div>
       )}
 
-      {query.data && latest && (
+      {query.data && (
         <>
-          <section className="dosm-occupation-national" aria-labelledby="dosm-national-title" data-testid="panel-dosm-national-context">
-            <div className="dosm-occupation-national-heading">
-              <div>
-                <h3 id="dosm-national-title">Malaysia-wide context</h3>
-                <p>All occupations · latest DOSM observation: {formatMonth(latest.date)}</p>
-              </div>
-              <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noreferrer">OpenDOSM source</a>
-            </div>
-            {query.data.nationalContext.isStale && query.data.nationalContext.warning && (
-              <p className="dosm-occupation-warning" role="status">{query.data.nationalContext.warning}</p>
-            )}
-            <div className="dosm-occupation-stats">
-              <StatCard label="People employed" value={formatPeople(latest.employedThousands)} note="All Malaysian occupations" />
-              <StatCard label="People unemployed" value={formatPeople(latest.unemployedThousands)} note="All Malaysian occupations" />
-              <StatCard label="Unemployment rate" value={`${latest.unemploymentRate.toFixed(1)}%`} note="National labour force" />
-              <StatCard label="Employment-to-population ratio" value={`${latest.employmentPopulationRatio.toFixed(1)}%`} note="National working-age population" />
-            </div>
-            <p className="dosm-occupation-rate-explainer">
-              The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for the searched job.
-            </p>
-          </section>
-
           <div className="dosm-occupation-results-heading">
             <div>
               <h3>{debouncedKeyword ? `Results for “${debouncedKeyword}”` : "Search results"}</h3>
@@ -138,6 +94,27 @@ export function DosmOccupationSearch() {
                     <div className="dosm-occupation-count">
                       <strong>{formatPeople(group.employedThousands)}</strong>
                       <span>people employed in this broad group in {query.data.occupationSource.referenceYear}</span>
+                    </div>
+                    <div className="dosm-group-skills" data-testid={`panel-group-skills-${group.code}`}>
+                      <h5>General skills for this group</h5>
+                      {group.generalSkills.length > 0 ? (
+                        <ul className="dosm-group-skill-list">
+                          {group.generalSkills.map(skill => <li key={skill}>{skill}</li>)}
+                        </ul>
+                      ) : (
+                        <p className="dosm-group-skill-empty" data-testid={`status-group-skills-empty-${group.code}`}>General skills are unavailable for this group in the reviewed subset.</p>
+                      )}
+                      <p className="dosm-group-skill-note">
+                        {group.skillsCoverage} Group-level context from a reviewed MyCOL/O*NET subset; not requirements for every job in the group and not DOSM skill data.
+                      </p>
+                      {group.skillSourceUrls.length > 0 && (
+                        <details className="dosm-group-skill-sources">
+                          <summary>Skill sources ({group.skillSourceUrls.length})</summary>
+                          <ul>
+                            {group.skillSourceUrls.map((url, i) => <li key={url}><a className="text-link" href={url} target="_blank" rel="noreferrer" data-testid={`link-group-skill-source-${group.code}-${i}`}>{url}</a></li>)}
+                          </ul>
+                        </details>
+                      )}
                     </div>
                     <p className="dosm-occupation-card-note">
                       This is not an estimate for the individual title. DOSM does not publish an unemployment count or employment rate for this occupation group.

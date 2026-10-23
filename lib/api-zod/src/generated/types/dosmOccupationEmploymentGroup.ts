@@ -7,6 +7,9 @@
  */
 
 export interface DosmOccupationEmploymentGroup {
+  generalSkills: string[];
+  skillSourceUrls: string[];
+  skillsCoverage: string;
   /** @pattern ^[1-9]$ */
   code: string;
   label: string;

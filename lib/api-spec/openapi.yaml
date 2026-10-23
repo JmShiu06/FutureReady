@@ -1762,6 +1762,16 @@ components:
     DosmOccupationEmploymentGroup:
       type: object
       properties:
+        generalSkills:
+          type: array
+          items:
+            type: string
+        skillSourceUrls:
+          type: array
+          items:
+            type: string
+        skillsCoverage:
+          type: string
         code:
           type: string
           pattern: "^[1-9]$"
@@ -1778,7 +1788,7 @@ components:
           type: array
           items:
             type: string
-      required: [code, label, employedThousands, matchedOccupationTitles, matchedJobTitles]
+      required: [code, label, employedThousands, matchedOccupationTitles, matchedJobTitles, generalSkills, skillSourceUrls, skillsCoverage]
     DosmOccupationEmploymentSource:
       type: object
       properties:

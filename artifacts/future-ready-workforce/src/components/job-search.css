@@ -151,3 +151,17 @@
   .job-detail-salary { margin-left: 55px; }
   .jobs-search-panel { padding: 13px; }
 }
+.jobs-search-row { display:flex; gap:8px; align-items:center; }
+.jobs-search-row .jobs-search-box { flex:1; min-width:0; }
+.jobs-filter-toggle { position:relative; flex:none; width:45px; height:45px; display:grid; place-items:center; border:1px solid #dfd1c0; border-radius:9px; background:#fcf9f2; color:#73513b; }
+.jobs-filter-toggle:hover, .jobs-filter-toggle.open { background:#efe4d6; border-color:#bfa385; }
+.jobs-filter-toggle:focus-visible { outline:2px solid #73513b; outline-offset:2px; }
+.jobs-filter-count { position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 4px; border-radius:9px; background:#73513b; color:#fcf9f2; font:700 9px/18px var(--mono-font); text-align:center; }
+#jobs-filter-region[hidden] { display:none; }
+.dosm-group-skills { margin:10px 0; padding:10px 11px; border:1px solid #e5d9ca; border-radius:9px; background:#f8f2e9; }
+.dosm-group-skills h5 { margin:0 0 7px; color:#493628; font-size:11px; }
+.dosm-group-skill-list { display:flex; flex-wrap:wrap; gap:5px; margin:0; padding:0; list-style:none; }
+.dosm-group-skill-list li { padding:3px 8px; border-radius:20px; background:#efe4d6; color:#594533; font-size:10px; }
+.dosm-group-skill-empty, .dosm-group-skill-note { margin:6px 0 0; color:#6c5744; font-size:10px; line-height:1.5; }
+.dosm-group-skill-sources summary { margin-top:6px; color:#73513b; font-size:10px; font-weight:700; cursor:pointer; min-height:28px; display:flex; align-items:center; }
+.dosm-group-skill-sources ul { margin:4px 0 0; padding-left:16px; font-size:10px; overflow-wrap:anywhere; }

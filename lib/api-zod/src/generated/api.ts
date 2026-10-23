@@ -983,6 +983,9 @@ export const GetDosmOccupationEmploymentSearchResponse = zod.object({
   "scopeNote": zod.string()
 }),
   "occupationGroups": zod.array(zod.object({
+  "generalSkills": zod.array(zod.string()),
+  "skillSourceUrls": zod.array(zod.string()),
+  "skillsCoverage": zod.string(),
   "code": zod.string().regex(getDosmOccupationEmploymentSearchResponseOccupationGroupsItemCodeRegExp),
   "label": zod.string(),
   "employedThousands": zod.number().min(getDosmOccupationEmploymentSearchResponseOccupationGroupsItemEmployedThousandsMin),

@@ -39,3 +39,21 @@ test("unmatched keywords do not invent an occupation mapping", () => {
 test("an empty query returns the nine DOSM occupation groups", () => {
   assert.equal(searchDosmOccupationEmployment("").occupationGroups.length, 9);
 });
+
+test("occupation results include deterministic, sourced general group skills rather than title-specific requirements", () => {
+  const titleGroup = searchDosmOccupationEmployment("Software Engineer").occupationGroups[0];
+  const broadGroup = searchDosmOccupationEmployment("Professionals").occupationGroups[0];
+  assert.ok(titleGroup.generalSkills.length > 0);
+  assert.ok(titleGroup.generalSkills.length <= 8);
+  assert.deepEqual(titleGroup.generalSkills, broadGroup.generalSkills);
+  assert.equal(new Set(titleGroup.generalSkills).size, titleGroup.generalSkills.length);
+  assert.ok(titleGroup.skillSourceUrls.every(url => url.startsWith("https://www.onetonline.org/")));
+  assert.match(titleGroup.skillsCoverage, /not a requirement for every job/);
+});
+
+test("groups without reviewed skill mappings report unavailable evidence, not invented skills", () => {
+  const group = searchDosmOccupationEmployment("").occupationGroups.find(group => group.code === "9")!;
+  assert.deepEqual(group.generalSkills, []);
+  assert.deepEqual(group.skillSourceUrls, []);
+  assert.match(group.skillsCoverage, /No reviewed group-level skill evidence/);
+});

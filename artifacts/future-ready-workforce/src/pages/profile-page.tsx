@@ -4,7 +4,8 @@ import { TwinSection } from '@/components/profile/twin-section';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowRight, Check, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowRight, Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProfileCvImport } from '@/components/profile-cv-import';
 import { useCvSession } from '@/domain/cv-session';
 import { ChiliLevelSlider } from '@/components/chili-level-slider';
@@ -38,6 +39,7 @@ export default function ProfilePage() {
   const [newCategory, setNewCategory] = useState('Custom');
   const [skillError, setSkillError] = useState('');
   useEffect(() => { form.reset(toForm(profile)); }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setSaved(''); }, [state.audience]);
 
   const onSubmit = (v: FormValues) => {
     const { interestsText, ...rest } = v;
@@ -59,6 +61,14 @@ export default function ProfilePage() {
     skills.append({ name, level: 2, category: newCategory.trim().slice(0, 120) || 'Custom' });
     setNewSkill(''); setSkillError(''); setSaved('');
   };
+  const resetSkills = () => {
+    saveProfile({ ...profile, skills: [] });
+    skills.replace([]);
+    form.reset({ ...form.getValues(), skills: [] });
+    setNewSkill(''); setSkillError('');
+    setSaved(`All skills cleared for ${audienceLabels[state.audience]}. Your CV session and roadmap history are unchanged.`);
+  };
+  const canReset = profile.skills.length > 0 || profileSkills.length > 0 || newSkill.trim() !== '';
   const [, navigate] = useLocation();
   const sectionParam = new URLSearchParams(useSearch()).get('section');
   const section: ProfileSection = sectionParam === 'twin' ? 'twin' : 'skills';
@@ -119,6 +129,23 @@ export default function ProfilePage() {
             <input className="fr-input" style={{ maxWidth: 260 }} maxLength={80} value={newSkill} onChange={e => { setNewSkill(e.target.value); setSkillError(''); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} placeholder="Add a skill" aria-label="New skill name" data-testid="input-new-skill" />
             <input className="fr-input" style={{ maxWidth: 160 }} value={newCategory} onChange={e => setNewCategory(e.target.value)} aria-label="New skill category" data-testid="input-new-skill-category" />
             <button type="button" className="btn btn-secondary btn-small" onClick={addSkill} data-testid="button-add-skill"><Plus size={12} /> Add skill</button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button type="button" className="btn btn-danger btn-small" disabled={!canReset} data-testid="button-reset-skills"><RotateCcw size={12} /> Reset skills</button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="roadmap-reset-dialog">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset all skills for {audienceLabels[state.audience]}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This clears every saved and unsaved skill in this audience's profile only. Other audiences are not affected. Your CV session, learning roadmap and progress history are kept, and your CV will not be re-imported. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="button-cancel-reset-skills">Keep skills</AlertDialogCancel>
+                  <AlertDialogAction className="btn-danger" onClick={resetSkills} data-testid="button-confirm-reset-skills">Reset skills</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           {skillError && <p className="field-error" role="alert" data-testid="error-add-skill">{skillError}</p>}
         </div>

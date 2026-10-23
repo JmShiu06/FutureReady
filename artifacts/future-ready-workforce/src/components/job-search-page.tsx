@@ -55,6 +55,7 @@ export function JobSearchPage({ profileSkills }: Props) {
   const [employmentType, setEmploymentType] = useState('');
   const [sort, setSort] = useState<'relevance' | 'recent'>('relevance');
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const params = useMemo<ListJobsParams>(() => ({
     page,
@@ -96,6 +97,7 @@ export function JobSearchPage({ profileSkills }: Props) {
   }, [jobs, sort, profileSkills.length, scores]);
   const total = jobsQuery.data?.total ?? 0;
   const pages = jobsQuery.data?.totalPages ?? 1;
+  const activeCount = [minSalary, maxSalary, state, city, remoteOnly, employmentType, sort !== 'relevance'].filter(Boolean).length;
   const activeFilters = Boolean(keyword || minSalary || maxSalary || state || city || remoteOnly || employmentType || sort !== 'relevance');
   const clearFilters = () => {
     setKeyword('');
@@ -107,11 +109,15 @@ export function JobSearchPage({ profileSkills }: Props) {
     <DosmOccupationSearch />
 
     <section className="jobs-search-panel panel" aria-label="Search and filter jobs">
+      <div className="jobs-search-row">
       <label className="jobs-search-box">
         <Search size={17} aria-hidden="true" />
         <input value={keyword} onChange={event => { setKeyword(event.target.value); setPage(1); }} placeholder="Search titles, companies, or skills" aria-label="Search job listings" data-testid="input-job-search" />
         {keyword && <button className="search-clear" onClick={() => { setKeyword(''); setPage(1); }} aria-label="Clear search" data-testid="button-clear-search"><X size={15} /></button>}
       </label>
+      <button type="button" className={`jobs-filter-toggle${filtersOpen ? ' open' : ''}${activeCount ? ' active' : ''}`} onClick={() => setFiltersOpen(o => !o)} aria-expanded={filtersOpen} aria-controls="jobs-filter-region" title={filtersOpen ? 'Hide filters' : 'Show filters'} aria-label={`${filtersOpen ? 'Hide' : 'Show'} filters${activeCount ? `, ${activeCount} active` : ''}`} data-testid="button-toggle-filters"><SlidersHorizontal size={16} aria-hidden="true" />{activeCount > 0 && <span className="jobs-filter-count" aria-hidden="true" data-testid="text-active-filter-count">{activeCount}</span>}</button>
+      </div>
+      <div id="jobs-filter-region" hidden={!filtersOpen}>
       <div className="jobs-filter-heading"><span><SlidersHorizontal size={14} /> Refine results</span>{activeFilters && <button className="text-link" onClick={clearFilters} data-testid="button-clear-filters">Clear filters</button>}</div>
       <div className="jobs-filter-grid">
         <div className="filter-block">
@@ -130,6 +136,7 @@ export function JobSearchPage({ profileSkills }: Props) {
       <div className="jobs-filter-bottom">
         <label className="remote-toggle"><input type="checkbox" checked={remoteOnly} onChange={event => { setRemoteOnly(event.target.checked); setPage(1); }} data-testid="checkbox-remote-only" /><span className="toggle-visual" /><Wifi size={14} /><span>Remote only</span></label>
         <label className="sort-control"><span>Sort by</span><select value={sort} onChange={event => { setSort(event.target.value as 'relevance' | 'recent'); setPage(1); }} data-testid="select-job-sort"><option value="relevance">Most relevant</option><option value="recent">Most recent</option></select></label>
+      </div>
       </div>
     </section>
 

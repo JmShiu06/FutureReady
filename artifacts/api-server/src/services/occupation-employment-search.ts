@@ -1,4 +1,5 @@
 import { mycolOccupations, mycolSource } from "../data/occupation-evidence/mycol-2024-2025";
+import { matchOccupations } from "../lib/occupationEvidence";
 import {
   dosmOccupationEmployment2024,
   validateDosmOccupationEmployment2024,
@@ -19,6 +20,7 @@ export function searchDosmOccupationEmployment(query: string) {
   const normalizedQuery = normalizeSearchText(query);
   const tokens = normalizedQuery ? normalizedQuery.split(" ") : [];
   const mycolRecordsByGroup = new Map<string, typeof mycolOccupations>();
+  const reviewedOccupations = matchOccupations([]).occupations.filter(o => o.recommendationStatus === "eligible");
 
   for (const occupation of mycolOccupations) {
     const groupCode = occupation.masco4[0];
@@ -44,12 +46,25 @@ export function searchDosmOccupationEmployment(query: string) {
 
     if (tokens.length > 0 && !groupMatches && matchingRecords.length === 0) return [];
 
+    const reviewedGroup = reviewedOccupations.filter(o => o.mycol.masco4.startsWith(group.code));
+    const frequencies = new Map<string, number>();
+    for (const occupation of reviewedGroup) {
+      for (const name of new Set(occupation.documentedSkills.map(skill => skill.name))) {
+        frequencies.set(name, (frequencies.get(name) ?? 0) + 1);
+      }
+    }
+    const generalSkills = [...frequencies].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8).map(([name]) => name);
     return [{
       code: group.code,
       label: group.label,
       employedThousands: group.employedThousands,
       matchedOccupationTitles: matchingRecords.map(occupation => occupation.title),
       matchedJobTitles,
+      generalSkills,
+      skillSourceUrls: [...new Set(reviewedGroup.map(o => o.onet.url))],
+      skillsCoverage: reviewedGroup.length
+        ? `Common documented skills across ${reviewedGroup.length} reviewed MyCOL occupations mapped to this major group using O*NET 31.0. Ranked by occurrence; not a requirement for every job, a complete group survey, or DOSM skill data.`
+        : "No reviewed group-level skill evidence is available in the current MyCOL/O*NET subset.",
     }];
   });
 

@@ -1,6 +1,7 @@
 import { useLocation, useSearch } from 'wouter';
 import { BarChart3, Cpu } from 'lucide-react';
 import { PageHead } from '@/components/workspace/ui';
+import { DosmNationalContext } from '@/components/dosm-national-context';
 import { DosmDataPanels } from '@/components/workspace/dosm-data-panels';
 import { AiAnnouncementsPanel, SkillFrequencyPanel } from '@/components/workspace/radar-evidence-panels';
 import { AiExplainButton } from '@/components/ai-drawer';
@@ -25,6 +26,7 @@ export default function MarketAndAiImpactPage() {
       {tab === 'market' ? <>
         <div className="tab-intro"><p className="muted small">Latest available DOSM national observations, AI announcements and skill frequencies. Not occupation vacancies or AI causation.</p>
           <AiExplainButton request={{ feature: 'market-trends' }} label="Summarise market trends with AI" /></div>
+        <DosmNationalContext />
         <DosmDataPanels />
         <div className="stack" style={{ gap: 18, marginBottom: 22, minWidth: 0 }}>
           <AiAnnouncementsPanel />
