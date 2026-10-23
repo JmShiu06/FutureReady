@@ -10,6 +10,22 @@ import { RefreshCw } from "lucide-react";
 import { Bar, EmptyBlock, ErrorBlock, LoadingBlock, SectionTitle } from "@/components/workspace/ui";
 import { formatCompactCount, formatRate } from "@/domain/formatting";
 
+const OFFICIAL_ANNOUNCEMENTS_URL = "https://www.digital.gov.my/en-GB/siaran";
+
+function announcementFailureDetails(error: unknown) {
+  const data = error && typeof error === "object" && "data" in error ? error.data : null;
+  const details = data && typeof data === "object" ? data as Record<string, unknown> : {};
+  const sourceStatus = typeof details.sourceStatus === "number" ? details.sourceStatus : null;
+  const retryAfterSeconds = typeof details.retryAfterSeconds === "number" ? details.retryAfterSeconds : null;
+  const retryMinutes = retryAfterSeconds === null ? null : Math.max(1, Math.ceil(retryAfterSeconds / 60));
+  return {
+    message: sourceStatus === 503
+      ? `The Ministry of Digital listing returned HTTP 503. It asked automated readers to wait${retryMinutes === null ? " before trying again" : ` about ${retryMinutes} minutes before trying again`}. No announcement was invented or substituted.`
+      : "The official Ministry of Digital listing could not be reached. No announcement was invented or substituted.",
+    retryAfterSeconds,
+  };
+}
+
 const fmtDate = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
 const fmtTimestamp = (value: string) =>
@@ -45,7 +61,8 @@ export function AiAnnouncementsPanel() {
       />
       {refresh.isError && (
         <div role="alert" className="state-box" style={{ marginBottom: 12 }} data-testid="error-announcements-refresh">
-          Refresh failed. {refresh.error instanceof Error ? refresh.error.message : ""} Earlier retrieved data, if any, is kept below.
+          Refresh failed. {announcementFailureDetails(refresh.error).message} Earlier retrieved data, if any, is kept below.
+          <p><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">Open the official Ministry of Digital announcements page</a></p>
         </div>
       )}
       {refresh.isSuccess && (
@@ -55,7 +72,10 @@ export function AiAnnouncementsPanel() {
       )}
       {query.isPending && <LoadingBlock rows={2} />}
       {query.isError && (
-        <ErrorBlock message="Announcements could not be loaded from the Ministry of Digital." onRetry={() => { void query.refetch(); }} />
+        <div data-testid="error-announcements-source">
+          <ErrorBlock message={announcementFailureDetails(query.error).message} onRetry={() => { void query.refetch(); }} />
+          <p className="small"><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">Open the official Ministry of Digital announcements page</a></p>
+        </div>
       )}
       {data && (
         <>

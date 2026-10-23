@@ -1,12 +1,24 @@
 import { z } from "zod";
 
-const LISTING_URL = "https://www.digital.gov.my/en-GB/siaran";
+export const LISTING_URL = "https://www.digital.gov.my/en-GB/siaran";
 const SITE_ORIGIN = "https://www.digital.gov.my";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_HTML_BYTES = 2_000_000;
 const STALE_AFTER_DAYS = 14;
+const DEFAULT_RETRY_AFTER_SECONDS = 60;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export class AiAnnouncementSourceUnavailableError extends Error {
+  constructor(
+    message: string,
+    readonly retryAfterSeconds = DEFAULT_RETRY_AFTER_SECONDS,
+    readonly sourceStatus?: number,
+  ) {
+    super(message);
+    this.name = "AiAnnouncementSourceUnavailableError";
+  }
+}
 
 // Only titles that explicitly mention AI are kept; nothing is inferred or scored.
 const AI_TITLE = /\bAI\b|artificial intelligence|kecerdasan buatan/i;
@@ -49,6 +61,15 @@ function parseDate(text: string): string | undefined {
   const iso = `${match[3]}-${String(month + 1).padStart(2, "0")}-${match[1].padStart(2, "0")}`;
   const parsed = new Date(`${iso}T00:00:00.000Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === iso ? iso : undefined;
+}
+
+function retryAfterSeconds(value: string | null, now: Date): number {
+  if (!value) return DEFAULT_RETRY_AFTER_SECONDS;
+  const seconds = /^\d+$/.test(value.trim())
+    ? Number(value)
+    : Math.ceil((Date.parse(value) - now.getTime()) / 1000);
+  if (!Number.isFinite(seconds) || seconds <= 0) return DEFAULT_RETRY_AFTER_SECONDS;
+  return Math.min(86_400, seconds);
 }
 
 /**
@@ -119,6 +140,8 @@ export function createAiAnnouncementService(options: ServiceOptions = {}) {
   const requestTimeoutMs = options.requestTimeoutMs ?? REQUEST_TIMEOUT_MS;
   const listingUrl = options.listingUrl ?? LISTING_URL;
   let cache: CacheEntry | null = null;
+  let retryAt = 0;
+  let lastFailure: AiAnnouncementSourceUnavailableError | null = null;
 
   async function download(): Promise<CacheEntry> {
     const controller = new AbortController();
@@ -128,7 +151,13 @@ export function createAiAnnouncementService(options: ServiceOptions = {}) {
         headers: { accept: "text/html", "user-agent": "FutureReadyWorkforce/1.0 (public announcement reader)" },
         signal: controller.signal,
       });
-      if (!response.ok) throw new Error(`Ministry of Digital responded with HTTP ${response.status}.`);
+      if (!response.ok) {
+        throw new AiAnnouncementSourceUnavailableError(
+          `The Ministry of Digital listing returned HTTP ${response.status}.`,
+          retryAfterSeconds(response.headers.get("retry-after"), now()),
+          response.status,
+        );
+      }
       const html = await response.text();
       if (html.length > MAX_HTML_BYTES) throw new Error("The Ministry of Digital page was unexpectedly large.");
       const retrieved = now();
@@ -138,12 +167,32 @@ export function createAiAnnouncementService(options: ServiceOptions = {}) {
     }
   }
 
+  async function fetchAndCache() {
+    if (retryAt > now().getTime() && lastFailure) throw lastFailure;
+    try {
+      cache = await download();
+      retryAt = 0;
+      lastFailure = null;
+      return cache;
+    } catch (error) {
+      const failure = error instanceof AiAnnouncementSourceUnavailableError
+        ? error
+        : new AiAnnouncementSourceUnavailableError("The official announcement listing could not be reached.");
+      lastFailure = failure;
+      retryAt = now().getTime() + failure.retryAfterSeconds * 1000;
+      throw failure;
+    }
+  }
+
   async function get() {
     const current = now();
     if (cache && current.getTime() < cache.expiresAt) return toResponse(cache, current, false);
     try {
-      cache = await download();
-      return toResponse(cache, now(), false);
+      if (retryAt > current.getTime() && lastFailure) {
+        if (!cache) throw lastFailure;
+        return toResponse(cache, current, true);
+      }
+      return toResponse(await fetchAndCache(), now(), false);
     } catch (error) {
       if (!cache) throw error;
       return toResponse(cache, now(), true);
@@ -151,8 +200,7 @@ export function createAiAnnouncementService(options: ServiceOptions = {}) {
   }
 
   async function refresh() {
-    cache = await download();
-    return toResponse(cache, now(), false);
+    return toResponse(await fetchAndCache(), now(), false);
   }
 
   return { get, refresh };

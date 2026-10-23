@@ -1,5 +1,22 @@
 import { expect, test } from '@playwright/test';
 
+test('market AI citation stays compact below its button on desktop and mobile', async ({ page }) => {
+  await page.route('**/api/ai/**', route => route.abort());
+  await page.goto('/market-and-ai-impact');
+  const citation = page.getByTestId('label-ai-model-button-market-trends');
+  await expect(citation).toContainText('AI-generated');
+  for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const box = await citation.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.height).toBeLessThan(90);
+    expect(await citation.evaluate(element => getComputedStyle(element).borderTopStyle)).toBe('none');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('.tab-intro').screenshot({ path: '/tmp/frw-market-ai-compact.jpg' });
+});
+
 test('disclosure page uses live public metadata and distinguishes local CV processing', async ({ page }) => {
   const response = await page.request.get('/api/ai-info');
   expect(response.status()).toBe(200);
@@ -102,4 +119,28 @@ test('local fictional CV review labels optional AI without sending its file or t
   await expect(page.getByTestId('dialog-cv-review')).toBeVisible();
   await expect(page.getByTestId('label-ai-model-cv-skill-explain')).toContainText(info.modelId);
   expect(generationRequests).toBe(0);
+});
+
+test('temporary official announcement outage explains its retry window and links to the source', async ({ page }) => {
+  let sourceRequests = 0;
+  await page.route('**/api/signals/ai-announcements', async route => {
+    sourceRequests++;
+    await route.fulfill({
+      status: 502,
+      json: {
+        error: 'The official Ministry of Digital announcement listing is temporarily unavailable.',
+        sourceStatus: 503,
+        retryAfterSeconds: 300,
+        sourceUrl: 'https://www.digital.gov.my/en-GB/siaran',
+      },
+    });
+  });
+  await page.goto('/market-and-ai-impact');
+  await expect(page.getByTestId('error-announcements-source')).toContainText('HTTP 503');
+  await expect(page.getByTestId('error-announcements-source')).toContainText('5 minutes');
+  const link = page.getByTestId('error-announcements-source').getByRole('link', { name: /official ministry of digital/i });
+  await expect(link).toHaveAttribute('href', 'https://www.digital.gov.my/en-GB/siaran');
+  await page.getByTestId('button-refresh-announcements').click();
+  await expect(page.getByTestId('error-announcements-refresh')).toContainText('5 minutes');
+  expect(sourceRequests).toBeGreaterThan(0);
 });

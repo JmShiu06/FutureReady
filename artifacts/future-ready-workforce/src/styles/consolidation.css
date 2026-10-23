@@ -11,7 +11,7 @@
 .url-tab:focus-visible, .url-tabpanel:focus-visible { outline:2px solid #73513b; outline-offset:2px; }
 .url-tabpanel { min-width:0; }
 .tab-intro { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; margin:0 0 16px; padding:12px 14px; border:1px solid #e5d9ca; border-radius:12px; background:rgba(252,249,242,.78); }
-.tab-intro p { margin:0; flex:1 1 320px; }
+.tab-intro > p { margin:0; flex:1 1 320px; }
 .card-more summary { cursor:pointer; font-size:11px; font-weight:700; color:#73513b; }
 
 /* Shared match score */

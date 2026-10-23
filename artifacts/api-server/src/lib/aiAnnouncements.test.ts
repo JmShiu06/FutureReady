@@ -51,3 +51,36 @@ test("throws when the source fails and nothing is cached", async () => {
   const service = createAiAnnouncementService({ fetchImpl: async () => new Response("no", { status: 500 }) });
   await assert.rejects(service.get());
 });
+
+test("honors Retry-After and suppresses repeated source requests while no prior copy exists", async () => {
+  let now = new Date("2026-10-05T00:00:00.000Z");
+  let calls = 0;
+  const service = createAiAnnouncementService({
+    now: () => now,
+    fetchImpl: async () => {
+      calls++;
+      return calls === 1
+        ? new Response("temporarily unavailable", { status: 503, headers: { "retry-after": "300" } })
+        : new Response(html, { status: 200 });
+    },
+  });
+
+  await assert.rejects(service.get(), error => {
+    assert.equal((error as Error).name, "AiAnnouncementSourceUnavailableError");
+    assert.equal((error as Error & { retryAfterSeconds: number }).retryAfterSeconds, 300);
+    assert.equal((error as Error & { sourceStatus: number }).sourceStatus, 503);
+    return true;
+  });
+  await assert.rejects(service.get(), error => {
+    assert.equal((error as Error & { retryAfterSeconds: number }).retryAfterSeconds, 300);
+    return true;
+  });
+  await assert.rejects(service.refresh(), /HTTP 503/);
+  assert.equal(calls, 1, "repeated requests during the source retry window must not hammer the ministry");
+
+  now = new Date(now.getTime() + 300_000);
+  const recovered = await service.get();
+  assert.equal(calls, 2);
+  assert.equal(recovered.items.length, 2);
+  assert.equal(recovered.isStale, false);
+});

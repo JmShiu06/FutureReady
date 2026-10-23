@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { GetAiAnnouncementsResponse, GetSkillFrequenciesResponse } from "@workspace/api-zod";
-import { aiAnnouncementService } from "../lib/aiAnnouncements";
+import { aiAnnouncementService, AiAnnouncementSourceUnavailableError, LISTING_URL } from "../lib/aiAnnouncements";
 import { getSkillFrequencies } from "../lib/skillFrequencies";
 import { arxivSignals } from "../lib/arxivSignals";
 
@@ -15,6 +15,16 @@ router.get("/signals/ai-announcements", async (req, res): Promise<void> => {
     res.json(result);
   } catch (error) {
     req.log.warn({ error: error instanceof Error ? error.message : "Unknown source error" }, "AI announcement retrieval failed");
+    if (error instanceof AiAnnouncementSourceUnavailableError) {
+      res.setHeader("Retry-After", String(error.retryAfterSeconds));
+      res.status(502).json({
+        error: "The official Ministry of Digital announcement listing is temporarily unavailable.",
+        sourceStatus: error.sourceStatus,
+        retryAfterSeconds: error.retryAfterSeconds,
+        sourceUrl: LISTING_URL,
+      });
+      return;
+    }
     res.status(502).json({ error: "Official announcements are unavailable and no earlier retrieved copy exists." });
   }
 });
@@ -26,6 +36,16 @@ router.post("/signals/ai-announcements/refresh", async (req, res): Promise<void>
     res.json(result);
   } catch (error) {
     req.log.warn({ error: error instanceof Error ? error.message : "Unknown source error" }, "AI announcement refresh failed");
+    if (error instanceof AiAnnouncementSourceUnavailableError) {
+      res.setHeader("Retry-After", String(error.retryAfterSeconds));
+      res.status(502).json({
+        error: "The official Ministry of Digital announcement listing is temporarily unavailable.",
+        sourceStatus: error.sourceStatus,
+        retryAfterSeconds: error.retryAfterSeconds,
+        sourceUrl: LISTING_URL,
+      });
+      return;
+    }
     res.status(502).json({ error: "The Ministry of Digital page could not be refreshed. Any earlier retrieved copy was kept." });
   }
 });

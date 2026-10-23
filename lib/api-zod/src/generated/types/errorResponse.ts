@@ -8,4 +8,11 @@
 
 export interface ErrorResponse {
   error: string;
+  sourceStatus?: number;
+  /**
+     * @minimum 1
+     * @maximum 86400
+     */
+  retryAfterSeconds?: number;
+  sourceUrl?: string;
 }

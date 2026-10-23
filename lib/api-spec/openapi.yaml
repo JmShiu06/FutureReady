@@ -975,6 +975,15 @@ components:
       properties:
         error:
           type: string
+        sourceStatus:
+          type: integer
+        retryAfterSeconds:
+          type: integer
+          minimum: 1
+          maximum: 86400
+        sourceUrl:
+          type: string
+          format: uri
       required:
         - error
     CvUploadInput:
