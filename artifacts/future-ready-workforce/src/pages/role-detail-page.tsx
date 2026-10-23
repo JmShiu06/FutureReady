@@ -9,9 +9,10 @@ import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { OccupationEvidenceDetail } from '@/components/workspace/occupation-evidence';
 import { useWorkspace } from '@/domain/workspace-context';
 import { demoRoles } from '@/domain/demo-data';
-import { assessRole, methodology } from '@/domain/services';
+import { assessRole } from '@/domain/services';
 import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, EvidencePanel, GapStatus, PriorityTag, SectionTitle } from '@/components/workspace/ui';
+import { useI18n } from '@/i18n/i18n-context';
 
 export default function RoleDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
@@ -21,35 +22,37 @@ export default function RoleDetailPage() {
 }
 
 function SampleRoleDetail({ id }: { id: string }) {
+  const { t } = useI18n();
   const { profile } = useWorkspace();
   const role = demoRoles.find(r => r.id === id);
   const a = useMemo(() => role ? assessRole(profile, role) : null, [profile, role]);
-  if (!role || !a) return <EmptyBlock title="That sample role does not exist."><Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary btn-small" data-testid="link-back-careers">Back to career paths</Link></EmptyBlock>;
+  if (!role || !a) return <EmptyBlock title={t('detail.noRole')}><Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary btn-small" data-testid="link-back-careers">{t('detail.backCareers')}</Link></EmptyBlock>;
   return <>
-    <div className="row" style={{ marginBottom: 14 }}><Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-back-careers"><ArrowLeft size={12} /> Career paths</Link></div>
+    <div className="row" style={{ marginBottom: 14 }}><Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-back-careers"><ArrowLeft size={12} /> {t('detail.careers')}</Link></div>
+    <p className="small muted" data-testid="text-source-language">{t('detail.sourceLanguage')}</p>
     <div className="role-hero">
       <div className="eyebrow">{role.category}</div><h1 data-testid="text-role-title">{role.title}</h1>
       <p className="muted" style={{ maxWidth: 690 }}>{role.description}</p>
       <div className="role-meta"><span><BriefcaseBusiness size={14} />{role.industry}</span><span><Target size={14} />{role.demandLabel}</span></div>
       <div className="row" style={{ marginTop: 16 }}>
         <BuildRoadmapButton roleId={role.id} testId="button-build-roadmap" />
-        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>
+        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">{t('detail.analysis')}</Link>
       </div>
       <ExternalJobLinks occupationTitle={role.title} testIdSuffix={`role-${role.id}`} />
     </div>
     <div className="detail-layout">
       <div className="stack">
         <div className="panel panel-pad">
-          <SectionTitle title="Your skills against the role" note="PRESENT · BELOW TARGET · MISSING" />
+          <SectionTitle title={t('detail.skillsRole')} note={t('detail.gapLegend')} />
           <MatchScore metric="coverage" variant="panel" value={a.readiness} className="ms-spaced-bottom" testId="text-role-score" />
           <div className="gap-list">{[...a.present, ...a.missing].map(g => <div className="gap-row" key={g.name}><span><strong>{g.name}</strong><PriorityTag priority={g.priority} /></span><GapStatus gap={g} /></div>)}</div>
         </div>
-        <div className="panel panel-pad"><SectionTitle title="Task exposure" note="DESCRIPTIVE, NOT A PREDICTION" /><p className="muted">{role.taskExposure}</p></div>
+        <div className="panel panel-pad"><SectionTitle title={t('detail.taskExposure')} note={t('detail.descriptive')} /><p className="muted">{role.taskExposure}</p></div>
       </div>
       <div className="stack">
-        <div className="panel panel-pad"><SectionTitle title="Methodology" /><p className="muted small">{methodology}</p><ChiliProgressBar value={a.readiness} label={`Illustrative skill coverage ${a.readiness}%`} testId="progress-coverage" /></div>
-        <div className="panel panel-pad"><SectionTitle title="Evidence" /><EvidencePanel evidence={role.evidence} /></div>
-        <div className="panel panel-pad"><SectionTitle title="SDG relevance" note="SOURCE-SUPPORTED OR UNVERIFIED · NOT IMPACT" />
+        <div className="panel panel-pad"><SectionTitle title={t('detail.methodology')} /><p className="muted small">{t('detail.methodologyBody')}</p><ChiliProgressBar value={a.readiness} label={t('detail.coverage', { n: a.readiness })} testId="progress-coverage" /></div>
+        <div className="panel panel-pad"><SectionTitle title={t('detail.evidence')} /><EvidencePanel evidence={role.evidence} /></div>
+        <div className="panel panel-pad"><SectionTitle title={t('detail.sdg')} note={t('detail.sdgNote')} />
           <SdgTags roleId={role.id} />
         </div>
       </div>

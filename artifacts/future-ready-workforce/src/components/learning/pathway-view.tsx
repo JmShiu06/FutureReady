@@ -47,28 +47,29 @@ function Sdgs({ ids, testid }: { ids: number[]; testid: string }) {
 }
 
 function ResourceBlock({ step }: { step: PathwayStep }) {
+  const { t } = useI18n();
   const r = step.resource;
   if (step.kind === 'project') {
     return <div className="pw-resource pw-project" data-testid={`text-project-${step.id}`}>
-      <span className="pw-tag">Portfolio project · written by FutureReady</span>
-      <div className="pw-chips"><span className="pw-chip">MYR 0</span><span className="pw-chip">{step.hours} hrs · app estimate</span></div>
+      <span className="pw-tag">{t('learn.project')}</span>
+      <div className="pw-chips"><span className="pw-chip">MYR 0</span><span className="pw-chip">{t('learn.appHours', { n: step.hours ?? 0 })}</span></div>
       <p>{step.activity}</p>
-      <small>This is a fictional practice brief created by this app, not a provider course. There is no course link.</small>
+      <small>{t('learn.projectNote')}</small>
     </div>;
   }
   if (!r || step.status === 'no-resource') {
     return <div className="pw-resource pw-missing" data-testid={`text-missing-${step.id}`}>
-      <strong>No verified resource yet</strong><small>We won't invent one. Search your employer's or HRD Corp's catalogue for “{step.skill}”.</small>
+      <strong>{t('learn.noResource')}</strong><small>{t('learn.searchResource', { skill: step.skill })}</small>
     </div>;
   }
   if (step.status === 'price-unconfirmed') {
     return <div className="pw-resource pw-missing" data-testid={`text-price-unconfirmed-${step.id}`}>
-      <strong>Price unconfirmed</strong><small>“{r.title}” has reviewed skill coverage, but its price is not confirmed. Check the price with the provider before including it in your budget. Free access is not assumed.</small>
+      <strong>{t('learn.priceUnknown')}</strong><small>{t('learn.priceNote', { title: r.title })}</small>
     </div>;
   }
   if (step.status === 'budget') {
     return <div className="pw-resource pw-missing" data-testid={`text-budget-${step.id}`}>
-      <strong>No match within your budget</strong><small>The closest verified option is “{r.title}” ({r.cost}). Raise the budget or turn off free-only to see it.</small>
+      <strong>{t('learn.budget')}</strong><small>{t('learn.budgetNote', { title: r.title, cost: r.cost })}</small>
     </div>;
   }
   const url = safeUrl(r.url);
@@ -76,42 +77,42 @@ function ResourceBlock({ step }: { step: PathwayStep }) {
     <strong className="pw-res-title">{r.title}</strong>
     <div className="pw-chips">
       <span className="pw-chip">{r.provider}</span>
-      <span className="pw-chip">{step.status === 'check-availability' ? 'Cost not verified' : r.cost}</span>
-      <span className="pw-chip">{step.hours != null ? `${step.hours} hrs` : 'Duration not stated'}</span>
+      <span className="pw-chip">{step.status === 'check-availability' ? t('learn.costUnknown') : r.cost}</span>
+      <span className="pw-chip">{step.hours != null ? t('rm.hrs', { n: step.hours }) : t('learn.durationUnknown')}</span>
       <span className="pw-chip">{r.level}</span>
-      {step.status === 'check-availability' && <span className="pw-chip pw-chip-warn">Check availability</span>}
+      {step.status === 'check-availability' && <span className="pw-chip pw-chip-warn">{t('learn.availability')}</span>}
     </div>
-    {url && <a className="btn btn-secondary btn-small pw-open" href={url} target="_blank" rel="noopener noreferrer" data-testid={`link-course-${step.id}`}>Open course <ExternalLink size={12} /></a>}
+    {url && <a className="btn btn-secondary btn-small pw-open" href={url} target="_blank" rel="noopener noreferrer" data-testid={`link-course-${step.id}`}>{t('learn.open')} <ExternalLink size={12} /></a>}
   </div>;
 }
 
 function WhyDetails({ step, r }: { step: PathwayStep; r: Resource | null }) {
+  const { t } = useI18n();
   return <details className="pw-why" data-testid={`details-why-${step.id}`}>
-    <summary>Why this step?</summary>
+    <summary>{t('learn.why')}</summary>
+    <p className="small muted">{t('detail.sourceLanguage')}</p>
     <dl>
-      <dt>Gap priority</dt><dd>{step.priority.toFixed(1)}{step.importance != null ? ` · role importance ${step.importance}` : ''}</dd>
-      {step.kind !== 'project' && <><dt>Calculation</dt><dd>{step.importance != null
-        ? 'Existing priority = clamp(12 × O*NET importance + 0.2 × (0.7 × signal index + 0.3 × trend index) + scenario bonus, 0–100). Gaps are skill names absent from the saved starting profile, not assessed proficiency deficits.'
-        : 'Sample-role High / Medium / Low priority is used for ordering only, with the existing scenario bonus. This is not an official O*NET proficiency assessment.'} Foundation basics precede core work. Within each phase, the existing priority places higher-emphasis skills first. Scenario effects are workshop assumptions, not measured skill-demand growth.</dd></>}
-      {step.scenarioBonus > 0 && <><dt>Scenario bonus</dt><dd>+{step.scenarioBonus.toFixed(1)}</dd></>}
-      {step.marketEvidence && <><dt>Planning inputs</dt><dd>{step.marketEvidence.scenario === 'fast' ? 'Fast' : 'Moderate'} scenario · signal index {step.marketEvidence.signalIndex} · trend index {step.marketEvidence.trendIndex} · {step.marketEvidence.period}
-        {safeUrl(step.marketEvidence.url) && <> · <a className="pw-link" href={step.marketEvidence.url} target="_blank" rel="noopener noreferrer">DOSM workbook</a></>}</dd></>}
-      {step.coveredSkills.length > 1 && <><dt>Also covers</dt><dd>{step.coveredSkills.join(', ')}</dd></>}
-      <dt>Resource choice</dt><dd>{step.whyResource || '—'}</dd>
-      {!!step.sdgTargets?.length && <><dt>Why this SDG?</dt><dd>{step.sdgTargets.map(t => <p key={t.target}>
-        <a href={t.sourceUrl} target="_blank" rel="noreferrer">SDG target {t.target}</a>: {t.reason}
-        {t.dutyUrl && <> · <a href={t.dutyUrl} target="_blank" rel="noreferrer">Duty evidence</a></>} · reviewed {t.reviewedOn}.
+      <dt>{t('learn.priority')}</dt><dd>{step.priority.toFixed(1)}{step.importance != null ? <> · {t('learn.importance', { n: step.importance })}</> : ''}</dd>
+      {step.kind !== 'project' && <><dt>{t('learn.calculation')}</dt><dd>{t(step.importance != null ? 'learn.officialCalculation' : 'learn.sampleCalculation')} {t('learn.orderNote')}</dd></>}
+      {step.scenarioBonus > 0 && <><dt>{t('learn.scenarioBonus')}</dt><dd>+{step.scenarioBonus.toFixed(1)}</dd></>}
+      {step.marketEvidence && <><dt>{t('learn.inputs')}</dt><dd>{t('learn.marketInputs', { scenario: t(step.marketEvidence.scenario === 'fast' ? 'rm.fastShort' : 'rm.moderateShort'), signal: step.marketEvidence.signalIndex, trend: step.marketEvidence.trendIndex, period: step.marketEvidence.period })}
+        {safeUrl(step.marketEvidence.url) && <> · <a className="pw-link" href={step.marketEvidence.url} target="_blank" rel="noopener noreferrer">{t('learn.workbook')}</a></>}</dd></>}
+      {step.coveredSkills.length > 1 && <><dt>{t('learn.also')}</dt><dd>{step.coveredSkills.join(', ')}</dd></>}
+      <dt>{t('learn.choice')}</dt><dd>{step.whyResource || '—'}</dd>
+      {!!step.sdgTargets?.length && <><dt>{t('learn.whySdg')}</dt><dd>{step.sdgTargets.map(target => <p key={target.target}>
+        <a href={target.sourceUrl} target="_blank" rel="noreferrer">{t('learn.target', { n: target.target })}</a>: {target.reason}
+        {target.dutyUrl && <> · <a href={target.dutyUrl} target="_blank" rel="noreferrer">{t('learn.duty')}</a></>} · {t('learn.reviewed', { date: target.reviewedOn })}.
       </p>)}</dd></>}
-      {r && <><dt>Source</dt><dd>{safeUrl(r.sourceUrl) ? <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="pw-link">{r.provider}</a> : r.provider}</dd>
-        <dt>Verified</dt><dd>{r.verified_on}</dd>
-        <dt>Coverage</dt><dd>{r.coverage}</dd>
-        <dt>Limitations</dt><dd>{[r.timeBasis, r.costCaveat].filter(Boolean).join(' ') || 'None noted.'}</dd></>}
-      {step.evidenceUrl && safeUrl(step.evidenceUrl) && <><dt>Evidence</dt><dd className="pw-evidence"><a className="pw-link" href={step.evidenceUrl} target="_blank" rel="noopener noreferrer">Role skill evidence</a></dd></>}
+      {r && <><dt>{t('learn.source')}</dt><dd>{safeUrl(r.sourceUrl) ? <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="pw-link">{r.provider}</a> : r.provider}</dd>
+        <dt>{t('learn.verified')}</dt><dd>{r.verified_on}</dd>
+        <dt>{t('learn.coverage')}</dt><dd>{r.coverage}</dd>
+        <dt>{t('learn.limits')}</dt><dd>{[r.timeBasis, r.costCaveat].filter(Boolean).join(' ') || t('learn.none')}</dd></>}
+      {step.evidenceUrl && safeUrl(step.evidenceUrl) && <><dt>{t('detail.evidence')}</dt><dd className="pw-evidence"><a className="pw-link" href={step.evidenceUrl} target="_blank" rel="noopener noreferrer">{t('learn.roleEvidence')}</a></dd></>}
     </dl>
   </details>;
 }
 
-function StepCard({ step, index, done, onToggle }: { step: PathwayStep; index: number; done: boolean; onToggle: (d: boolean) => void }) {
+function StepCard({ step, index, done, onToggle, targetTitle }: { step: PathwayStep; index: number; done: boolean; onToggle: (d: boolean) => void; targetTitle: string }) {
   const Icon = step.kind === 'project' ? Hammer : BookOpen;
   const { t } = useI18n();
   const checkbox = <label className="pw-done" data-testid={`label-done-${step.id}`}>
@@ -120,7 +121,7 @@ function StepCard({ step, index, done, onToggle }: { step: PathwayStep; index: n
   </label>;
   const body = <div className="pw-body">
     {!done && step.startWeek !== undefined && <p className="small"><b>{t('rm.week', { range: `${step.startWeek}${step.endWeek !== step.startWeek ? `–${step.endWeek}` : ''}` })}</b> · {t('rm.weekLine', { date: step.endDate ?? '' })}</p>}
-    <p className="pw-whyline">{step.why}</p>
+    <p className="pw-whyline">{t(step.kind === 'project' ? 'learn.projectWhy' : 'learn.buildSkill', { skill: step.skill, role: targetTitle })}</p>
     <ResourceBlock step={step} />
     <Sdgs ids={step.sdgs} testid={`list-sdgs-${step.id}`} />
     <WhyDetails step={step} r={step.resource} />
@@ -131,7 +132,7 @@ function StepCard({ step, index, done, onToggle }: { step: PathwayStep; index: n
       <header className="pw-card-head">
         <div className="pw-title">
           <span className="pw-kind"><Icon size={12} /> {step.kind === 'project' ? t('rm.project') : t('rm.course')} · {t('rm.step', { n: index })}</span>
-          <h3 data-testid={`text-step-skill-${step.id}`}>{step.skill}</h3>
+          <h3 data-testid={`text-step-skill-${step.id}`}>{step.kind === 'project' ? t('learn.applySkills') : step.skill}</h3>
         </div>
         {checkbox}
       </header>
@@ -174,7 +175,8 @@ export function PathwayView(p: PathwayViewProps) {
         <div>
           <div className="eyebrow">{t('rm.eyebrow')}</div>
           <h2 className="pw-target" data-testid="text-target-title">{p.targetTitle}</h2>
-          <p className="pw-time" data-testid="text-plan-time">~{plan.totalWeeks} {plan.unknownDurationCount ? 'known weeks' : 'weeks'} remaining at {p.hours} hrs/week{plan.finishDate ? ` · planned finish around ${plan.finishDate}` : plan.unknownDurationCount ? ` · known activities finish around ${plan.knownFinishDate}; full finish date unknown` : ''}</p>
+          <p className="pw-time" data-testid="text-plan-time">{t(plan.unknownDurationCount ? 'learn.knownWeeks' : 'learn.weeks', { weeks: plan.totalWeeks, hours: p.hours })}{plan.finishDate ? <> · {t('learn.finish', { date: plan.finishDate })}</> : plan.unknownDurationCount ? <> · {t('learn.knownFinish', { date: plan.knownFinishDate ?? '' })}</> : ''}</p>
+          <p className="small muted" data-testid="text-source-language">{t('detail.sourceLanguage')}</p>
         </div>
         <div className="row pw-noprint">
           <button type="button" className="btn btn-quiet btn-small" onClick={printPlan} data-testid="button-print-plan"><Printer size={13} /> {t('rm.print')}</button>
@@ -221,12 +223,12 @@ export function PathwayView(p: PathwayViewProps) {
       return <section key={ph.key} className={`pw-phase ${ph.cls}`} data-testid={`section-phase-${ph.key.replace(/\s/g, '-').toLowerCase()}`}>
         <header className="pw-phase-head"><span className="pw-phase-icon" aria-hidden><ph.Icon size={15} /></span>
           <div><h2>{t(`rm.phase.${ph.key}`)}</h2><p>{t(`rm.note.${ph.key}`)}</p></div></header>
-        <ol className="pw-steps">{steps.map(s => <StepCard key={s.id} step={s} index={plan.steps.indexOf(s) + 1} done={p.isDone(s)} onToggle={d => p.onToggle(s, d)} />)}</ol>
+        <ol className="pw-steps">{steps.map(s => <StepCard key={s.id} step={s} targetTitle={p.targetTitle} index={plan.steps.indexOf(s) + 1} done={p.isDone(s)} onToggle={d => p.onToggle(s, d)} />)}</ol>
       </section>;
     })}
     {plan.unknownDurationCount > 0 && <section className="pw-phase" data-testid="section-unknown-time"><h2>{t('rm.unknownTitle')}</h2>
       <p className="small muted">{t('rm.unknownBody')}</p>
-      <ol className="pw-steps">{plan.steps.filter(s => s.hours === null && !p.isDone(s)).map(s => <StepCard key={s.id} step={s} index={plan.steps.indexOf(s) + 1} done={false} onToggle={d => p.onToggle(s, d)} />)}</ol>
+      <ol className="pw-steps">{plan.steps.filter(s => s.hours === null && !p.isDone(s)).map(s => <StepCard key={s.id} step={s} targetTitle={p.targetTitle} index={plan.steps.indexOf(s) + 1} done={false} onToggle={d => p.onToggle(s, d)} />)}</ol>
     </section>}
     <p className="small muted">{t('rm.packNote', { hours: plan.totalHours })}</p>
 

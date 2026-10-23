@@ -6,6 +6,7 @@ import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { useI18n } from '@/i18n/i18n-context';
 import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 import type { MessageKey } from '@/i18n/messages';
+import { enDetail } from '@/i18n/messages-detail';
 
 export function SectionTitle({ title, note, action, info }: { title: string; note?: string; action?: ReactNode; info?: string }) {
   return <div className="section-head"><div>
@@ -46,17 +47,18 @@ export function GapStatus({ gap }: { gap: SkillGap }) {
 }
 
 export function EvidencePanel({ evidence, testId = 'panel-evidence' }: { evidence: Evidence; testId?: string }) {
+  const { t } = useI18n();
   const warnings = evidenceWarnings(evidence);
   return <div className="evidence" data-testid={testId}>
     <dl>
-      <dt>Evidence type</dt><dd>{evidence.kind === 'synthetic' ? 'Synthetic (fictional)' : 'Observed'}</dd>
-      <dt>Source name</dt><dd>{evidence.sourceName}</dd>
-      <dt>Source URL</dt><dd>{evidence.sourceUrl ? <a href={evidence.sourceUrl} target="_blank" rel="noreferrer" className="text-link">{evidence.sourceUrl}</a> : 'None — no verified source URL'}</dd>
-      <dt>Observation period</dt><dd>{evidence.observationStart ?? 'Unknown'} to {evidence.observationEnd ?? 'Unknown'}</dd>
-      <dt>Last updated</dt><dd>{evidence.lastUpdated ?? 'Missing'}</dd>
-      <dt>Notes</dt><dd>{evidence.notes}</dd>
+      <dt>{t('detail.evidenceType')}</dt><dd>{t(evidence.kind === 'synthetic' ? 'detail.synthetic' : 'detail.observed')}</dd>
+      <dt>{t('detail.sourceName')}</dt><dd>{evidence.sourceName}</dd>
+      <dt>{t('detail.sourceUrl')}</dt><dd>{evidence.sourceUrl ? <a href={evidence.sourceUrl} target="_blank" rel="noreferrer" className="text-link">{evidence.sourceUrl}</a> : t('detail.noUrl')}</dd>
+      <dt>{t('detail.observationPeriod')}</dt><dd>{t('detail.dateRange', { start: evidence.observationStart ?? t('detail.unknown'), end: evidence.observationEnd ?? t('detail.unknown') })}</dd>
+      <dt>{t('detail.updated')}</dt><dd>{evidence.lastUpdated ?? t('detail.missing')}</dd>
+      <dt>{t('detail.notes')}</dt><dd>{evidence.notes}</dd>
     </dl>
-    {warnings.length > 0 && <ul className="warn-list" data-testid={`${testId}-warnings`}>{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
+    {warnings.length > 0 && <ul className="warn-list" data-testid={`${testId}-warnings`}>{warnings.map(w => <li key={w}>{evidenceWarningKeys[w] ? t(evidenceWarningKeys[w]) : w}</li>)}</ul>}
   </div>;
 }
 
@@ -104,3 +106,7 @@ export function useLevelLabel() {
 }
 export const levelLabel = (level: number) => ['Not present', 'New to it', 'Exploring', 'Working knowledge', 'Confident', 'Can teach'][level] ?? 'Not present';
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+const evidenceWarningKeys = Object.fromEntries(([
+  'detail.warnSynthetic', 'detail.warnUrl', 'detail.warnDateMissing', 'detail.warnDateInvalid', 'detail.warnStale',
+] as const).map(key => [enDetail[key], key]));

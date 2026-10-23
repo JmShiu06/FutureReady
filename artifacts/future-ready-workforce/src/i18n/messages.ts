@@ -1,5 +1,6 @@
 import { enW, wCatalogs } from './messages-workflow';
 import { enAi, aiCatalogs } from './messages-ai';
+import { enDetail, detailCatalogs } from './messages-detail';
 import type { Locale } from './locales';
 
 /** English is the source catalog; every other locale must provide exactly the same keys (checked by TypeScript and tests). */
@@ -181,7 +182,7 @@ const enCore = {
   'guidance.subtitle': 'Review learning suggestions from your selected saved skills. Your roadmap and progress stay unchanged.',
   'guidance.back': 'Back to Learning roadmap',
 } as const;
-export const en = { ...enCore, ...enW, ...enAi } as const;
+export const en = { ...enCore, ...enW, ...enAi, ...enDetail } as const;
 
 export type MessageKey = keyof typeof en;
 export type Catalog = Record<MessageKey, string>;
@@ -1440,7 +1441,7 @@ const id: CoreCatalog = {
   'guidance.back': 'Kembali ke Peta belajar',
 };
 
-export const catalogs: Record<Locale, Catalog> = { en, ms: { ...ms, ...wCatalogs.ms, ...aiCatalogs.ms }, 'zh-CN': { ...zhCN, ...wCatalogs['zh-CN'], ...aiCatalogs['zh-CN'] }, 'zh-TW': { ...zhTW, ...wCatalogs['zh-TW'], ...aiCatalogs['zh-TW'] }, ko: { ...ko, ...wCatalogs.ko, ...aiCatalogs.ko }, ta: { ...ta, ...wCatalogs.ta, ...aiCatalogs.ta }, ja: { ...ja, ...wCatalogs.ja, ...aiCatalogs.ja }, id: { ...id, ...wCatalogs.id, ...aiCatalogs.id } };
+export const catalogs: Record<Locale, Catalog> = { en, ms: { ...ms, ...wCatalogs.ms, ...aiCatalogs.ms, ...detailCatalogs.ms }, 'zh-CN': { ...zhCN, ...wCatalogs['zh-CN'], ...aiCatalogs['zh-CN'], ...detailCatalogs['zh-CN'] }, 'zh-TW': { ...zhTW, ...wCatalogs['zh-TW'], ...aiCatalogs['zh-TW'], ...detailCatalogs['zh-TW'] }, ko: { ...ko, ...wCatalogs.ko, ...aiCatalogs.ko, ...detailCatalogs.ko }, ta: { ...ta, ...wCatalogs.ta, ...aiCatalogs.ta, ...detailCatalogs.ta }, ja: { ...ja, ...wCatalogs.ja, ...aiCatalogs.ja, ...detailCatalogs.ja }, id: { ...id, ...wCatalogs.id, ...aiCatalogs.id, ...detailCatalogs.id } };
 
 /** Looks up a key, falling back to English for any missing entry. */
 export function translate(locale: Locale, key: MessageKey): string {

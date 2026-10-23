@@ -2,6 +2,7 @@ import { it } from 'node:test';
 import assert from 'node:assert/strict';
 import { LOCALES, LOCALE_STORAGE_KEY, isLocale, readStoredLocale, writeStoredLocale, matchBrowserLocale, interpolate } from '../i18n/locales';
 import { catalogs, en, translate } from '../i18n/messages';
+import { detailCatalogs, enDetail } from '../i18n/messages-detail';
 
 const memory = (init: Record<string, string> = {}) => {
   const data = { ...init };
@@ -60,4 +61,28 @@ it('has complete, equal-key, non-empty, meaningfully translated catalogs', () =>
     }
   }
   assert.equal(translate('ko', 'lang.continue'), '계속');
+});
+
+it('bundles every secondary detail and learning key in all eight languages without fallback', () => {
+  const keys = Object.keys(enDetail) as (keyof typeof enDetail)[];
+  for (const locale of LOCALES) {
+    assert.deepEqual(Object.keys(detailCatalogs[locale]).sort(), [...keys].sort(), `${locale} secondary keys`);
+    for (const key of keys) {
+      assert.ok(detailCatalogs[locale][key].trim(), `${locale}.${key}`);
+      assert.equal(translate(locale, key), detailCatalogs[locale][key], `${locale}.${key} merged`);
+    }
+  }
+});
+
+it('interpolates every secondary placeholder in every language without translating supplied content', () => {
+  const original = 'O*NET Critical Thinking / MASCO 2020 · 日本語 · <CV>{name}';
+  for (const locale of LOCALES) {
+    for (const [key, template] of Object.entries(detailCatalogs[locale])) {
+      const placeholders = [...new Set(template.match(/\{\w+\}/g) ?? [])];
+      const values = Object.fromEntries(placeholders.map(token => [token.slice(1, -1), original]));
+      const rendered = interpolate(template, values);
+      assert.equal(rendered, template.replace(/\{\w+\}/g, () => original), `${locale}.${key}`);
+      if (placeholders.length) assert.ok(rendered.includes(original), `${locale}.${key} preserved source`);
+    }
+  }
 });

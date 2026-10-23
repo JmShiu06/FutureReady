@@ -5,6 +5,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { PathwayView, type PathwayViewProps } from './pathway-view';
 import { buildPathway } from '../../domain/reskilling-pathway';
 import type { CourseResource } from '../../domain/resource-catalog';
+import { I18nProvider } from '../../i18n/i18n-context';
+import { LOCALES, LOCALE_STORAGE_KEY, interpolate, type Locale } from '../../i18n/locales';
+import { translate } from '../../i18n/messages';
 
 /** Fictional resource, never added to the public catalogue. */
 const resource: CourseResource = {
@@ -15,7 +18,7 @@ const resource: CourseResource = {
   status: 'verified', coverage: 'Test only', timeBasis: 'Test only', costCaveat: 'Test only',
 };
 
-function render(catalog: CourseResource[], budget: number, freeOnly: boolean) {
+function render(catalog: CourseResource[], budget: number, freeOnly: boolean, locale: Locale = 'en') {
   const plan = buildPathway({
     milestones: [{
       id: 'test-gap', skill: 'Critical Thinking', title: 'Test gap', provider: 'Test only',
@@ -33,7 +36,17 @@ function render(catalog: CourseResource[], budget: number, freeOnly: boolean) {
     isDone: () => false, onToggle: noop, onReviewTwin: noop, onReset: noop,
     onAcceptChanges: noop, onKeepPlan: noop,
   };
-  return renderToStaticMarkup(createElement(PathwayView, props));
+  // Only the locale preference is supplied; no workspace or progress storage is touched.
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: {
+    localStorage: { getItem: (key: string) => key === LOCALE_STORAGE_KEY ? locale : null },
+  } });
+  try {
+    return renderToStaticMarkup(createElement(I18nProvider, null, createElement(PathwayView, props)));
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'window', descriptor);
+    else Reflect.deleteProperty(globalThis, 'window');
+  }
 }
 
 test('unpriced reviewed course explains price uncertainty instead of suggesting a higher budget', () => {
@@ -59,5 +72,32 @@ test('known-priced budget and free-only exclusions retain the budget message, ev
     assert.match(html, /Synthetic paid course/);
     assert.match(html, /Raise the budget or turn off free-only/);
     assert.doesNotMatch(html, /Price unconfirmed/);
+  }
+});
+
+test('learning evidence controls translate in every locale while provider evidence stays verbatim', () => {
+  const escape = (s: string) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#x27;');
+  const priced = { ...resource, costMYR: 30, hours: 2, coverage: 'Original coverage quotation: 未翻訳', timeBasis: 'Provider duration wording' };
+  for (const locale of LOCALES) {
+    const html = render([priced], 100, false, locale);
+    for (const key of ['learn.why', 'learn.open', 'learn.coverage', 'learn.limits', 'detail.sourceLanguage', 'learn.contribution'] as const) {
+      assert.ok(html.includes(escape(translate(locale, key))), `${locale}.${key} rendered`);
+    }
+    for (const original of [priced.title, priced.provider, priced.coverage, priced.timeBasis, 'Critical Thinking', priced.sourceUrl!]) {
+      assert.ok(html.includes(escape(original)), `${locale}: original evidence ${original}`);
+    }
+    assert.ok(html.includes('href="https://example.invalid/course"'), `${locale}: course destination unchanged`);
+    assert.match(html, /data-testid="checkbox-done-test-gap"/);
+    assert.doesNotMatch(html, /\{(?:title|skill|scenario|hours|weeks|date|n)\}/);
+
+    for (const [catalog, budget, message] of [
+      [[], 100, 'learn.noResource'],
+      [[resource], 100, 'learn.priceUnknown'],
+      [[priced], 0, 'learn.budget'],
+    ] as const) {
+      assert.ok(render([...catalog], budget, false, locale).includes(escape(translate(locale, message))), `${locale}.${message}`);
+    }
+    const note = interpolate(translate(locale, 'learn.priceNote'), { title: resource.title });
+    assert.ok(render([resource], 100, false, locale).includes(escape(note)), `${locale}: title interpolation`);
   }
 });

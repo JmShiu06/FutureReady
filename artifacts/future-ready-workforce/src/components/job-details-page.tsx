@@ -3,18 +3,17 @@ import { Link, useParams, useSearch } from 'wouter';
 import { ArrowLeft, BriefcaseBusiness, Layers, MapPin } from 'lucide-react';
 import { getGetJobQueryKey, useCalculateJobMatchScores, useGetJob } from '@workspace/api-client-react';
 import type { JobMatchScore } from '@workspace/api-client-react';
-import { fictionalListingLabel } from '@workspace/workforce-evidence';
 import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
 import { ExternalJobLinks, SampleListingBadge } from '@/components/shared/external-job-links';
 import { listingReturnHref } from '@/domain/job-listing-filters';
 import '@/components/job-listings.css';
+import { useI18n } from '@/i18n/i18n-context';
 
 type Props = { profileSkills: string[] };
-const modeLabel: Record<string, string> = { 'on-site': 'On-site', hybrid: 'Hybrid', remote: 'Remote' };
-const levelLabel: Record<string, string> = { entry: 'Entry level', mid: 'Mid level', senior: 'Senior level' };
 
 export function JobDetailsPage({ profileSkills }: Props) {
+  const { t } = useI18n();
   const backHref = listingReturnHref(useSearch());
   const params = useParams<{ id: string }>();
   const id = params.id ?? '';
@@ -45,12 +44,13 @@ export function JobDetailsPage({ profileSkills }: Props) {
 
   if (query.isLoading) return <div className="jobs-page" data-testid="page-job-details"><div className="jobs-details-skeleton panel"><i /><i /><i /><i /><i /></div></div>;
   if (query.isError || !job) return <div className="jobs-page" data-testid="page-job-details">
-    <Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link>
-    <div className="jobs-state panel jobs-error" role="alert" data-testid="status-job-detail-error"><span className="jobs-state-icon">!</span><h3>{query.isError ? 'This listing could not be loaded.' : 'This sample listing is not available.'}</h3><p>Try returning to the listings and opening another one.</p><button className="btn btn-primary" onClick={() => query.refetch()} data-testid="button-retry-job-detail">Try again</button></div>
+    <Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> {t('detail.backListings')}</Link>
+    <div className="jobs-state panel jobs-error" role="alert" data-testid="status-job-detail-error"><span className="jobs-state-icon">!</span><h3>{t(query.isError ? 'detail.loadError' : 'detail.noListing')}</h3><p>{t('detail.tryAnother')}</p><button className="btn btn-primary" onClick={() => query.refetch()} data-testid="button-retry-job-detail">{t('common.tryAgain')}</button></div>
   </div>;
 
   return <div className="jobs-page" data-testid="page-job-details">
-    <div className="job-detail-topline"><Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link></div>
+    <div className="job-detail-topline"><Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> {t('detail.backListings')}</Link></div>
+    <p className="small muted" data-testid="text-source-language">{t('detail.sourceLanguage')}</p>
     <section className="job-detail-hero">
       <div className="job-detail-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>
       <div className="job-detail-heading">
@@ -59,55 +59,55 @@ export function JobDetailsPage({ profileSkills }: Props) {
         <p>{job.company}</p>
         <div className="job-detail-meta">
           <span><MapPin size={14} />{job.location}</span>
-          <span><BriefcaseBusiness size={14} />{modeLabel[job.workMode]} · {job.employmentType.replace('-', ' ')}</span>
-          <span><Layers size={14} />{levelLabel[job.level]}</span>
+          <span><BriefcaseBusiness size={14} />{t(`search.mode.${job.workMode}`)} · {t(`detail.employment.${job.employmentType}`)}</span>
+          <span><Layers size={14} />{t(`search.level.${job.level}`)}</span>
         </div>
       </div>
     </section>
 
     <div className="job-detail-columns">
       <div className="job-detail-content">
-        <section className="panel panel-pad" data-testid="section-job-description"><div className="section-head"><div><h2>About this sample listing</h2><div className="section-kicker">FICTIONAL DESCRIPTION</div></div></div><div className="job-description-text">{job.description.split(/\n+/).filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}</div></section>
+        <section className="panel panel-pad" data-testid="section-job-description"><div className="section-head"><div><h2>{t('detail.aboutListing')}</h2><div className="section-kicker">{t('detail.fictionalDescription')}</div></div></div><div className="job-description-text">{job.description.split(/\n+/).filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}</div></section>
         <section className="panel panel-pad" data-testid="section-job-occupation">
-          <div className="section-head"><div><h2>Occupation mapping</h2><div className="section-kicker">MASCO → O*NET</div></div></div>
+          <div className="section-head"><div><h2>{t('detail.mapping')}</h2><div className="section-kicker">MASCO → O*NET</div></div></div>
           <dl className="jl-evidence">
-            <dt>Occupation</dt><dd><Link href={`/careers-and-jobs/roles/${encodeURIComponent(job.occupationId)}`} className="text-link" data-testid="link-job-occupation">{job.occupationName}</Link></dd>
+            <dt>{t('detail.occupation')}</dt><dd><Link href={`/careers-and-jobs/roles/${encodeURIComponent(job.occupationId)}`} className="text-link" data-testid="link-job-occupation">{job.occupationName}</Link></dd>
             <dt>MASCO</dt><dd className="mono">{job.mascoCode}</dd>
             <dt>O*NET</dt><dd><a className="text-link" href={`https://www.onetonline.org/link/summary/${encodeURIComponent(job.onetCode)}`} target="_blank" rel="noopener noreferrer" data-testid="link-job-onet">{job.onetCode} {job.onetTitle}</a></dd>
-            <dt>Mapping note</dt><dd data-testid="text-job-mapping-note">{job.mappingNote}</dd>
-            <dt>Level / mode</dt><dd>{levelLabel[job.level]} · {modeLabel[job.workMode]}</dd>
+            <dt>{t('detail.mappingNote')}</dt><dd data-testid="text-job-mapping-note">{job.mappingNote}</dd>
+            <dt>{t('detail.levelMode')}</dt><dd>{t(`search.level.${job.level}`)} · {t(`search.mode.${job.workMode}`)}</dd>
           </dl>
         </section>
-        <section className="panel panel-pad" data-testid="section-company-information"><div className="section-head"><div><h2>About {job.company}</h2><div className="section-kicker">FICTIONAL EMPLOYER</div></div></div><p className="job-company-info">{job.companyInfo || 'No employer information is included in this sample listing.'}</p></section>
-        <section className="panel panel-pad" data-testid="section-job-sdg"><div className="section-head"><div><h2>SDG relevance</h2><div className="section-kicker">EXISTING REVIEWED MAPPING · NOT IMPACT</div></div></div>
-          {job.sdgTags.length ? <SdgTags roleId={job.sdgRoleId} /> : <p className="muted small" data-testid="text-job-sdg-none">No reviewed SDG mapping for this occupation. No contribution or impact is implied.</p>}
+        <section className="panel panel-pad" data-testid="section-company-information"><div className="section-head"><div><h2>{t('detail.aboutCompany', { name: job.company })}</h2><div className="section-kicker">{t('detail.fictionalEmployer')}</div></div></div><p className="job-company-info">{job.companyInfo || t('detail.noCompany')}</p></section>
+        <section className="panel panel-pad" data-testid="section-job-sdg"><div className="section-head"><div><h2>{t('detail.sdg')}</h2><div className="section-kicker">{t('detail.sdgNote')}</div></div></div>
+          {job.sdgTags.length ? <SdgTags roleId={job.sdgRoleId} /> : <p className="muted small" data-testid="text-job-sdg-none">{t('detail.noSdg')}</p>}
         </section>
       </div>
       <aside className="job-detail-aside">
         <section className="panel panel-pad job-skills-panel">
-          <div className="section-head"><div><h2>Skills for this listing</h2><div className="section-kicker">O*NET DOCUMENTED SKILLS</div></div></div>
+          <div className="section-head"><div><h2>{t('detail.listingSkills')}</h2><div className="section-kicker">{t('detail.documented')}</div></div></div>
           {profileSkills.length ? <>
             {match && <MatchScore metric="exact" value={match.score} matched={match.matchedSkills.length} considered={match.skillsConsidered} variant="panel" testId="text-detail-match-score" />}
-            <div className="jobs-skill-label">In your profile</div>
-            <div className="jobs-skill-list">{matchedSkills.map(s => <span className="skill-status matched" key={s} data-testid={`skill-matched-${s.toLowerCase().replaceAll(' ', '-')}`}>{s}<b>Matched</b></span>)}
-              {!matchedSkills.length && <div className="skill-empty">No exact matches in your profile yet.</div>}</div>
-            <div className="jobs-skill-label">Skills to explore</div>
-            <div className="jobs-skill-list">{missingSkills.map(s => <span className="skill-status missing" key={s} data-testid={`skill-missing-${s.toLowerCase().replaceAll(' ', '-')}`}>{s}<b>Not in profile</b></span>)}
-              {!missingSkills.length && <div className="skill-empty">All listed skills appear in your profile.</div>}</div>
-            <p className="job-profile-disclaimer">Skills saved in your profile on this device. Exact overlap is not a hiring prediction.</p>
+            <div className="jobs-skill-label">{t('detail.inProfile')}</div>
+            <div className="jobs-skill-list">{matchedSkills.map(s => <span className="skill-status matched" key={s} data-testid={`skill-matched-${s.toLowerCase().replaceAll(' ', '-')}`}>{s}<b>{t('detail.matched')}</b></span>)}
+              {!matchedSkills.length && <div className="skill-empty">{t('detail.noMatches')}</div>}</div>
+            <div className="jobs-skill-label">{t('detail.explore')}</div>
+            <div className="jobs-skill-list">{missingSkills.map(s => <span className="skill-status missing" key={s} data-testid={`skill-missing-${s.toLowerCase().replaceAll(' ', '-')}`}>{s}<b>{t('detail.notInProfile')}</b></span>)}
+              {!missingSkills.length && <div className="skill-empty">{t('detail.allSkills')}</div>}</div>
+            <p className="job-profile-disclaimer">{t('detail.profileNote')}</p>
           </> : <>
-            <div className="skill-empty">Add skills to your profile to see which skills overlap.</div>
-            <div className="jobs-skill-label">Listed skills</div><div className="jobs-skill-list">{job.requiredSkills.map(s => <span className="skill-status neutral" key={s} data-testid={`skill-required-${s.toLowerCase().replaceAll(' ', '-')}`}>{s}</span>)}</div>
+            <div className="skill-empty">{t('detail.addSkills')}</div>
+            <div className="jobs-skill-label">{t('detail.listed')}</div><div className="jobs-skill-list">{job.requiredSkills.map(s => <span className="skill-status neutral" key={s} data-testid={`skill-required-${s.toLowerCase().replaceAll(' ', '-')}`}>{s}</span>)}</div>
           </>}
         </section>
         <section className="panel panel-pad" data-testid="section-real-jobs">
-          <div className="section-kicker">REAL VACANCIES ELSEWHERE</div>
-          <p className="small muted">This listing is fictional and cannot be applied for. Search real vacancies for the occupation instead.</p>
+          <div className="section-kicker">{t('detail.realJobs')}</div>
+          <p className="small muted">{t('detail.fictionalNote')}</p>
           <ExternalJobLinks occupationTitle={job.occupationName} testIdSuffix="detail" />
         </section>
       </aside>
     </div>
-    <div className="jobs-footnote"><span className="jobs-footnote-mark">i</span><span>{fictionalListingLabel}. Employer, role details and availability are illustrative; no salary is shown because none comes from a published source.</span></div>
+    <div className="jobs-footnote"><span className="jobs-footnote-mark">i</span><span>{t('detail.listingFootnote')}</span></div>
   </div>;
 }
 

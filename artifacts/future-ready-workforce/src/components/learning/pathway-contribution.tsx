@@ -1,14 +1,17 @@
 import type { PathwayPlan } from '@/domain/reskilling-pathway';
+import { useI18n } from '@/i18n/i18n-context';
 export function PathwayContribution({ plan }: { plan: PathwayPlan }) {
+  const { t } = useI18n();
   const targets = [...new Map(plan.steps.flatMap(s => s.sdgTargets ?? []).map(t => [t.target, t])).values()];
-  return <details className="card-more" data-testid="pathway-sdg-contribution"><summary>How your path contributes</summary>
-    <p className="small">Conditional learning and practice intentions, not measured impact. Hours can support more than one target; do not add these rows together.</p>
-    {targets.map(t => {
-      const steps = plan.steps.filter(s => s.sdgTargets?.some(x => x.target === t.target));
+  return <details className="card-more" data-testid="pathway-sdg-contribution"><summary>{t('learn.contribution')}</summary>
+    <p className="small">{t('learn.contributionNote')}</p>
+    <p className="small muted">{t('detail.sourceLanguage')}</p>
+    {targets.map(target => {
+      const steps = plan.steps.filter(s => s.sdgTargets?.some(x => x.target === target.target));
       const unknown = steps.filter(s => s.hours === null).length;
-      return <div key={t.target} className="small" style={{ marginBottom: 12 }}>
-        <b><a href={t.sourceUrl} target="_blank" rel="noreferrer">SDG target {t.target}</a> · {steps.length} steps · {steps.reduce((sum, s) => sum + (s.hours ?? 0), 0)} known hours{unknown ? ` + ${unknown} unstated` : ''}</b>
-        <p>{t.reason}</p><details><summary>Steps for this target</summary><ul>{steps.map(s => <li key={s.id}>{s.skill} · {s.hours === null ? 'hours unknown' : `${s.hours}h`}</li>)}</ul></details>
+      return <div key={target.target} className="small" style={{ marginBottom: 12 }}>
+        <b><a href={target.sourceUrl} target="_blank" rel="noreferrer">{t('learn.target', { n: target.target })}</a> · {t('learn.targetStats', { steps: steps.length, hours: steps.reduce((sum, s) => sum + (s.hours ?? 0), 0) })}{unknown ? ` ${t('rm.unstated', { n: unknown })}` : ''}</b>
+        <p>{target.reason}</p><details><summary>{t('learn.targetSteps')}</summary><ul>{steps.map(s => <li key={s.id}>{s.skill} · {s.hours === null ? t('learn.hoursUnknown') : t('rm.hrs', { n: s.hours })}</li>)}</ul></details>
       </div>;
     })}
   </details>;

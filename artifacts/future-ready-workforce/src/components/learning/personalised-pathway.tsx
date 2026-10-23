@@ -34,9 +34,9 @@ export function PersonalisedPathway() {
       sourceUrl: g.observations.at(-1)!.dataUrl, period: g.observations.map(o => o.quarter).join(' → '),
     })) ?? [], [market.data]);
   if (!baseline) return <PathwayEmpty onPickRole={() => navigate('/careers-and-jobs?tab=career-paths')} />;
-  if (market.isLoading && !market.data) return <div aria-label="Preparing your pathway with the current market snapshot"><LoadingBlock /></div>;
+  if (market.isLoading && !market.data) return <div aria-label={t('learn.preparing')}><LoadingBlock /></div>;
   return <><ActivePathway key={`${state.audience}:${state.targets[state.audience]}:${baseline.startedAt}`} baseline={baseline}
-    signals={signals} marketWarning={market.isError ? 'Market data is unavailable. The plan uses documented role skills and scenario assumptions; refresh Market & AI impact to retry.' : ''} />
+    signals={signals} marketWarning={market.isError ? t('learn.marketWarning') : ''} />
     <aside className="disclaimer"><a href={malaysianCatalogReference.url} target="_blank" rel="noreferrer">{malaysianCatalogReference.title}</a> · {malaysianCatalogReference.status}. {malaysianCatalogReference.note}</aside></>;
 }
 

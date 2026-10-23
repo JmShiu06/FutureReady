@@ -13,6 +13,7 @@ import { ExternalJobLinks } from '@/components/shared/external-job-links';
 import '@/components/job-listings.css';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
 import { officialPlanId, occupationSnapshot } from '@/domain/official-roadmap';
+import { useI18n } from '@/i18n/i18n-context';
 
 /**
  * Official occupation evidence (TalentCorp MyCOL + O*NET), shown alongside but
@@ -51,11 +52,13 @@ const relationLabel: Record<OccupationEvidence['mapping']['relation'], string> =
 };
 
 function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
+  const { t } = useI18n();
   return <div className="disclaimer" style={{ marginTop: 14 }} data-testid="text-occupation-attribution"><Info size={14} /><span>
+    {t('detail.sourceLanguage')}{' '}
     {data.sources.onet.attribution}{' '}
     <a className="text-link" href={data.sources.onet.licenseUrl} target="_blank" rel="noreferrer">CC BY 4.0</a>{' · '}
-    <a className="text-link" href={data.sources.onet.databaseUrl} target="_blank" rel="noreferrer">O*NET {data.sources.onet.release} database</a>{' · '}
-    <a className="text-link" href={data.sources.mycol.reportUrl} target="_blank" rel="noreferrer">{data.sources.mycol.edition} report (TalentCorp)</a>
+    <a className="text-link" href={data.sources.onet.databaseUrl} target="_blank" rel="noreferrer">O*NET {data.sources.onet.release} {t('detail.database')}</a>{' · '}
+    <a className="text-link" href={data.sources.mycol.reportUrl} target="_blank" rel="noreferrer">{t('detail.report', { edition: data.sources.mycol.edition })} (TalentCorp)</a>
   </span></div>;
 }
 
@@ -183,78 +186,80 @@ export function OccupationComparisonPanel({ query }: { query: OccupationEvidence
 }
 
 export function OccupationEvidenceDetail({ id }: { id: string }) {
+  const { t } = useI18n();
   const query = useOccupationEvidence();
-  if (query.isError) return <ErrorBlock message="Official occupation evidence could not be loaded." onRetry={query.retry} />;
+  if (query.isError) return <ErrorBlock message={t('detail.officialError')} onRetry={query.retry} />;
   if (query.isPending || !query.data) return <LoadingBlock rows={4} />;
   const data = query.data;
   const o = data.occupations.find(x => x.id === id);
-  if (!o) return <EmptyBlock title="That occupation is not in the reviewed MyCOL evidence."><Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary btn-small" data-testid="link-back-careers">Back to career paths</Link></EmptyBlock>;
+  if (!o) return <EmptyBlock title={t('detail.noOccupation')}><Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary btn-small" data-testid="link-back-careers">{t('detail.backCareers')}</Link></EmptyBlock>;
   const { mycol, onet } = data.sources;
   return <>
-    <div className="row" style={{ marginBottom: 14 }}><Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-back-careers"><ArrowLeft size={12} /> Career paths</Link></div>
+    <div className="row" style={{ marginBottom: 14 }}><Link href="/careers-and-jobs?tab=career-paths" className="text-link" data-testid="link-back-careers"><ArrowLeft size={12} /> {t('detail.careers')}</Link></div>
+    <p className="small muted" data-testid="text-source-language">{t('detail.sourceLanguage')}</p>
     <div className="role-hero">
-      <div className="eyebrow">{o.mycol.edition} critical occupation · MASCO {o.mycol.masco4}</div>
+      <div className="eyebrow">{t('detail.critical', { edition: o.mycol.edition, code: o.mycol.masco4 })}</div>
       <h1 data-testid="text-occupation-title">{o.mycol.title}</h1>
-      <p className="muted" style={{ maxWidth: 690 }}>Classified as a critical occupation by TalentCorp in {o.mycol.edition}. This is a TalentCorp classification, not a hiring probability or a vacancy count.</p>
-      <div className="role-meta"><span><BookOpen size={14} />O*NET {o.onet.code} · {o.onet.title}</span><span><ShieldCheck size={14} />{relationLabel[o.mapping.relation]} · {o.mapping.status === 'verified' ? 'reviewed mapping' : 'unverified mapping'}</span></div>
+      <p className="muted" style={{ maxWidth: 690 }}>{t('detail.classificationNote', { edition: o.mycol.edition })}</p>
+      <div className="role-meta"><span><BookOpen size={14} />O*NET {o.onet.code} · {o.onet.title}</span><span><ShieldCheck size={14} />{t(`detail.relation.${o.mapping.relation}`)} · {t(o.mapping.status === 'verified' ? 'detail.reviewedMapping' : 'detail.unverifiedMapping')}</span></div>
       <div className="row" style={{ marginTop: 16 }}>
         {o.recommendationStatus === 'eligible' && o.mapping.status === 'verified' && o.documentedSkills.length > 0
           ? <BuildRoadmapButton roleId={officialPlanId(o.id)} occupation={occupationSnapshot(o, data)} testId="button-build-occupation-roadmap" />
-          : <span className="small muted" data-testid="text-roadmap-unavailable">Roadmap unavailable: no reviewed documented skill requirements.</span>}
-        <Link href="/learning-roadmap" className="btn btn-primary btn-small" data-testid="link-occupation-roadmap"><Workflow size={12} /> Continue to my roadmap</Link>
-        <Link href="/my-profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> Update my skills</Link>
-        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation-occupation">Open Skill analysis</Link>
+          : <span className="small muted" data-testid="text-roadmap-unavailable">{t('detail.noRoadmap')}</span>}
+        <Link href="/learning-roadmap" className="btn btn-primary btn-small" data-testid="link-occupation-roadmap"><Workflow size={12} /> {t('detail.continueRoadmap')}</Link>
+        <Link href="/my-profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> {t('detail.updateSkills')}</Link>
+        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation-occupation">{t('detail.analysis')}</Link>
       </div>
       <ExternalJobLinks occupationTitle={o.mycol.title} testIdSuffix={`occupation-${o.id}`} />
     </div>
     <div className="detail-layout">
       <div className="stack">
         <div className="panel panel-pad" data-testid="panel-occupation-skills">
-          <SectionTitle title="Your skills against O*NET documented skills" note="MATCHED · NOT IN PROFILE" />
+          <SectionTitle title={t('detail.skillsOnet')} note={t('detail.matchLegend')} />
           {o.exclusionReason
             ? <div className="state-box" data-testid="text-occupation-excluded">{o.exclusionReason}</div>
             : <>
               <MatchScore metric="onet" variant="panel" value={o.overlap!.score} matched={o.overlap!.matchedSkills.length} considered={o.overlap!.skillsConsidered} testId="text-occupation-overlap" />
-              <p className="small">{o.overlap!.matchedSkills.length} of {o.overlap!.skillsConsidered} documented skills appear in your profile by name.</p>
+              <p className="small">{t('detail.overlap', { matched: o.overlap!.matchedSkills.length, total: o.overlap!.skillsConsidered })}</p>
               <div className="gap-list">{o.documentedSkills.map(s => <div className="gap-row" key={s.elementId} data-testid={`row-onet-skill-${s.elementId}`}>
-                <span><strong>{s.name}</strong><small>{s.domain} skill · Importance {s.importance.toFixed(2)} of 5 · Level {s.level.toFixed(2)} of 7{s.levelLowPrecision ? ' (low precision)' : ''}</small></span>
-                <span className={`tag ${s.inProfile ? 'tag-ok' : 'tag-miss'}`}>{s.inProfile ? 'In your profile' : 'Not in profile'}</span>
+                <span><strong>{s.name}</strong><small>{t('detail.skillRating', { domain: s.domain, importance: s.importance.toFixed(2), level: s.level.toFixed(2) })}{s.levelLowPrecision ? ` ${t('detail.lowPrecision')}` : ''}</small></span>
+                <span className={`tag ${s.inProfile ? 'tag-ok' : 'tag-miss'}`}>{t(s.inProfile ? 'detail.inProfile' : 'detail.notInProfile')}</span>
               </div>)}</div>
             </>}
-          <p className="muted small" style={{ marginTop: 12 }}>{data.selectionRule} O*NET Importance and Level ratings are shown on their original scales and are not converted into your 1–5 self-ratings.</p>
+          <p className="muted small" style={{ marginTop: 12 }}>{data.selectionRule} {t('detail.scaleNote')}</p>
         </div>
         <div className="panel panel-pad" data-testid="panel-occupation-why">
-          <SectionTitle title="Why this occupation appears" note="EXPLANATION" />
+          <SectionTitle title={t('detail.whyOccupation')} note={t('detail.explanation')} />
           <p className="muted">{o.explanation}</p>
-          <dl className="evidence"><dt>Mapping rationale</dt><dd>{o.mapping.rationale}</dd><dt>Mapping limitations</dt><dd>{o.mapping.limitations}</dd><dt>Scoring</dt><dd>{data.scoring}</dd></dl>
-          <p className="muted small">Browsing never changes your roadmap. Choose “Build my learning roadmap” to use this occupation’s documented skills. O*NET ratings are not converted into 1–5 proficiency targets.</p>
+          <dl className="evidence"><dt>{t('detail.rationale')}</dt><dd>{o.mapping.rationale}</dd><dt>{t('detail.mappingLimits')}</dt><dd>{o.mapping.limitations}</dd><dt>{t('detail.scoring')}</dt><dd>{data.scoring}</dd></dl>
+          <p className="muted small">{t('detail.browseNote')}</p>
         </div>
       </div>
       <div className="stack">
         <div className="panel panel-pad" data-testid="panel-occupation-mycol">
-          <SectionTitle title="MyCOL classification" note="TALENTCORP MALAYSIA" />
+          <SectionTitle title={t('detail.mycol')} note="TALENTCORP MALAYSIA" />
           <dl className="evidence">
-            <dt>Edition</dt><dd>{mycol.title}</dd>
-            <dt>Reference period</dt><dd>{mycol.referencePeriod} · publication date not stated in the report</dd>
-            <dt>MASCO 2020 (4-digit)</dt><dd className="mono">{o.mycol.masco4} · Table 7, no. {o.mycol.table7Number}</dd>
-            <dt>MASCO (6-digit)</dt><dd className="mono">{o.mycol.masco6.join(', ')}</dd>
-            <dt>Included job titles only</dt><dd data-testid="text-mycol-job-titles">{o.mycol.includedJobTitles.join(', ')}</dd>
-            <dt>Source</dt><dd><a className="text-link" href={mycol.reportUrl} target="_blank" rel="noreferrer">MyCOL 2024/2025 report</a>, profile p. {o.mycol.profilePage} · <a className="text-link" href={mycol.landingUrl} target="_blank" rel="noreferrer">TalentCorp MyCOL page</a></dd>
+            <dt>{t('detail.edition')}</dt><dd>{mycol.title}</dd>
+            <dt>{t('detail.period')}</dt><dd>{mycol.referencePeriod} · {t('detail.noPublicationDate')}</dd>
+            <dt>{t('detail.masco4')}</dt><dd className="mono">{o.mycol.masco4} · {t('detail.table', { n: o.mycol.table7Number })}</dd>
+            <dt>{t('detail.masco6')}</dt><dd className="mono">{o.mycol.masco6.join(', ')}</dd>
+            <dt>{t('detail.includedTitles')}</dt><dd data-testid="text-mycol-job-titles">{o.mycol.includedJobTitles.join(', ')}</dd>
+            <dt>{t('learn.source')}</dt><dd><a className="text-link" href={mycol.reportUrl} target="_blank" rel="noreferrer">{t('detail.report', { edition: o.mycol.edition })}</a>, {t('detail.profilePage', { n: o.mycol.profilePage })} · <a className="text-link" href={mycol.landingUrl} target="_blank" rel="noreferrer">{t('detail.mycolPage')}</a></dd>
           </dl>
           <p className="muted small">{mycol.scopeNote}</p>
         </div>
         <div className="panel panel-pad" data-testid="panel-occupation-onet">
-          <SectionTitle title="O*NET occupation" note={`O*NET ${onet.release} · ${onet.taxonomy}`} />
+          <SectionTitle title={t('detail.onetOccupation')} note={`O*NET ${onet.release} · ${onet.taxonomy}`} />
           <dl className="evidence">
-            <dt>Occupation</dt><dd><a className="text-link" href={o.onet.url} target="_blank" rel="noreferrer" data-testid="link-onet-occupation">{o.onet.code} {o.onet.title}</a></dd>
-            <dt>Description</dt><dd>{o.onet.description}</dd>
-            <dt>Release</dt><dd>O*NET {onet.release} ({onet.releaseDate}) · <a className="text-link" href={onet.databaseUrl} target="_blank" rel="noreferrer">database</a></dd>
-            <dt>Mapping review</dt><dd>{relationLabel[o.mapping.relation]} · {o.mapping.status} · reviewed {data.sources.mapping.reviewedAt}</dd>
+            <dt>{t('detail.occupation')}</dt><dd><a className="text-link" href={o.onet.url} target="_blank" rel="noreferrer" data-testid="link-onet-occupation">{o.onet.code} {o.onet.title}</a></dd>
+            <dt>{t('detail.description')}</dt><dd>{o.onet.description}</dd>
+            <dt>{t('detail.release')}</dt><dd>O*NET {onet.release} ({onet.releaseDate}) · <a className="text-link" href={onet.databaseUrl} target="_blank" rel="noreferrer">{t('detail.database')}</a></dd>
+            <dt>{t('detail.mappingReview')}</dt><dd>{t(`detail.relation.${o.mapping.relation}`)} · {t(o.mapping.status === 'verified' ? 'detail.reviewedMapping' : 'detail.unverifiedMapping')} · {t('learn.reviewed', { date: data.sources.mapping.reviewedAt })}</dd>
           </dl>
           <p className="muted small">{onet.localDemandNote}</p>
         </div>
         <div className="panel panel-pad" data-testid="panel-occupation-sdg">
-          <SectionTitle title="SDG relevance" note="APPLICATION REVIEW · NOT MEASURED IMPACT" />
+          <SectionTitle title={t('detail.sdg')} note={t('detail.sdgNote')} />
           <SdgTags roleId={o.id} />
         </div>
       </div>
