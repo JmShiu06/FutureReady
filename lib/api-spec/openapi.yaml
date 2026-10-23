@@ -390,6 +390,7 @@ paths:
       operationId: listJobs
       tags: [jobs]
       summary: List job listings
+      description: Paginated catalogue, not the full result set. Read every page through totalPages for global search, counts or sorting. The page limit remains at most 50. Equal sort values use listing ID as a stable tie-breaker.
       parameters:
         - $ref: "#/components/parameters/JobPage"
         - $ref: "#/components/parameters/JobLimit"
@@ -502,7 +503,7 @@ paths:
       operationId: calculateJobMatchScores
       tags: [jobs]
       summary: Calculate profile skill overlap for job listings
-      description: Exact normalized skill-name overlap. This is not a hiring probability.
+      description: Exact normalized skill-name overlap. This is not a hiring probability. For larger catalogues, send successive batches of at most 50 jobIds using the same candidateSkills and combine all scores before global sorting.
       requestBody:
         required: true
         content:

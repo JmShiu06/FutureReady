@@ -36,9 +36,11 @@ function normalize(value: string): string {
   return value.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
 }
 export class DemoJobProvider implements JobProvider {
+  constructor(private readonly catalogue: readonly JobListing[] = sampleJobs) {}
+
   async listJobs(filters: JobFilters): Promise<JobPage> {
     const queryTerms = normalize(filters.q ?? "").split(" ").filter(Boolean);
-    let jobs = sampleJobs.filter(job => {
+    let jobs = this.catalogue.filter(job => {
       const searchable = normalize([job.title, job.company, job.occupationName, job.mascoCode, job.onetTitle, ...job.requiredSkills].join(" "));
       if (!queryTerms.every(term => searchable.includes(term))) return false;
       if (filters.minSalary !== undefined && (job.salaryMin === null || job.salaryMin < filters.minSalary)) return false;
@@ -57,20 +59,20 @@ export class DemoJobProvider implements JobProvider {
           (score, term) => score + (title.includes(term) ? 3 : 0) + (company.includes(term) ? 2 : 0) +
             (job.requiredSkills.some(skill => normalize(skill).includes(term)) ? 1 : 0), 0);
       };
-      jobs = jobs.sort((a, b) => relevance(b) - relevance(a) || b.datePosted.localeCompare(a.datePosted));
-    } else jobs = jobs.sort((a, b) => b.datePosted.localeCompare(a.datePosted));
+      jobs = jobs.sort((a, b) => relevance(b) - relevance(a) || b.datePosted.localeCompare(a.datePosted) || a.id.localeCompare(b.id));
+    } else jobs = jobs.sort((a, b) => b.datePosted.localeCompare(a.datePosted) || a.id.localeCompare(b.id));
     const total = jobs.length;
     const start = (filters.page - 1) * filters.limit;
     return { jobs: jobs.slice(start, start + filters.limit), page: filters.page, limit: filters.limit, total, totalPages: Math.ceil(total / filters.limit) };
   }
   async getJobDetails(id: string): Promise<JobListing | null> {
-    return sampleJobs.find(job => job.id === id) ?? null;
+    return this.catalogue.find(job => job.id === id) ?? null;
   }
   async matchJobs(candidateSkills: string[], jobIds?: string[]): Promise<JobMatchScore[]> {
     // Original exact-normalized overlap formula and rounding, unchanged.
     const candidate = new Set(candidateSkills.map(normalize).filter(Boolean));
     const selected = jobIds ? new Set(jobIds) : null;
-    return sampleJobs.filter(job => !selected || selected.has(job.id)).map(job => {
+    return this.catalogue.filter(job => !selected || selected.has(job.id)).map(job => {
       const matchedSkills = job.requiredSkills.filter(skill => candidate.has(normalize(skill)));
       const missingSkills = job.requiredSkills.filter(skill => !candidate.has(normalize(skill)));
       return {

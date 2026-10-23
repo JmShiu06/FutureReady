@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'wouter';
 import { ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, Layers, MapPin, Search, X } from 'lucide-react';
-import { getListJobsQueryKey, useCalculateJobMatchScores, useListJobs } from '@workspace/api-client-react';
-import type { JobMatchScore, ListJobsParams } from '@workspace/api-client-react';
+import { useQuery } from '@tanstack/react-query';
+import { calculateJobMatchScores, listJobs } from '@workspace/api-client-react';
+import type { JobMatchScore } from '@workspace/api-client-react';
 import { MatchScore } from '@/components/shared/match-score';
 import { DosmOccupationSearch } from '@/components/dosm-occupation-search';
 import { ExternalJobLinks, SampleListingBadge } from '@/components/shared/external-job-links';
 import { emptyListingFilters, filterListings, orderListingsByMatch, jobLocation, readListingSearch, listingSearchParams, type ListingFilters, type ListingSearchState } from '@/domain/job-listing-filters';
+import { loadJobCatalogue, loadJobMatchScores } from '@/domain/job-catalogue-loading';
 import '@/components/job-listings.css';
 
 type Props = { profileSkills: string[] };
 const PAGE_SIZE = 12;
-const LIST_PARAMS: ListJobsParams = { page: 1, limit: 50 };
 const modeLabel: Record<string, string> = { 'on-site': 'On-site', hybrid: 'Hybrid', remote: 'Remote' };
 const levelLabel: Record<string, string> = { entry: 'Entry level', mid: 'Mid level', senior: 'Senior level' };
 
@@ -34,13 +35,15 @@ export function JobSearchPage({ profileSkills }: Props) {
     }
   }, [profileSkills.length, searchState.matchOnly, setSearchParams]);
 
-  const jobsQuery = useListJobs(LIST_PARAMS, { query: { queryKey: getListJobsQueryKey(LIST_PARAMS), staleTime: 30_000 } });
-  const allJobs = useMemo(() => jobsQuery.data?.jobs ?? [], [jobsQuery.data]);
+  const jobsQuery = useQuery({
+    queryKey: ['complete-job-catalogue'],
+    queryFn: ({ signal }) => loadJobCatalogue((params, signal) => listJobs(params, { signal }), signal),
+    staleTime: 30_000,
+    retry: false,
+  });
+  const allJobs = useMemo(() => jobsQuery.isError ? [] : jobsQuery.data ?? [], [jobsQuery.data, jobsQuery.isError]);
 
   // Async scores, guarded against stale responses when skills or the catalogue change.
-  const matchMutation = useCalculateJobMatchScores();
-  const mutateAsyncRef = useRef(matchMutation.mutateAsync);
-  mutateAsyncRef.current = matchMutation.mutateAsync;
   const requestRef = useRef(0);
   const [storedScores, setScoreState] = useState<{ key: string; status: 'idle' | 'pending' | 'error' | 'ready'; scores: Map<string, JobMatchScore> }>({ key: '', status: 'idle', scores: new Map() });
   const skillSignature = JSON.stringify(profileSkills);
@@ -52,16 +55,18 @@ export function JobSearchPage({ profileSkills }: Props) {
 
   useEffect(() => {
     const token = ++requestRef.current;
+    const controller = new AbortController();
     if (!profileSkills.length || !allJobs.length) {
       setScoreState({ key: scoreKey, status: 'idle', scores: new Map() });
       return;
     }
     setScoreState({ key: scoreKey, status: 'pending', scores: new Map() });
-    mutateAsyncRef.current({ data: { candidateSkills: profileSkills.slice(0, 50), jobIds: allJobs.slice(0, 50).map(j => j.id) } })
-      .then(res => { if (token === requestRef.current) setScoreState({ key: scoreKey, status: 'ready', scores: new Map(res.scores.map(s => [s.jobId, s])) }); })
+    loadJobMatchScores(allJobs, profileSkills,
+      (input, signal) => calculateJobMatchScores(input, { signal }), controller.signal)
+      .then(scores => { if (token === requestRef.current) setScoreState({ key: scoreKey, status: 'ready', scores }); })
       .catch(() => { if (token === requestRef.current) setScoreState({ key: scoreKey, status: 'error', scores: new Map() }); });
-    return () => { requestRef.current++; };
-  }, [skillSignature, jobSignature, retryTick]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { requestRef.current++; controller.abort(); };
+  }, [skillSignature, jobSignature, retryTick, allJobs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const occupations = useMemo(() => [...new Map(allJobs.map(j => [j.occupationId, j.occupationName])).entries()].sort((a, b) => a[1].localeCompare(b[1])), [allJobs]);
   const locations = useMemo(() => [...new Set(allJobs.map(jobLocation))].sort(), [allJobs]);
@@ -116,17 +121,17 @@ export function JobSearchPage({ profileSkills }: Props) {
 
     <div className="jobs-results-heading">
       <div><div className="eyebrow">Sample listings (fictional)</div>
-        <h2 data-testid="text-job-results-count" aria-live="polite">{jobsQuery.isLoading || matchWaiting ? 'Finding listings…' : `${results.length} of ${allJobs.length} sample ${allJobs.length === 1 ? 'listing' : 'listings'}`}</h2></div>
+        <h2 data-testid="text-job-results-count" aria-live="polite">{jobsQuery.isLoading || matchWaiting ? 'Finding listings…' : jobsQuery.isError ? 'Listings unavailable' : matchOnly && scoreState.status === 'error' ? 'Profile matches unavailable' : `${results.length} of ${allJobs.length} sample ${allJobs.length === 1 ? 'listing' : 'listings'}`}</h2></div>
       {profileSkills.length > 0
         ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from your saved device profile{matchOnly ? ' · sorted by exact skill overlap' : ''}</span>
         : <span className="jobs-profile-note">Add skills to your profile to see overlap</span>}
     </div>
 
     {(jobsQuery.isLoading || matchWaiting) && <div className="jobs-list" aria-label="Loading listings" data-testid="status-jobs-loading">{[1, 2, 3].map(i => <div className="job-skeleton panel" key={i}><i /><i /><i /><i /></div>)}</div>}
-    {jobsQuery.isError && <div className="jobs-state panel jobs-error" role="alert" data-testid="status-jobs-error"><span className="jobs-state-icon">!</span><h3>Listings could not be loaded</h3><p>There was a problem reaching the sample listing service. Your filters are kept.</p><button className="btn btn-primary" onClick={() => jobsQuery.refetch()} data-testid="button-retry-jobs">Retry listings</button></div>}
+    {jobsQuery.isError && <div className="jobs-state panel jobs-error" role="alert" data-testid="status-jobs-error"><span className="jobs-state-icon">!</span><h3>Listings could not be loaded</h3><p>The complete catalogue could not be loaded. Partial results are not shown. Your filters are kept.</p><button className="btn btn-primary" onClick={() => jobsQuery.refetch()} data-testid="button-retry-jobs">Retry listings</button></div>}
     {scoreState.status === 'error' && <div className="jobs-profile-error" role="alert" data-testid="status-job-match-error">Profile match scores could not be calculated. <button className="text-link" onClick={() => setRetryTick(t => t + 1)} data-testid="button-retry-job-match">Retry profile match</button></div>}
 
-    {jobsQuery.data && !matchWaiting && results.length === 0 && !(matchOnly && scoreState.status === 'error') && <div className="jobs-state panel" data-testid="status-jobs-empty">
+    {jobsQuery.data && !jobsQuery.isError && !matchWaiting && results.length === 0 && !(matchOnly && scoreState.status === 'error') && <div className="jobs-state panel" data-testid="status-jobs-empty">
       <span className="jobs-state-icon"><Search size={18} /></span>
       <h3>No sample listings match.</h3>
       <p>Try a broader word like <b>data</b>, <b>nurse</b> or <b>cyber</b>, a 4-digit MASCO code, or remove a filter{matchOnly ? ' — “Matches my skills” only keeps listings sharing at least one exact skill' : ''}.</p>

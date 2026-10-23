@@ -125,8 +125,12 @@ describe("POST /api/jobs/match-score", () => {
     assert.match(json.scoringNote, /not a probability/i);
   });
 
-  it("rejects empty/invalid candidate skills", async () => {
-    for (const body of [{ candidateSkills: [] }, { candidateSkills: [4] }, {}]) {
+  it("rejects invalid skills and preserves both 50-item request limits", async () => {
+    for (const body of [
+      { candidateSkills: [] }, { candidateSkills: [4] }, {},
+      { candidateSkills: Array.from({ length: 51 }, () => 'Fictional skill') },
+      { candidateSkills: ['Fictional skill'], jobIds: Array.from({ length: 51 }, (_, i) => `fictional-${i}`) },
+    ]) {
       const response = await fetch(`${base}/match-score`, {
         method: "POST",
         headers: { "content-type": "application/json" },

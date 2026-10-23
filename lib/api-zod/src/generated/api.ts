@@ -666,6 +666,7 @@ export const AnalyzeProfileSimilarityResponse = zod.object({
 
 
 /**
+ * Paginated catalogue, not the full result set. Read every page through totalPages for global search, counts or sorting. The page limit remains at most 50. Equal sort values use listing ID as a stable tie-breaker.
  * @summary List job listings
  */
 export const listJobsQueryPageDefault = 1;
@@ -941,7 +942,7 @@ export const GetJobResponse = zod.object({
 
 
 /**
- * Exact normalized skill-name overlap. This is not a hiring probability.
+ * Exact normalized skill-name overlap. This is not a hiring probability. For larger catalogues, send successive batches of at most 50 jobIds using the same candidateSkills and combine all scores before global sorting.
  * @summary Calculate profile skill overlap for job listings
  */
 export const calculateJobMatchScoresBodyCandidateSkillsItemMax = 60;
