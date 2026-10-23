@@ -9,6 +9,7 @@ import { DosmOccupationSearch } from '@/components/dosm-occupation-search';
 import { ExternalJobLinks, SampleListingBadge } from '@/components/shared/external-job-links';
 import { emptyListingFilters, filterListings, orderListingsByMatch, jobLocation, readListingSearch, listingSearchParams, type ListingFilters, type ListingSearchState } from '@/domain/job-listing-filters';
 import { loadJobCatalogue, loadJobMatchScores } from '@/domain/job-catalogue-loading';
+import { clearListingReturnPosition, isSameTabNavigation, rememberListingPosition, restoreListingPosition } from '@/domain/listing-return-position';
 import '@/components/job-listings.css';
 
 type Props = { profileSkills: string[] };
@@ -22,6 +23,7 @@ export function JobSearchPage({ profileSkills }: Props) {
   const { filters, page } = searchState;
   const matchOnly = searchState.matchOnly && profileSkills.length > 0;
   const changeSearch = (change: (state: ListingSearchState) => ListingSearchState) => {
+    clearListingReturnPosition();
     setSearchParams(previous => listingSearchParams(change(readListingSearch(previous))), { replace: true });
   };
   const setPage = (page: number) => changeSearch(state => ({ ...state, page }));
@@ -85,8 +87,17 @@ export function JobSearchPage({ profileSkills }: Props) {
   const activeCount = Object.values(filters).filter(Boolean).length + Number(matchOnly);
   const reset = () => changeSearch(() => ({ filters: emptyListingFilters, matchOnly: false, page: 1 }));
   const matchWaiting = matchOnly && scoreState.status === 'pending';
+  const rootRef = useRef<HTMLDivElement>(null);
+  const returnScope = `/careers-and-jobs?${listingSearchParams(searchState)}`;
+  const resultsReady = !jobsQuery.isFetching && !jobsQuery.isLoading && !jobsQuery.isError
+    && scoreState.status !== 'pending' && !(matchOnly && scoreState.status === 'error');
+  const visibleIds = JSON.stringify(visible.map(job => job.id));
+  useEffect(() => {
+    if (resultsReady && rootRef.current) return restoreListingPosition(rootRef.current, returnScope);
+    return undefined;
+  }, [resultsReady, returnScope, visibleIds]);
 
-  return <div className="jobs-page" data-testid="page-job-search">
+  return <div ref={rootRef} className="jobs-page" data-testid="page-job-search">
     <DosmOccupationSearch keyword={filters.q} onKeywordChange={q => update({ q })}>
       <div className="jl-unified-filters">
       <span className="jobs-filter-label">Sample listing filters</span>
@@ -117,7 +128,7 @@ export function JobSearchPage({ profileSkills }: Props) {
 
     <div className="jobs-results-heading">
       <div><div className="eyebrow">Sample listings (fictional)</div>
-        <h2 data-testid="text-job-results-count" aria-live="polite">{jobsQuery.isLoading || matchWaiting ? 'Finding listings…' : jobsQuery.isError ? 'Listings unavailable' : matchOnly && scoreState.status === 'error' ? 'Profile matches unavailable' : `${results.length} of ${allJobs.length} sample ${allJobs.length === 1 ? 'listing' : 'listings'}`}</h2></div>
+        <h2 tabIndex={-1} data-listing-results-heading data-testid="text-job-results-count" aria-live="polite">{jobsQuery.isLoading || matchWaiting ? 'Finding listings…' : jobsQuery.isError ? 'Listings unavailable' : matchOnly && scoreState.status === 'error' ? 'Profile matches unavailable' : `${results.length} of ${allJobs.length} sample ${allJobs.length === 1 ? 'listing' : 'listings'}`}</h2></div>
       {profileSkills.length > 0
         ? <span className="jobs-profile-note" data-testid="text-profile-skill-source">{profileSkills.length} skills from your saved device profile{matchOnly ? ' · sorted by exact skill overlap' : ''}</span>
         : <span className="jobs-profile-note">Add skills to your profile to see overlap</span>}
@@ -144,7 +155,7 @@ export function JobSearchPage({ profileSkills }: Props) {
             <div className="job-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>
             <div className="job-card-copy">
               <SampleListingBadge testId={`badge-fictional-${job.id}`} />
-              <div className="job-title-line"><Link href={href} className="job-title-link" data-testid={`link-job-title-${job.id}`}>{job.title}</Link></div>
+              <div className="job-title-line"><Link href={href} className="job-title-link" data-listing-id={job.id} data-listing-link="title" onClick={event => { if (isSameTabNavigation(event)) rememberListingPosition(event.currentTarget, job.id, 'title'); }} data-testid={`link-job-title-${job.id}`}>{job.title}</Link></div>
               <div className="job-company">{job.company}</div>
               <div className="jl-occupation" data-testid={`text-job-occupation-${job.id}`}>{job.occupationName} · MASCO {job.mascoCode}</div>
               {job.mappingStatus === 'unverified' && <p className="small muted">Unverified occupational crosswalk — fictional example only.</p>}
@@ -161,7 +172,7 @@ export function JobSearchPage({ profileSkills }: Props) {
               <span><Layers size={13} />{levelLabel[job.level]}</span>
               <span>{job.sdgTags.length ? job.sdgTags.map(n => `SDG ${n}`).join(', ') : 'No reviewed SDG mapping'}</span>
             </div>
-            <div className="job-card-actions"><Link className="job-details-link" href={href} data-testid={`link-job-details-${job.id}`}>View details <ArrowRight size={13} /></Link></div>
+            <div className="job-card-actions"><Link className="job-details-link" href={href} data-listing-id={job.id} data-listing-link="details" onClick={event => { if (isSameTabNavigation(event)) rememberListingPosition(event.currentTarget, job.id, 'details'); }} data-testid={`link-job-details-${job.id}`}>View details <ArrowRight size={13} /></Link></div>
           </div>
           <ExternalJobLinks occupationTitle={job.occupationName} testIdSuffix={job.id} compact />
         </article>;

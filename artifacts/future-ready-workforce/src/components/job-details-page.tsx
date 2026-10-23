@@ -8,6 +8,7 @@ import { MatchScore } from '@/components/shared/match-score';
 import { SdgTags } from '@/components/shared/sdg-tags';
 import { ExternalJobLinks, SampleListingBadge } from '@/components/shared/external-job-links';
 import { listingReturnHref } from '@/domain/job-listing-filters';
+import { isSameTabNavigation, requestListingReturn } from '@/domain/listing-return-position';
 import '@/components/job-listings.css';
 
 type Props = { profileSkills: string[] };
@@ -45,12 +46,12 @@ export function JobDetailsPage({ profileSkills }: Props) {
 
   if (query.isLoading) return <div className="jobs-page" data-testid="page-job-details"><div className="jobs-details-skeleton panel"><i /><i /><i /><i /><i /></div></div>;
   if (query.isError || !job) return <div className="jobs-page" data-testid="page-job-details">
-    <Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link>
+    <Link href={backHref} className="jobs-back-link" onClick={event => { if (isSameTabNavigation(event)) requestListingReturn(id); }} data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link>
     <div className="jobs-state panel jobs-error" role="alert" data-testid="status-job-detail-error"><span className="jobs-state-icon">!</span><h3>{query.isError ? 'This listing could not be loaded.' : 'This sample listing is not available.'}</h3><p>Try returning to the listings and opening another one.</p><button className="btn btn-primary" onClick={() => query.refetch()} data-testid="button-retry-job-detail">Try again</button></div>
   </div>;
 
   return <div className="jobs-page" data-testid="page-job-details">
-    <div className="job-detail-topline"><Link href={backHref} className="jobs-back-link" data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link></div>
+    <div className="job-detail-topline"><Link href={backHref} className="jobs-back-link" onClick={event => { if (isSameTabNavigation(event)) requestListingReturn(id); }} data-testid="link-back-job-search"><ArrowLeft size={15} /> Back to listings</Link></div>
     <section className="job-detail-hero">
       <div className="job-detail-company-mark">{job.company.slice(0, 1).toUpperCase()}</div>
       <div className="job-detail-heading">
