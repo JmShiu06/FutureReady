@@ -218,7 +218,6 @@ export function ProfileCvImport({
         <button type="button" className="btn btn-secondary btn-small" onClick={() => inputRef.current?.click()} disabled={phase === 'extracting'} data-testid="button-choose-cv">
           Choose a file
         </button>
-        <p className="small">Review the extracted skills before adding them to your profile.</p>
       </div>
       <input
         ref={inputRef}
