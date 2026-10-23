@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'wouter';
-import { ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, Layers, MapPin, Search, X } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, ChevronLeft, ChevronRight, Layers, MapPin, Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { calculateJobMatchScores, listJobs } from '@workspace/api-client-react';
 import type { JobMatchScore } from '@workspace/api-client-react';
@@ -87,15 +87,10 @@ export function JobSearchPage({ profileSkills }: Props) {
   const matchWaiting = matchOnly && scoreState.status === 'pending';
 
   return <div className="jobs-page" data-testid="page-job-search">
-    <DosmOccupationSearch />
-
-    <section className="jobs-search-panel panel" aria-label="Search sample listings">
-      <label className="jobs-search-box">
-        <Search size={17} aria-hidden="true" />
-        <input value={filters.q} onChange={e => update({ q: e.target.value })} placeholder="Search title, occupation, MASCO code or skill — try data, nurse, cyber" aria-label="Search sample listings" data-testid="input-job-search" />
-        {filters.q && <button className="search-clear" onClick={() => update({ q: '' })} aria-label="Clear search" data-testid="button-clear-search"><X size={15} /></button>}
-      </label>
-      <div className="jl-filters">
+    <DosmOccupationSearch keyword={filters.q} onKeywordChange={q => update({ q })}>
+      <div className="jl-unified-filters">
+      <span className="jobs-filter-label">Sample listing filters</span>
+      <div className="jl-filters" role="group" aria-label="Sample listing filters">
         <select className="select-field" value={filters.occupation} onChange={e => update({ occupation: e.target.value })} aria-label="Occupation" data-testid="select-filter-occupation">
           <option value="">All occupations</option>{occupations.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
         </select>
@@ -115,9 +110,10 @@ export function JobSearchPage({ profileSkills }: Props) {
           <input type="checkbox" checked={matchOnly} disabled={!profileSkills.length} onChange={e => setMatchOnly(e.target.checked)} data-testid="checkbox-matches-my-skills" />
           Matches my skills
         </label>
-        {activeCount > 0 && <button className="text-link" onClick={reset} data-testid="button-reset-filters">Reset filters ({activeCount})</button>}
+        {activeCount > 0 && <button className="text-link" onClick={reset} data-testid="button-reset-filters">Reset listing search ({activeCount})</button>}
       </div>
-    </section>
+      </div>
+    </DosmOccupationSearch>
 
     <div className="jobs-results-heading">
       <div><div className="eyebrow">Sample listings (fictional)</div>

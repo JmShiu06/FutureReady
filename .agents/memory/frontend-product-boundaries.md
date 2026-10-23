@@ -3,6 +3,12 @@ name: Frontend product and evidence boundaries
 description: FutureReady's Aiversecity scope, audience separation and trust requirements for demonstration features.
 ---
 
+Careers & jobs Listings should use one shared search area for sample listings and DOSM occupation context, rather than two competing search boxes.
+
+**Why:** The user explicitly asked to combine the duplicate occupation and listing searches.
+
+**How to apply:** Keep the common keyword synchronized with listing return-navigation state. Preserve both result types and their separate evidence scopes; listing-specific filters must not imply that DOSM broad-group employment totals are vacancy counts or individual-role statistics.
+
 The visible "Viewing as" audience selector offers working adults and graduates/career switchers only. Legacy HR and University/TVET profiles and progress remain in local storage for compatibility, but are not selectable.
 
 **Why:** The user explicitly asked to remove HR/L&D managers and TVET career centres from the "Viewing as" selector.

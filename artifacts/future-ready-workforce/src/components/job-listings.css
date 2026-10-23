@@ -1,5 +1,7 @@
 /* Listings: fictional badge, filters, external job-site links */
 .jl-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.jl-unified-filters { margin: 4px 0 16px; }
+.jl-unified-filters .jl-filters { margin-top: 7px; }
 .jl-filters .select-field { min-width: 0; max-width: 220px; }
 .jl-check { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #503a2a; padding: 8px 10px; border: 1px solid #e3d8c9; border-radius: 8px; background: #fbf7f0; cursor: pointer; }
 .jl-check.disabled { opacity: .55; cursor: not-allowed; }

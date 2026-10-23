@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Info, Search, SlidersHorizontal, UsersRound } from "lucide-react";
 import { useGetDosmOccupationEmploymentSearch } from "@workspace/api-client-react";
 import { ExternalJobLinks } from "@/components/shared/external-job-links";
@@ -14,8 +14,17 @@ function useDebouncedValue(value: string, delay: number) {
   return debounced;
 }
 
-export function DosmOccupationSearch() {
-  const [keyword, setKeyword] = useState("");
+type Props = {
+  keyword?: string;
+  onKeywordChange?: (keyword: string) => void;
+  children?: ReactNode;
+};
+
+export function DosmOccupationSearch({ keyword: sharedKeyword, onKeywordChange, children }: Props = {}) {
+  const [localKeyword, setLocalKeyword] = useState("");
+  const keyword = sharedKeyword ?? localKeyword;
+  const setKeyword = onKeywordChange ?? setLocalKeyword;
+  const combinedSearch = Boolean(onKeywordChange);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [groupCode, setGroupCode] = useState("");
   const [skill, setSkill] = useState("");
@@ -37,9 +46,9 @@ export function DosmOccupationSearch() {
       <div className="dosm-occupation-heading">
         <div className="dosm-occupation-icon" aria-hidden="true"><UsersRound size={18} /></div>
         <div>
-          <div className="eyebrow">DOSM labour-market data</div>
-          <h2 id="dosm-occupation-title">Search an occupation</h2>
-          <p>Find a listed job title or major occupation group, then see the employment count DOSM publishes for that group.</p>
+          <div className="eyebrow">{combinedSearch ? "Careers & labour-market data" : "DOSM labour-market data"}</div>
+          <h2 id="dosm-occupation-title">{combinedSearch ? "Search occupations & listings" : "Search an occupation"}</h2>
+          <p>{combinedSearch ? "One search for sample listings and official DOSM occupation-group context." : "Find a listed job title or major occupation group, then see the employment count DOSM publishes for that group."}</p>
         </div>
       </div>
 
@@ -50,12 +59,12 @@ export function DosmOccupationSearch() {
           value={keyword}
           onChange={event => setKeyword(event.target.value)}
           maxLength={100}
-          placeholder="Try Software Engineer, Data Analyst, or Professionals"
-          aria-label="Search DOSM occupation data by job title or group"
-          data-testid="input-dosm-occupation-search"
+          placeholder={combinedSearch ? "Search title, occupation, MASCO code or skill — try data, nurse, cyber" : "Try Software Engineer, Data Analyst, or Professionals"}
+          aria-label={combinedSearch ? "Search occupations and sample listings" : "Search DOSM occupation data by job title or group"}
+          data-testid={combinedSearch ? "input-job-search" : "input-dosm-occupation-search"}
         />
         {keyword && (
-          <button type="button" className="search-clear" onClick={() => setKeyword("")} aria-label="Clear occupation search">
+          <button type="button" className="search-clear" onClick={() => setKeyword("")} aria-label={combinedSearch ? "Clear search" : "Clear occupation search"} data-testid={combinedSearch ? "button-clear-search" : undefined}>
             ×
           </button>
         )}
@@ -74,6 +83,7 @@ export function DosmOccupationSearch() {
         {activeFilters > 0 && <span className="jobs-filter-count" aria-hidden="true">{activeFilters}</span>}
       </button>
       </div>
+      {children}
       <div id="dosm-occupation-filters" className="dosm-filter-panel" hidden={!filtersOpen}>
         <div className="jobs-filter-heading">
           <span>Filter occupation results</span>
@@ -119,7 +129,7 @@ export function DosmOccupationSearch() {
         <>
           <div className="dosm-occupation-results-heading">
             <div>
-              <h3>{debouncedKeyword ? `Results for “${debouncedKeyword}”` : "Search results"}</h3>
+              <h3>{combinedSearch ? "DOSM occupation context" : debouncedKeyword ? `Results for “${debouncedKeyword}”` : "Search results"}</h3>
               <span role="status" aria-live="polite">{hasCriteria ? `${groups.length} occupation ${groups.length === 1 ? "group" : "groups"} matched${activeFilters ? " with filters" : ""}` : "Enter a keyword or choose a filter to find an occupation group"}</span>
             </div>
             <span className="dosm-occupation-data-year">DOSM employment · {query.data.occupationSource.referenceYear}</span>
