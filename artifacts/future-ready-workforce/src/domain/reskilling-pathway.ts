@@ -6,7 +6,7 @@ export type Phase = 'Foundation' | 'Core skills' | 'Apply it';
 export interface PathwayStep {
   id: string; milestoneIds: string[]; skill: string; coveredSkills: string[];
   phase: Phase; kind: 'course' | 'project'; resource: CourseResource | null;
-  status: 'available' | 'no-resource' | 'budget' | 'check-availability';
+  status: 'available' | 'no-resource' | 'budget' | 'price-unconfirmed' | 'check-availability';
   hours: number | null; weeks: number | null; priority: number; scenarioBonus: number;
   why: string; whyResource: string; sdgs: number[]; activity: string;
   evidenceUrl: string | null; importance: number | null;
@@ -64,9 +64,14 @@ export function buildPathway(input: PathwayInput): PathwayPlan {
     if (existing) { existing.milestoneIds.push(m.id); existing.coveredSkills.push(m.skill); continue; }
     const resource = selectResource(m.skill, catalog, remaining, input.freeOnly);
     const coverage = catalog.filter(r => r.skills.some(s => normalized(s) === normalized(m.skill)));
-    const status = resource ? 'available' : coverage.some(r => r.status === 'verified') ? 'budget'
+    const reviewed = coverage.filter(r => r.status === 'verified');
+    const priced = reviewed.filter(r => r.costMYR !== null);
+    const status = resource ? 'available' : priced.length ? 'budget'
+      : reviewed.length ? 'price-unconfirmed'
       : coverage.length ? 'check-availability' : 'no-resource';
-    const fallback = status === 'check-availability' || status === 'budget' ? coverage[0] : null;
+    const fallback = status === 'budget' ? priced[0]
+      : status === 'price-unconfirmed' ? reviewed[0]
+        : status === 'check-availability' ? coverage[0] : null;
     const step: PathwayStep = {
       id: m.id, milestoneIds: [m.id], skill: m.skill, coveredSkills: [m.skill],
       phase: basic.has(normalized(m.skill)) ? 'Foundation' : 'Core skills', kind: 'course',
@@ -75,8 +80,9 @@ export function buildPathway(input: PathwayInput): PathwayPlan {
       why: `Build ${m.skill.toLowerCase()} to practise a documented part of ${input.roleTitle}.`,
       whyResource: resource ? `Exact reviewed skill coverage; ${resource.cost.toLowerCase()} learning content selected before higher-cost alternatives within the remaining MYR ${remaining} budget.`
         : status === 'budget' ? 'Reviewed coverage exists, but no priced resource meets the current budget/free-only setting.'
-          : status === 'check-availability' ? 'Only a provider catalogue link is available; confirm current availability, duration and price.'
-            : 'No reviewed course in this catalogue covers this exact skill. No course, price or study time has been invented.',
+          : status === 'price-unconfirmed' ? 'Reviewed coverage exists, but the price is unconfirmed. Confirm the price with the provider before including this course in your budget; free access is not assumed.'
+            : status === 'check-availability' ? 'Only a provider catalogue link is available; confirm current availability, duration and price.'
+              : 'No reviewed course in this catalogue covers this exact skill. No course, price or study time has been invented.',
       sdgs: resource?.sdgs ?? [4], activity: '', evidenceUrl: m.evidenceUrl ?? occupation?.sourceUrl ?? null,
       importance: importanceOf(m),
       ...(ranked ? { marketEvidence: {

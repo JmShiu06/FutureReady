@@ -89,6 +89,52 @@ test('free-only rejects paid and claimable content even inside the budget', () =
   assert.equal(plan.steps[0].hours, null);
   assert.equal(plan.totalCostMYR, 0);
 });
+test('unpriced reviewed resources stay unselected with a price explanation at every budget', () => {
+  for (const cost of ['Free', 'Free audit', 'HRD Corp-claimable'] as const) {
+    const unpriced = { ...fixture('unpriced', 'Critical Thinking', 0, cost), costMYR: null, hours: null };
+    for (const freeOnly of [false, true]) {
+      for (const budgetMYR of [0, 100000]) {
+        assert.equal(selectResource('Critical Thinking', [unpriced], budgetMYR, freeOnly), null);
+        const plan = buildPathway(input(['Critical Thinking'], { catalog: [unpriced], freeOnly, budgetMYR }));
+        const step = plan.steps[0];
+        assert.equal(step.status, 'price-unconfirmed');
+        assert.match(step.whyResource, /price is unconfirmed/);
+        assert.match(step.whyResource, /free access is not assumed/);
+        assert.doesNotMatch(step.whyResource, /raise|turn off free-only/i);
+        assert.equal(step.resource?.costMYR, null);
+        assert.equal(step.resource?.hours, null);
+        assert.equal(step.hours, null);
+        assert.equal(step.weeks, null);
+        assert.equal(plan.totalCostMYR, 0);
+        assert.equal(plan.totalHours, 4); // Only the app-authored portfolio project.
+        assert.equal(plan.unavailableCount, 1);
+        assert.equal(plan.unknownDurationCount, 1);
+        assert.equal(plan.finishDate, null);
+        assert.deepEqual(plan.skills, []);
+      }
+    }
+  }
+});
+test('mixed catalogue uses reviewed fallback matching the price or budget explanation', () => {
+  const unpriced = { ...fixture('unpriced', 'Critical Thinking', 0), costMYR: null, hours: null };
+  const unreviewed = { ...unpriced, id: 'catalogue', status: 'check-availability' as const };
+  const paid = fixture('paid', 'Critical Thinking', 30);
+  for (const catalog of [[unreviewed, unpriced, paid], [paid, unpriced, unreviewed]]) {
+    for (const settings of [{ budgetMYR: 0, freeOnly: false }, { budgetMYR: 100, freeOnly: true }]) {
+      const step = buildPathway(input(['Critical Thinking'], { catalog, ...settings })).steps[0];
+      assert.equal(step.status, 'budget');
+      assert.equal(step.resource?.id, 'paid');
+      assert.match(step.whyResource, /current budget\/free-only setting/);
+    }
+    const affordable = buildPathway(input(['Critical Thinking'], { catalog, budgetMYR: 30 }));
+    assert.equal(affordable.steps[0].status, 'available');
+    assert.equal(affordable.steps[0].resource?.id, 'paid');
+    assert.equal(affordable.totalCostMYR, 30);
+  }
+  const step = buildPathway(input(['Critical Thinking'], { catalog: [unreviewed, unpriced] })).steps[0];
+  assert.equal(step.status, 'price-unconfirmed');
+  assert.equal(step.resource?.id, 'unpriced');
+});
 test('one course covering multiple gaps is timed and costed once and retains all milestone IDs', () => {
   const plan = buildPathway(input(['Active Listening', 'Writing']));
   assert.equal(plan.steps.length, 2); // One real course, then one explicit project.

@@ -60,6 +60,11 @@ function ResourceBlock({ step }: { step: PathwayStep }) {
       <strong>No verified resource yet</strong><small>We won't invent one. Search your employer's or HRD Corp's catalogue for “{step.skill}”.</small>
     </div>;
   }
+  if (step.status === 'price-unconfirmed') {
+    return <div className="pw-resource pw-missing" data-testid={`text-price-unconfirmed-${step.id}`}>
+      <strong>Price unconfirmed</strong><small>“{r.title}” has reviewed skill coverage, but its price is not confirmed. Check the price with the provider before including it in your budget. Free access is not assumed.</small>
+    </div>;
+  }
   if (step.status === 'budget') {
     return <div className="pw-resource pw-missing" data-testid={`text-budget-${step.id}`}>
       <strong>No match within your budget</strong><small>The closest verified option is “{r.title}” ({r.cost}). Raise the budget or turn off free-only to see it.</small>
