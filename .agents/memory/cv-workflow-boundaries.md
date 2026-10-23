@@ -23,7 +23,7 @@ CV files and full extracted document text must remain transient and must not be 
 
 A detected CV name stays in the in-memory CV session and appears only in the My Profile sidebar label in place of “Your profile.” Keep the My Profile page heading unchanged, and do not persist the name or show it on other pages or in a separate badge.
 
-**Why:** The user clarified that the only visible name change should be replacing the “Your profile” sidebar label after a successful CV parse; a candidate badge and other page labels are unwanted.
+**Why:** The user clarified that the only visible name change should be replacing the “Your profile” sidebar label after a successful CV parse; a candidate badge and other page labels are unwanted. The name may appear in the CV title/header without any “Name” keyword; a labelled field must not be required.
 
 **How to apply:** Show the detected name only after successful parsing, use “Unknown” when no credible name is found, reject demo-name placeholders, and refresh it on re-upload. Replace only the existing sidebar label; retain the profile page heading and all other page content. Clear the name with the CV session (new upload, discard, audience change, or reload); return only the selected name, not surrounding document text.
 

@@ -75,6 +75,26 @@ describe("deterministic CV skill detection", () => {
       assert.equal(detectCvName(`Name: ${name}\nSkills: Python`), undefined);
     }
   });
+  it("recognizes names in CV titles without a Name keyword", () => {
+    for (const heading of [
+      "CV: Mina Tan",
+      "Curriculum Vitae — Mina Tan",
+      "Resume of Mina Tan",
+      "Mina Tan — Resume",
+      "**Mina Tan** | Software Engineer",
+      "# Mina Tan",
+    ]) {
+      assert.equal(detectCvName(`${heading}\nSkills: Python, SQL`), "Mina Tan");
+    }
+    assert.equal(detectCvName("\n".repeat(16) + "RESUME\nNUR AISYAH BINTI AHMAD BIN HASSAN\nSkills: Python"), "NUR AISYAH BINTI AHMAD BIN HASSAN");
+    assert.equal(detectCvName("陈美玲\nSkills: Python"), "陈美玲");
+    assert.equal(detectCvName("CV: Mina Tan\nName: Aisha Rahman\nSkills: SQL"), "Aisha Rahman");
+  });
+  it("does not use document titles, job headings or placeholder names as candidate names", () => {
+    for (const heading of ["CV", "Resume", "Personal Details", "Curriculum Vitae — Software Engineer", "CV: John Doe", "Jane Doe — Resume"]) {
+      assert.equal(detectCvName(`${heading}\nSkills: Python`), undefined);
+    }
+  });
   it("preserves punctuation, normalizes case/space and deduplicates without substring matches", () => {
     const catalogue = ["ai", "ai/ml", "node.js", "react.js", "next.js", "ci/cd", "c++", "c#", "data analysis", "python"];
     assert.deepEqual(detectSkills("Mail contains AI/ML; NODE.JS, REACT.JS, NEXT.JS, CI/CD, C++, C#. Data   analysis. Python PYTHON.", catalogue),
@@ -134,7 +154,7 @@ describe("deterministic CV skill detection", () => {
 
 describe("CV extraction and upload API", () => {
   it("extracts real dataset skills from UTF-8 TXT, selectable PDF and DOCX", async () => {
-    const text = "Mina Tan\nSkills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
+    const text = "Curriculum Vitae — Mina Tan\nSkills: Python, SQL, node.js, ci/cd, C++, C#.\nCurrent Role: Operations coordinator\nYears of Experience: 5 years";
     const fixtures: [Buffer, string][] = [[Buffer.from(text), "synthetic.txt"], [await pdf(text), "synthetic.pdf"], [await docx(text), "synthetic.docx"]];
     for (const [buffer, name] of fixtures) {
       const response = await upload(buffer, name);

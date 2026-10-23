@@ -121,9 +121,9 @@ export function detectSkills(text: string, catalogue = careerDataset.allSkills):
 const CV_NAME_LABEL = /^\s*(?:full\s+name|candidate\s+name|name)\s*[:：]\s*(.*?)\s*$/i;
 const CV_HEADER_LABELS = new Set([
   "about me", "career objective", "career profile", "career summary", "certifications",
-  "contact", "contact details", "contact information", "core competencies",
+  "contact", "contact details", "contact information", "core competencies", "cv",
   "curriculum vitae", "education", "employment history", "experience", "key skills",
-  "languages", "objective", "personal information", "personal profile",
+  "languages", "objective", "personal details", "personal information", "personal profile",
   "professional experience", "professional profile", "professional summary", "profile",
   "profile summary", "projects", "references", "resume", "skills", "summary",
   "vitae", "work experience", "work history",
@@ -140,7 +140,7 @@ const PLACEHOLDER_CANDIDATE_NAMES = new Set([
 const isNameText = (value: string, allowSingleWord: boolean) => {
   if (value.length < 2 || value.length > 80) return false;
   const parts = value.split(/\s+/);
-  if (parts.length > 5 || (!allowSingleWord && parts.length < 2)) return false;
+  if (parts.length > 8 || (!allowSingleWord && parts.length < 2)) return false;
   return parts.every((part) => /^\p{L}[\p{L}\p{M}'’.-]*$/u.test(part));
 };
 
@@ -156,12 +156,28 @@ function cleanCandidateName(raw: string, allowSingleWord = false): string | unde
     !isNameText(candidate, allowSingleWord)
     || PLACEHOLDER_CANDIDATE_NAMES.has(normalized)
     || CV_HEADER_LABELS.has(normalized)
+    || /\b(?:curriculum|vitae|resume|résumé|cv)\b/i.test(candidate)
+    || /\b(?:worked|working|with|seeking|responsible|experienced)\b/i.test(candidate)
+    || /\p{L}{2,}\.$/u.test(candidate)
     || candidate.split(/\s+/).some((part) => CV_ROLE_WORDS.has(part.toLowerCase().replace(/[.]$/, "")))
   ) return undefined;
   return candidate;
 }
 
 type NameCandidate = { name: string; sourcePriority: number; confidence: number };
+
+/** Strip document-title decoration, not content from experience or skills sections. */
+function cvHeaderName(line: string): string {
+  return line
+    .replace(/^\s*(?:#{1,6}\s+|[•*·–—-]\s*)/, "")
+    .replace(/\*{1,2}/g, "")
+    .replace(/^\s*(?:curriculum\s+vitae|résumé|resume|c\.?v\.?)(?:\s+of\b|\s*[:：|–—-]\s*|\s+)(?:\s*[:：|–—-]\s*)?/i, "")
+    .replace(/\s*(?:[:：|–—-]\s*|\s+)(?:curriculum\s+vitae|résumé|resume|c\.?v\.?)\s*$/i, "")
+    .split(/[|;•]/, 1)[0]
+    .replace(/\s+(?:[-–—])\s+.*$/, "")
+    .trim()
+    .replace(/\s+/g, " ");
+}
 
 /** Selects a short name only; local PERSON recognition never retains CV text. */
 export function detectCvName(text: string, parsedName?: string): string | undefined {
@@ -179,15 +195,13 @@ export function detectCvName(text: string, parsedName?: string): string | undefi
     addCandidate(labelled[1], 3, 1, true);
   }
 
-  lines.slice(0, 12).forEach((line, index) => {
-    const candidate = line
-      .replace(/^\s*[•*·–—-]\s*/, "")
-      .split(/[|;•]/, 1)[0]
-      .replace(/\s+(?:[-–—])\s+.*$/, "")
-      .trim()
-      .replace(/\s+/g, " ");
+  lines.filter((line) => line.trim()).slice(0, 12).forEach((line, index) => {
+    const candidate = cvHeaderName(line);
     if (!candidate || /[:：@]/.test(candidate)) return;
-    addCandidate(candidate, 2, Math.max(0.8, 0.94 - index * 0.012));
+    // Chinese/Japanese/Korean names need not contain spaces. Do not generally
+    // accept arbitrary single-word headings as names.
+    const unspacedName = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]{2,12}$/u.test(candidate);
+    addCandidate(candidate, 2, Math.max(0.8, 0.94 - index * 0.012), unspacedName);
   });
 
   // compromise runs locally in the API process; only selected name strings
