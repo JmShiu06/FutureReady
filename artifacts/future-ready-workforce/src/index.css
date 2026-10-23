@@ -526,7 +526,7 @@ h1 { letter-spacing:-1.25px; }
 .warn-list { color:#865f2c; }
 .state-box { border-color:#dfd1c0; color:#624c39; }
 .skeleton { background:linear-gradient(90deg,#eee5d9,#faf5ed,#eee5d9); background-size:200% 100%; }
-.profile-save-bar { border-color:#dfd1c0; background:rgba(252,248,241,.96); }
+.profile-save-bar { border:0; background:transparent; box-shadow:none; backdrop-filter:none; }
 .profile-completeness-track span { background:#98765c; }
 .source-note { background:#f3ece1; }
 .personal-radar-chart { height:250px; min-width:0; margin:2px -6px 0; }

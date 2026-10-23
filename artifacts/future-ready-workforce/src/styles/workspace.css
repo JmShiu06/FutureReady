@@ -30,7 +30,7 @@
 .section-info summary:hover { background:#fae7d6; }
 .section-info summary:focus-visible { outline:2px solid #c95b1c; outline-offset:2px; }
 .section-info-popup { position:absolute; top:calc(100% + 8px); left:0; z-index:20; width:min(280px,calc(100vw - 48px)); padding:11px 12px; border:1px solid #e6d7c9; border-radius:10px; background:#fffaf4; color:#6f5444; box-shadow:0 12px 30px rgba(65,42,28,.16); font-size:10px; font-weight:400; line-height:1.55; letter-spacing:normal; text-transform:none; }
-.profile-save-bar { position:sticky; bottom:0; z-index:6; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:2px; padding:12px 2px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid #e6d7c9; background:rgba(255,250,244,.96); box-shadow:0 -9px 20px rgba(65,42,28,.08); backdrop-filter:blur(8px); }
+.profile-save-bar { position:sticky; bottom:0; z-index:6; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:2px; padding:12px 2px calc(12px + env(safe-area-inset-bottom)); border:0; background:transparent; box-shadow:none; backdrop-filter:none; }
 .profile-save-bar .btn { min-width:145px; }
 .skill-name-control { display:flex; align-items:center; gap:7px; min-width:0; }
 .skill-name-control .fr-input { flex:1; }
@@ -209,7 +209,7 @@
 .section-info summary:hover { background:#efe1d0; }
 .section-info-popup { border-color:#dfd1c0; background:#fcf9f2; color:#594533; box-shadow:0 12px 30px rgba(74,51,34,.14); }
 .kpi strong,.big-num { color:#73513b; }
-.profile-save-bar { border-color:#dfd1c0; background:rgba(252,248,241,.96); box-shadow:0 -9px 20px rgba(74,51,34,.08); }
+.profile-save-bar { border:0; background:transparent; box-shadow:none; }
 .chili-level-caption { color:#725d49; }
 .skill-edit { border-color:#e7dccd; }
 .btn-danger { background:#fbeae6; color:#8a2c1e; border-color:#f1c9bf; }
