@@ -8,6 +8,28 @@
 import * as zod from 'zod';
 
 
+/**
+ * Reads the same runtime model configuration as generation without making an upstream request. Never includes keys, endpoint URLs, prompts or personal data.
+ * @summary Public model identity and AI usage disclosure
+ */
+export const GetAiInfoResponse = zod.object({
+  "provider": zod.string(),
+  "modelId": zod.string().nullable(),
+  "modelStatus": zod.enum(['configured', 'discovered', 'unknown']),
+  "features": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "usesLanguageModel": zod.boolean(),
+  "usage": zod.enum(['generation', 'reused-output', 'local']),
+  "inputScope": zod.string()
+})),
+  "nonAiUses": zod.array(zod.string()),
+  "guardrails": zod.array(zod.string()),
+  "dataPractices": zod.array(zod.string())
+})
+
+
 export const getAiResearchResponseSnapshotOneCountsItemCurrentMin = 0;
 
 export const getAiResearchResponseSnapshotOneCountsItemPreviousMin = 0;
@@ -219,6 +241,10 @@ export const generateCvCareerExplanationResponseMatchesItemScoreMax = 100;
 
 
 export const GenerateCvCareerExplanationResponse = zod.object({
+  "aiModel": zod.object({
+  "provider": zod.string(),
+  "modelId": zod.string()
+}).optional(),
   "sections": zod.object({
   "skillAnalysis": zod.string().min(1).max(generateCvCareerExplanationResponseSectionsSkillAnalysisMax),
   "careerMatchAnalysis": zod.string().min(1).max(generateCvCareerExplanationResponseSectionsCareerMatchAnalysisMax),
@@ -378,6 +404,10 @@ export const createAiExplanationResponseSuggestionsMax = 4;
 
 
 export const CreateAiExplanationResponse = zod.object({
+  "aiModel": zod.object({
+  "provider": zod.string(),
+  "modelId": zod.string()
+}).optional(),
   "explanation": zod.string().min(1).max(createAiExplanationResponseExplanationMax),
   "sampleLabel": zod.string(),
   "contextSummary": zod.array(zod.string()),

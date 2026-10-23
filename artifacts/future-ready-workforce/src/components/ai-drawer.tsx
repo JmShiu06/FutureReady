@@ -4,6 +4,7 @@ import { Sparkles, X } from 'lucide-react';
 import type { AiExplanationInput } from '@workspace/api-client-react';
 import { AiExplanationPanel, aiFeatureTitles } from '@/components/ai-explanation-panel';
 import { useWorkspace } from '@/domain/workspace-context';
+import { AiModelLabel } from '@/components/ai-model-label';
 import type { ProfileSkill } from '@/domain/types';
 
 export type AiRequest = {
@@ -81,12 +82,13 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
       <div ref={dialogRef} className="ai-drawer" role="dialog" aria-modal="true" aria-labelledby="ai-drawer-title" onKeyDown={onKeyDown} data-testid="drawer-ai">
         <header className="ai-drawer-head">
           <div>
-            <div className="eyebrow">Explain with AI · Qwen3</div>
+            <div className="eyebrow">Explain with AI</div>
             <h2 id="ai-drawer-title"><Sparkles size={16} aria-hidden="true" /> {aiFeatureTitles[request.feature]}</h2>
           </div>
           <button type="button" className="icon-button" onClick={close} aria-label="Close AI explanation" data-autofocus data-testid="button-close-ai-drawer"><X size={16} /></button>
         </header>
         <div className="ai-drawer-body">
+          <AiModelLabel testId="label-ai-model-drawer" />
           <AiExplanationPanel key={nonce} embedded feature={request.feature} jobId={request.jobId} goal={request.goal} cvDetectedSkill={request.cvDetectedSkill} onApplySkills={request.onApplySkills} />
         </div>
       </div>
@@ -102,8 +104,8 @@ export function AiExplainButton({ request, label = 'Explain with AI', testId, sm
   if (request.feature !== 'cv-analysis' && request.feature !== 'market-trends') {
     return null;
   }
-  return <button type="button" className={`btn ai-trigger ${quiet ? 'btn-quiet' : 'btn-secondary'}${small ? ' btn-small' : ''}`} aria-haspopup="dialog"
+  return <span className="ai-trigger-wrap"><button type="button" className={`btn ai-trigger ${quiet ? 'btn-quiet' : 'btn-secondary'}${small ? ' btn-small' : ''}`} aria-haspopup="dialog"
     onClick={() => open(request)} data-testid={testId ?? `button-open-ai-${request.feature}`}>
     <Sparkles size={small ? 12 : 14} aria-hidden="true" /> {label}
-  </button>;
+  </button><AiModelLabel compact testId={`label-ai-model-button-${request.feature}`} /></span>;
 }

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, BarChart3, BriefcaseBusiness, Compass, Route as RouteIcon, UserRound, Users } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
+import { useI18n } from '@/i18n/i18n-context';
 import { aggregateRecords, audienceLabels, demoRoles } from '@/domain/demo-data';
 import { assessRole, completionKey, rankCareers } from '@/domain/services';
 import { activeBaseline, roadmapMilestones } from '@/domain/learning';
@@ -62,6 +63,7 @@ function AggregateOverview() {
 
 function PersonalOverview() {
   const { state, profile, targetRoleId } = useWorkspace();
+  const { t } = useI18n();
   const ranked = useMemo(() => rankCareers(profile), [profile]);
   const target = demoRoles.find(r => r.id === targetRoleId) ?? demoRoles[0];
   const occupation = officialBaseline(state)?.occupation;
@@ -82,29 +84,29 @@ function PersonalOverview() {
       subtitle="A summary of where you stand. Each card opens the full view." />
     <section className="summary-grid summary-grid-lead">
       <article className="welcome-card">
-        <div className="eyebrow">Starting from</div>
-        <h1 data-testid="text-dashboard-occupation">{profile.occupation || 'Your career profile'}</h1>
-        <p>{profileContext || 'Add or update your skills in My profile to personalise this context.'}</p>
+        <div className="eyebrow">{t('dash.startingFrom')}</div>
+        <h1 data-testid="text-dashboard-occupation">{profile.occupation || t('dash.yourProfile')}</h1>
+        <p>{profileContext || t('dash.addSkillsHint')}</p>
         <RaccoonArt name="waving" size={118} className="welcome-raccoon" />
         <div className="welcome-actions">
-          <Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> Explore career paths <ArrowRight size={14} /></Link>
-          <Link href="/my-profile" className="btn btn-quiet" data-testid="link-edit-profile"><UserRound size={14} /> Edit profile</Link>
+          <Link href="/careers-and-jobs?tab=career-paths" className="btn btn-primary" data-testid="link-explore-careers"><Compass size={14} /> {t('dash.exploreCareers')} <ArrowRight size={14} /></Link>
+          <Link href="/my-profile" className="btn btn-quiet" data-testid="link-edit-profile"><UserRound size={14} /> {t('dash.editProfile')}</Link>
         </div>
       </article>
-      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Current target" title={occupation?.title ?? 'No career target selected'} testId="target"
+      <SummaryCard icon={<RouteIcon size={15} />} eyebrow={t('dash.currentTarget')} title={occupation?.title ?? t('dash.noTarget')} testId="target"
         value={overlap ? <MatchScore metric="onet" value={overlap.score} matched={overlap.matched} considered={overlap.total} variant="pill" testId="stat-target-overlap" />
           : undefined}
-        foot={overlap ? `${overlap.total - overlap.matched} documented skills not in profile` : 'Choose an occupation from Careers & jobs.'} href={occupation ? `/careers-and-jobs/roles/${occupation.id}` : '/careers-and-jobs?tab=career-paths'} cta={occupation ? 'Role detail' : 'Choose target'} />
+        foot={overlap ? `${overlap.total - overlap.matched} documented skills not in profile` : t('dash.chooseOccupation')} href={occupation ? `/careers-and-jobs/roles/${occupation.id}` : '/careers-and-jobs?tab=career-paths'} cta={occupation ? t('dash.roleDetail') : t('dash.chooseTarget')} />
     </section>
     <section className="summary-grid">
-      <SummaryCard icon={<UserRound size={15} />} eyebrow="My profile" title={`${profile.skills.length} skill${profile.skills.length === 1 ? '' : 's'} saved`} testId="profile"
-        foot="Upload a CV or edit skills. CVs are processed transiently; only skills you confirm are saved in this browser." href="/my-profile" cta="Open My profile" />
-      <SummaryCard icon={<BriefcaseBusiness size={15} />} eyebrow="Careers & jobs" title={profile.skills.length ? 'Explore matches for your saved skills' : 'No CV-based matches yet'} testId="careers"
-        foot="Use reviewed skills to explore role alignment, not hiring predictions." href="/careers-and-jobs?tab=matched-roles" cta="View matched roles" />
-      <SummaryCard icon={<RouteIcon size={15} />} eyebrow="Learning roadmap" title={built ? `${pathway.done} of ${pathway.total} steps done · ${pathway.percent}%` : 'No roadmap yet'} testId="roadmap"
-        foot={built ? 'Completion tracks progress only' : 'Build one from a career path'} href="/learning-roadmap" cta="Open learning roadmap" />
-      <SummaryCard icon={<BarChart3 size={15} />} eyebrow="Market & AI impact" title="Labour-market indicators and AI task support" testId="market"
-        foot="Dated DOSM context and a local self-check" href="/market-and-ai-impact" cta="Open Market & AI impact" />
+      <SummaryCard icon={<UserRound size={15} />} eyebrow={t('nav.profile')} title={t('dash.skillsSaved', { count: profile.skills.length })} testId="profile"
+        foot={t('dash.profileFoot')} href="/my-profile" cta={t('dash.openProfile')} />
+      <SummaryCard icon={<BriefcaseBusiness size={15} />} eyebrow={t('nav.careers')} title={profile.skills.length ? t('dash.exploreMatches') : t('dash.noMatches')} testId="careers"
+        foot={t('dash.careersFoot')} href="/careers-and-jobs?tab=matched-roles" cta={t('dash.viewMatched')} />
+      <SummaryCard icon={<RouteIcon size={15} />} eyebrow={t('nav.roadmap')} title={built ? t('dash.stepsDone', { done: pathway.done, total: pathway.total, percent: pathway.percent }) : t('dash.noRoadmap')} testId="roadmap"
+        foot={built ? t('dash.roadmapFootBuilt') : t('dash.roadmapFootEmpty')} href="/learning-roadmap" cta={t('dash.openRoadmap')} />
+      <SummaryCard icon={<BarChart3 size={15} />} eyebrow={t('nav.market')} title={t('dash.marketTitle')} testId="market"
+        foot={t('dash.marketFoot')} href="/market-and-ai-impact" cta={t('dash.openMarket')} />
     </section>
   </>;
 }

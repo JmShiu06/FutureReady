@@ -65,7 +65,10 @@ router.post("/ai/cv-career-explanation", async (req, res): Promise<void> => {
   activeRequests++;
   try {
     const result = await provider(prepared.request);
-    if (!res.destroyed) res.json(parseCvCareerExplanation(result.explanation, prepared));
+    if (!res.destroyed) res.json({
+      ...parseCvCareerExplanation(result.explanation, prepared),
+      ...(result.aiModel ? { aiModel: result.aiModel } : {}),
+    });
   } catch (error) {
     // Only bounded diagnostic categories: never log CV data, prompts, output or credentials.
     const stage = error instanceof RunpodConfigurationError ? "configuration"
@@ -127,6 +130,7 @@ router.post("/ai/explanations", async (req, res): Promise<void> => {
       const parsed = parseFeatureAnswer(result.explanation, example);
       return CreateAiExplanationResponse.parse({
         explanation: parsed.explanation,
+        ...(result.aiModel ? { aiModel: result.aiModel } : {}),
         ...(parsed.suggestions ? { suggestions: parsed.suggestions } : {}),
         sampleLabel: example.sampleLabel, contextSummary: parsed.contextSummary,
         evidence: parsed.evidence, synthetic: example.synthetic, finalAnswerOnly: true,

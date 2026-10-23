@@ -1,5 +1,6 @@
 import type { Proficiency } from '@/domain/types';
-import { levelLabel } from '@/components/workspace/ui';
+import { useLevelLabel } from '@/components/workspace/ui';
+import { useI18n } from '@/i18n/i18n-context';
 
 const levels: Proficiency[] = [1, 2, 3, 4, 5];
 
@@ -29,6 +30,8 @@ export function ChiliLevelPicker({
   testId?: string;
   disabled?: boolean;
 }) {
+  const levelLabel = useLevelLabel();
+  const { t } = useI18n();
   return <fieldset className="chili-level-picker" disabled={disabled} data-testid={testId}>
     <legend className="sr-only">{label}</legend>
     <div className="chili-level-options">
@@ -46,7 +49,7 @@ export function ChiliLevelPicker({
       </label>)}
     </div>
     <output className="chili-level-caption" aria-live="polite">
-      {value === '' ? 'Choose level' : `${value} · ${levelLabel(value)}`}
+      {value === '' ? t('level.choose') : `${value} · ${levelLabel(value)}`}
     </output>
   </fieldset>;
 }

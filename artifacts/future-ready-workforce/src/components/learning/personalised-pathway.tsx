@@ -18,10 +18,12 @@ import { useAiResearch } from '@/hooks/use-ai-research';
 import { AiResearchEvidence } from '@/components/shared/ai-research-evidence';
 import { resolveActivePathway, stepIsDone } from '@/domain/pathway-progress';
 import { PATHWAY_SETTINGS_EVENT } from '@/hooks/use-pathway-progress';
+import { useI18n } from '@/i18n/i18n-context';
 
 export function PersonalisedPathway() {
   const { state } = useWorkspace();
   const [, navigate] = useLocation();
+  const { t } = useI18n();
   const baseline = activeBaseline(state);
   const market = useGetDosmJobMarketInsights();
   const signals = useMemo<PlanningSignal[]>(() => market.data?.occupationGroups
@@ -41,6 +43,7 @@ export function PersonalisedPathway() {
 function ActivePathway({ baseline, signals, marketWarning }: { baseline: RoadmapBaseline; signals: PlanningSignal[]; marketWarning: string }) {
   const { state, profile, targetRoleId, setMilestoneComplete, resetActiveRoadmap, storageWarning } = useWorkspace();
   const [, navigate] = useLocation();
+  const { t } = useI18n();
   const { scenario, setScenario, scenarioWarning } = usePlanningScenario();
   const ai = useAiResearch();
   const key = `frw-pathway-v1:${state.audience}:${targetRoleId}:${baseline.startedAt}`;
@@ -53,16 +56,16 @@ function ActivePathway({ baseline, signals, marketWarning }: { baseline: Roadmap
         researchFetchedAt: ai.data?.snapshot?.fetchedAt, researchSource: ai.demo ? 'demo' : ai.data?.snapshot ? 'arxiv' : 'unavailable' };
       return initial;
     }
-    catch { return { ...readPathwayPreferences(null, scenario, signals), warning: 'Pathway settings cannot be saved in this browser; progress may last only for this session.' }; }
+    catch { return { ...readPathwayPreferences(null, scenario, signals), warning: t('rm.settingsUnsaved') }; }
   });
   const [preferences, setPreferences] = useState(loaded.value);
   const [saveWarning, setSaveWarning] = useState(loaded.warning);
   useEffect(() => {
     try { window.localStorage.setItem(key, JSON.stringify(preferences)); window.dispatchEvent(new Event(PATHWAY_SETTINGS_EVENT)); }
-    catch { setSaveWarning('Pathway settings could not be saved; keep this page open or print your plan.'); }
+    catch { setSaveWarning(t('rm.settingsFailed')); }
   }, [key, preferences]);
   const milestones = useMemo(() => roadmapMilestones(state), [state]);
-  const title = baseline.occupation?.title ?? demoRoles.find(r => r.id === targetRoleId)?.title ?? 'Selected role';
+  const title = baseline.occupation?.title ?? demoRoles.find(r => r.id === targetRoleId)?.title ?? t('rm.selectedRole');
   const input = {
     milestones, roleId: targetRoleId, roleTitle: title, occupation: baseline.occupation,
     hoursPerWeek: preferences.hours, budgetMYR: preferences.budget, freeOnly: preferences.freeOnly,
@@ -74,11 +77,11 @@ function ActivePathway({ baseline, signals, marketWarning }: { baseline: Roadmap
   const changed = fingerprint !== priorityFingerprint(plan) && fingerprint !== preferences.ignoredFingerprint;
   const changes = changed ? describePlanChanges(plan, candidate) : [];
   const reason = preferences.accepted.scenario !== scenario
-    ? `the AI scenario is now ${scenario === 'fast' ? 'Fast' : 'Moderate'}. Your current order and progress are kept until you approve.`
-    : 'the DOSM or arXiv snapshot changed the gap priorities. Your current order and progress are kept until you approve.';
+    ? t('rm.reasonScenario', { scenario: scenario === 'fast' ? t('rm.fastShort') : t('rm.moderateShort') })
+    : t('rm.reasonData');
   const isDone = (step: PathwayStep) => stepIsDone(state, step);
   return <><AiResearchEvidence controls />
-    <p className="small muted">Saved plan AI input: {preferences.accepted.researchSource === 'demo' ? 'Synthetic AI A · Demo: simulate a fast AI jump' : preferences.accepted.researchFetchedAt ? `arXiv API · ${preferences.accepted.researchFetchedAt}` : 'No retrieved AI research snapshot was included'}. Updated priorities require review; progress is kept.</p>
+    <p className="small muted">{t('rm.savedInput', { source: preferences.accepted.researchSource === 'demo' ? t('rm.srcDemo') : preferences.accepted.researchFetchedAt ? `arXiv API · ${preferences.accepted.researchFetchedAt}` : t('rm.srcNone') })}</p>
     <PathwayView plan={plan} targetTitle={title} sampleLabel={baseline.sampleLabel}
     hours={preferences.hours} budget={preferences.budget} freeOnly={preferences.freeOnly} scenario={scenario} planScenario={preferences.accepted.scenario}
     onHoursChange={hours => setPreferences(p => ({ ...p, hours }))}
@@ -88,7 +91,7 @@ function ActivePathway({ baseline, signals, marketWarning }: { baseline: Roadmap
     isDone={isDone} onToggle={(step, done) => step.milestoneIds.forEach(id => setMilestoneComplete(completionKey(state.audience, id), done))}
     onReviewTwin={() => navigate('/my-profile?section=twin')}
     onReset={() => { resetActiveRoadmap(); try { window.localStorage.removeItem(key); } catch { /* Workspace still reports unavailable storage. */ } }}
-    pendingChange={changed ? { reason, changes: changes.length ? changes : ['Scenario emphasis changed; existing milestone IDs and completion will be retained.'] } : undefined}
+    pendingChange={changed ? { reason, changes: changes.length ? changes : [t('rm.scenarioChanged')] } : undefined}
     onAcceptChanges={() => setPreferences(p => ({ ...p, accepted: { scenario, signals, researchWeights: ai.weights,
       researchFetchedAt: ai.data?.snapshot?.fetchedAt, researchSource: ai.demo ? 'demo' : ai.data?.snapshot ? 'arxiv' : 'unavailable' }, ignoredFingerprint: undefined }))}
     onKeepPlan={() => setPreferences(p => ({ ...p, ignoredFingerprint: fingerprint }))}

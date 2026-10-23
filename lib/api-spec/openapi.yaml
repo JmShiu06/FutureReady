@@ -19,6 +19,19 @@ tags:
   - name: ai
     description: Optional Runpod vLLM explanations for user-requested task exposure
 paths:
+  /ai-info:
+    get:
+      operationId: getAiInfo
+      tags: [ai]
+      summary: Public model identity and AI usage disclosure
+      description: Reads the same runtime model configuration as generation without making an upstream request. Never includes keys, endpoint URLs, prompts or personal data.
+      responses:
+        "200":
+          description: Configured or already discovered model identity and feature inventory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiInfo"
   /signals/ai-research:
     get:
       operationId: getAiResearch
@@ -810,6 +823,45 @@ components:
         enum: [relevance, recent]
         default: recent
   schemas:
+    AiModelIdentity:
+      type: object
+      required: [provider, modelId]
+      properties:
+        provider: { type: string }
+        modelId: { type: string }
+    AiFeatureInfo:
+      type: object
+      required: [id, title, description, usesLanguageModel, usage, inputScope]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        usesLanguageModel: { type: boolean }
+        usage:
+          type: string
+          enum: [generation, reused-output, local]
+        inputScope: { type: string }
+    AiInfo:
+      type: object
+      required: [provider, modelId, modelStatus, features, nonAiUses, guardrails, dataPractices]
+      properties:
+        provider: { type: string }
+        modelId: { type: ["string", "null"] }
+        modelStatus:
+          type: string
+          enum: [configured, discovered, unknown]
+        features:
+          type: array
+          items: { $ref: "#/components/schemas/AiFeatureInfo" }
+        nonAiUses:
+          type: array
+          items: { type: string }
+        guardrails:
+          type: array
+          items: { type: string }
+        dataPractices:
+          type: array
+          items: { type: string }
     AiResearchCount:
       type: object
       required: [capability, label, query, currentQueryUrl, previousQueryUrl, current, previous, growth]
@@ -1047,6 +1099,8 @@ components:
       type: object
       required: [sections, matches, resources, warnings]
       properties:
+        aiModel:
+          $ref: "#/components/schemas/AiModelIdentity"
         sections:
           type: object
           additionalProperties: false
@@ -1144,6 +1198,8 @@ components:
       type: object
       required: [explanation, sampleLabel, contextSummary, synthetic, finalAnswerOnly]
       properties:
+        aiModel:
+          $ref: "#/components/schemas/AiModelIdentity"
         explanation:
           type: string
           minLength: 1

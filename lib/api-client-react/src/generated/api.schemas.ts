@@ -5,6 +5,49 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AiModelIdentity {
+  provider: string;
+  modelId: string;
+}
+
+export type AiFeatureInfoUsage = typeof AiFeatureInfoUsage[keyof typeof AiFeatureInfoUsage];
+
+
+export const AiFeatureInfoUsage = {
+  generation: 'generation',
+  'reused-output': 'reused-output',
+  local: 'local',
+} as const;
+
+export interface AiFeatureInfo {
+  id: string;
+  title: string;
+  description: string;
+  usesLanguageModel: boolean;
+  usage: AiFeatureInfoUsage;
+  inputScope: string;
+}
+
+export type AiInfoModelStatus = typeof AiInfoModelStatus[keyof typeof AiInfoModelStatus];
+
+
+export const AiInfoModelStatus = {
+  configured: 'configured',
+  discovered: 'discovered',
+  unknown: 'unknown',
+} as const;
+
+export interface AiInfo {
+  provider: string;
+  /** @nullable */
+  modelId: string | null;
+  modelStatus: AiInfoModelStatus;
+  features: AiFeatureInfo[];
+  nonAiUses: string[];
+  guardrails: string[];
+  dataPractices: string[];
+}
+
 export interface AiResearchCount {
   capability: string;
   label: string;
@@ -355,6 +398,7 @@ export type CvCareerExplanationResourcesItem = {
 };
 
 export interface CvCareerExplanation {
+  aiModel?: AiModelIdentity;
   sections: CvCareerExplanationSections;
   matches: CvCareerExplanationMatchesItem[];
   resources: CvCareerExplanationResourcesItem[];
@@ -444,6 +488,7 @@ export interface AiSkillSuggestion {
 }
 
 export interface AiExplanation {
+  aiModel?: AiModelIdentity;
   /**
      * @minLength 1
      * @maxLength 4000

@@ -3,7 +3,7 @@ import { Info } from 'lucide-react';
 import { useWorkspace } from '@/domain/workspace-context';
 import { completionKey } from '@/domain/services';
 import { confirmationFor, currentLevel, progressReport, proposedLevel, roadmapMilestones } from '@/domain/learning';
-import { Bar, EmptyBlock, SectionTitle, levelLabel } from '@/components/workspace/ui';
+import { Bar, EmptyBlock, SectionTitle, useLevelLabel } from '@/components/workspace/ui';
 import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
 import { usePathwayProgress } from '@/hooks/use-pathway-progress';
 import type { RoadmapBaseline } from '@/domain/types';
@@ -15,6 +15,7 @@ function Proposal({ milestoneId, skill, required, title }: { milestoneId: string
   const suggested = proposedLevel(current, required);
   const [level, setLevel] = useState<number | null>(null);
   const [msg, setMsg] = useState('');
+  const levelLabel = useLevelLabel();
   const confirmed = confirmationFor(state, milestoneId);
   if (confirmed) return <div className="small" data-testid={`confirmed-${milestoneId}`}>
     <strong>{skill}</strong>: level {confirmed.fromLevel} → {confirmed.toLevel} confirmed on {new Date(confirmed.confirmedAt).toLocaleDateString()}.</div>;

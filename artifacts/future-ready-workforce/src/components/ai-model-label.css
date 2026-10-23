@@ -1,0 +1,46 @@
+.ai-model-label { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:8px 0; padding:6px 9px; border:1px dashed #d6c1a8; border-radius:8px; background:#f7efe4; color:#6b4f3a; font:500 10.5px/1.45 var(--mono-font); letter-spacing:.1px; }
+.ai-model-label svg { flex:none; color:#a0714f; }
+.ai-model-label.is-compact { margin:4px 0 0; padding:3px 7px; font-size:10px; }
+.ai-model-label.is-unresolved { border-color:#d9a98a; background:#fbefe6; color:#7a3f24; }
+.ai-model-link { color:#73513b; font-weight:700; text-decoration:underline; text-underline-offset:2px; font-family:var(--app-font-sans); }
+.ai-model-link:hover { color:#4f3524; }
+.ai-model-retry { display:inline-flex; align-items:center; gap:4px; border:1px solid #d9a98a; background:#fffaf3; color:#7a3f24; border-radius:6px; padding:2px 6px; font-size:10px; font-weight:700; }
+.ai-consent-model { display:flex; flex-wrap:wrap; align-items:flex-start; gap:6px; margin:8px 0; padding:8px 10px; border-left:3px solid #a0714f; border-radius:0 8px 8px 0; background:#f4ebdf; color:#4f3a2a; font-size:11.5px; line-height:1.5; }
+.ai-consent-model svg { flex:none; margin-top:3px; color:#a0714f; }
+.ai-consent-model span { flex:1 1 220px; }
+.ai-trigger-wrap { display:inline-flex; flex-direction:column; align-items:flex-start; max-width:100%; }
+.sidebar-ai-link { display:flex; align-items:center; gap:8px; margin:0 4px 12px; padding:9px 11px; border:1px solid #dccab4; border-radius:10px; background:rgba(252,248,241,.8); color:#5c4633; font-size:11px; font-weight:700; }
+.sidebar-ai-link:hover, .sidebar-ai-link[aria-current="page"] { background:#e7dacc; color:#3e2c20; }
+.top-ai-link { display:none; }
+@media (max-width:780px) {
+  .top-ai-link { display:inline-grid; place-items:center; width:32px; height:32px; border:1px solid #dfd1c0; border-radius:9px; background:#fcf9f2; color:#5f4937; }
+}
+
+/* Disclosure page */
+.aid-hero { position:relative; overflow:hidden; padding:28px; border-radius:16px; background:#eee1d0; border:1px solid #ddcbb6; margin-bottom:18px; }
+.aid-hero h1 { max-width:620px; }
+.aid-hero p { max-width:640px; color:#66513f; font-size:13px; line-height:1.6; margin:0; }
+.aid-model { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:20px; }
+.aid-model div { padding:13px 14px; border-radius:11px; background:rgba(252,249,242,.9); border:1px solid #e1d2bf; min-width:0; }
+.aid-model dt { font:500 9.5px var(--mono-font); letter-spacing:1px; text-transform:uppercase; color:#806b56; margin-bottom:6px; }
+.aid-model dd { margin:0; font:700 15px/1.3 var(--display-font); color:#382b23; overflow-wrap:anywhere; }
+.aid-model dd.mono { font:600 14px var(--mono-font); }
+.aid-model dd.unknown { color:#8a3f22; }
+.aid-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:18px; align-items:start; }
+.aid-section h2 { margin-bottom:12px; }
+.aid-features { display:grid; gap:9px; }
+.aid-feature { padding:13px 14px; border:1px solid #e8ded1; border-radius:11px; background:#fffdf8; }
+.aid-feature header { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:baseline; }
+.aid-feature h3 { font-size:13px; }
+.aid-feature p { margin:7px 0 0; font-size:11.5px; color:#5f4b3a; line-height:1.55; }
+.aid-feature small { display:block; margin-top:7px; color:#7a6550; font-size:10.5px; }
+.aid-pill { padding:3px 8px; border-radius:20px; font:600 9.5px var(--mono-font); white-space:nowrap; }
+.aid-pill.llm { background:#ead6c2; color:#6a4329; }
+.aid-pill.none { background:#e3e9da; color:#45603e; }
+.aid-list { margin:0; padding-left:18px; display:grid; gap:7px; font-size:12px; color:#4f3b2c; line-height:1.55; }
+.aid-stack { display:grid; gap:18px; }
+.aid-notice { font-size:11px; color:#78634e; margin:0 0 14px; }
+.aid-skeleton i { display:block; height:14px; border-radius:6px; background:#eadfce; margin:10px 0; animation:aidPulse 1.2s ease-in-out infinite alternate; }
+@keyframes aidPulse { from { opacity:.5; } to { opacity:1; } }
+@media (max-width:900px) { .aid-grid { grid-template-columns:1fr; } }
+@media (max-width:620px) { .aid-model { grid-template-columns:1fr; } .aid-hero { padding:20px; } }

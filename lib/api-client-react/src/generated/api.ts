@@ -23,6 +23,7 @@ import type {
   AiAnnouncementsResponse,
   AiExplanation,
   AiExplanationInput,
+  AiInfo,
   AiResearchResponse,
   CareerMatchResult,
   CareerPathAnalysisReport,
@@ -83,6 +84,84 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetAiInfoUrl = () => {
+
+
+
+
+  return `/api/ai-info`
+}
+
+/**
+ * Reads the same runtime model configuration as generation without making an upstream request. Never includes keys, endpoint URLs, prompts or personal data.
+ * @summary Public model identity and AI usage disclosure
+ */
+export const getAiInfo = async ( options?: Parameters<typeof customFetch>[1]): Promise<AiInfo> => {
+
+  return customFetch<AiInfo>(getGetAiInfoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiInfoQueryKey = () => {
+    return [
+    `/api/ai-info`
+    ] as const;
+    }
+
+
+export const getGetAiInfoQueryOptions = <TData = Awaited<ReturnType<typeof getAiInfo>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiInfo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiInfoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiInfo>>> = ({ signal }) => getAiInfo({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiInfo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiInfoQueryResult = NonNullable<Awaited<ReturnType<typeof getAiInfo>>>
+export type GetAiInfoQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Public model identity and AI usage disclosure
+ */
+
+export function useGetAiInfo<TData = Awaited<ReturnType<typeof getAiInfo>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiInfo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiInfoQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetAiResearchUrl = () => {
 

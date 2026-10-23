@@ -1,16 +1,17 @@
 import { Info } from 'lucide-react';
 import { CvCareerExplanation } from '@/components/cv-career-explanation';
+import { useI18n } from '@/i18n/i18n-context';
 
 /** AI Explanation tab: the shared transient CV career explanation (replaces the old task review). */
 export function AiImpactTab() {
+  const { t } = useI18n();
   return <>
     <aside className="panel panel-pad ai-exposure-intro" data-testid="panel-ai-explanation-boundary">
       <Info size={17} aria-hidden="true" />
       <div>
-        <strong>Analyse the skills saved in My profile.</strong>
+        <strong>{t('sa.boundaryTitle')}</strong>
         <p className="muted">
-          Manually added skills and saved imported skills are available here. No CV upload is required. Only selected skill names
-          are sent after explicit consent; no ratings or personal details are shared. Results are temporary.
+          {t('sa.boundaryBody')}
         </p>
       </div>
     </aside>

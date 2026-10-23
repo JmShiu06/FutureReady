@@ -15,6 +15,26 @@ export class RunpodRequestError extends Error {
 
 let cachedModel: { baseUrl: string; model: string; expiresAt: number } | undefined;
 
+export const LLM_PROVIDER = "RunPod (vLLM)";
+export type LlmModelIdentity = { provider: string; modelId: string };
+const configuredModelId = (env: RunpodEnvironment) => env.RUNPOD_LLM_MODEL?.trim();
+
+/** Public metadata only. No network calls or credentials leave this function. */
+export function getLlmModelInfo(env: RunpodEnvironment = process.env): {
+  provider: string; modelId: string | null; modelStatus: "configured" | "discovered" | "unknown";
+} {
+  const configured = configuredModelId(env);
+  if (configured) return { provider: LLM_PROVIDER, modelId: configured, modelStatus: "configured" };
+  if (cachedModel && cachedModel.expiresAt > Date.now()) {
+    try {
+      if (cachedModel.baseUrl === runpodBaseUrl(env.RUNPOD_LLM_BASE_URL)) {
+        return { provider: LLM_PROVIDER, modelId: cachedModel.model, modelStatus: "discovered" };
+      }
+    } catch { /* Invalid configuration has no publicly identified model. */ }
+  }
+  return { provider: LLM_PROVIDER, modelId: null, modelStatus: "unknown" };
+}
+
 function runpodBaseUrl(raw: string | undefined): string {
   if (!raw) throw new RunpodConfigurationError("Runpod is not configured.");
 
@@ -44,7 +64,7 @@ async function readJson(response: Response, stage: "model-list" | "response"): P
 }
 
 async function resolveModel(baseUrl: string, apiKey: string, env: RunpodEnvironment, fetcher: Fetcher): Promise<string> {
-  const configured = env.RUNPOD_LLM_MODEL?.trim();
+  const configured = configuredModelId(env);
   if (configured) return configured;
 
   if (cachedModel?.baseUrl === baseUrl && cachedModel.expiresAt > Date.now()) return cachedModel.model;
@@ -96,7 +116,7 @@ export function cleanFinalAnswer(message: Record<string, unknown>, finishReason:
 export async function generateLlmExplanation(
   input: { instruction: string; context: Record<string, unknown>; json?: boolean; maxTokens?: number; maxOutputCharacters?: number },
   options: { env?: RunpodEnvironment; fetcher?: Fetcher } = {},
-): Promise<{ explanation: string }> {
+): Promise<{ explanation: string; aiModel?: LlmModelIdentity }> {
   const env = options.env ?? process.env;
   const fetcher = options.fetcher ?? fetch;
   if (JSON.stringify(input.context).length > 18_000 || input.instruction.length > 3_000) {
@@ -135,5 +155,8 @@ export async function generateLlmExplanation(
   };
   const choice = payload?.choices?.[0];
   if (!choice?.message || typeof choice.message !== "object") throw new RunpodRequestError("response");
-  return { explanation: cleanFinalAnswer(choice.message, choice.finish_reason, Math.min(24000, Math.max(4000, input.maxOutputCharacters ?? 4000))) };
+  return {
+    explanation: cleanFinalAnswer(choice.message, choice.finish_reason, Math.min(24000, Math.max(4000, input.maxOutputCharacters ?? 4000))),
+    aiModel: { provider: LLM_PROVIDER, modelId: model },
+  };
 }

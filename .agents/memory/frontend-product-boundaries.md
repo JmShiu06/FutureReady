@@ -3,6 +3,12 @@ name: Frontend product and evidence boundaries
 description: FutureReady's Aiversecity scope, audience separation and trust requirements for demonstration features.
 ---
 
+Offer language choice at first visit for English, Bahasa Melayu, Simplified Chinese, Traditional Chinese, Korean, Tamil, Japanese and Indonesian.
+
+**Why:** The user explicitly selected English/Malay/Simplified Chinese and added Korean, Tamil, Japanese, Indonesian and “fanti chinese” (Traditional Chinese).
+
+**How to apply:** Remember only the browser's language preference and allow later changes. Localize interface text without translating saved user input, detected names, canonical matching vocabulary, source citations or published figures.
+
 Careers & jobs Listings should use one shared search and filter area for sample listings and DOSM occupation context, with distinct result tabs rather than competing search/filter boxes.
 
 **Why:** The user explicitly asked to combine duplicate searches and filters, with a submitted Search action, one group-aware Occupation control, and separate result tabs so fictional listings are not confused with official group statistics.

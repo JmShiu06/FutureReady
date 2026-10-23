@@ -14,3 +14,9 @@ Treat harmless presentation differences separately from unsafe evidence claims. 
 **Why:** A completed live response used inline career labels instead of separate paragraphs, while also overstating what skill names and pooled references establish. Formatting tolerance is appropriate; accepting unsupported claims to avoid an error is not.
 
 **How to apply:** Normalise labels and whitespace without rewriting claims. Preserve validated sections and authoritative reference evidence, visibly label omissions, and fail when no usable analysis remains. Reuse captured fictional output for offline diagnosis rather than spending additional generation requests without approval.
+
+Model disclosure must distinguish current configuration from the provenance of an already generated answer. Reading disclosure metadata is not a service-health or generation test.
+
+**Why:** Domain 1 requires the exact model to be visible, but a later configuration change must not relabel an older explanation as if the replacement model produced it. The user also restricted this work to disclosure, not inference or provider changes.
+
+**How to apply:** Consent identifies the current configured model and precise input scope; generated answers retain their actual model identity. Unknown identity stays explicitly unknown. Adding or reading disclosure must never initiate generation or change provider defaults.

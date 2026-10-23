@@ -3,7 +3,9 @@ import { AlertTriangle, RotateCcw } from 'lucide-react';
 import type { Evidence, RequiredSkill, SkillGap } from '@/domain/types';
 import { evidenceWarnings } from '@/domain/services';
 import { RaccoonArt } from '@/components/brand/raccoon-art';
+import { useI18n } from '@/i18n/i18n-context';
 import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
+import type { MessageKey } from '@/i18n/messages';
 
 export function SectionTitle({ title, note, action, info }: { title: string; note?: string; action?: ReactNode; info?: string }) {
   return <div className="section-head"><div>
@@ -31,13 +33,16 @@ export function Bar({ value, alt, label }: { value: number; alt?: boolean; label
 }
 
 export function PriorityTag({ priority }: { priority: RequiredSkill['priority'] }) {
-  return <span className={`tag tag-${priority.toLowerCase()}`}>{priority} priority</span>;
+  const { t } = useI18n();
+  return <span className={`tag tag-${priority.toLowerCase()}`}>{t(`priority.${priority}` as MessageKey)}</span>;
 }
 
 export function GapStatus({ gap }: { gap: SkillGap }) {
-  if (gap.currentLevel === 0) return <span className="tag tag-miss">Missing · needs {gap.level}</span>;
-  if (gap.gap > 0) return <span className="tag tag-below">Below target · {gap.currentLevel}/{gap.level}</span>;
-  return <span className="tag tag-ok">Meets target · {gap.currentLevel}/{gap.level}</span>;
+  const { t } = useI18n();
+  const vars = { current: gap.currentLevel, level: gap.level };
+  if (gap.currentLevel === 0) return <span className="tag tag-miss">{t('gap.missing', vars)}</span>;
+  if (gap.gap > 0) return <span className="tag tag-below">{t('gap.below', vars)}</span>;
+  return <span className="tag tag-ok">{t('gap.meets', vars)}</span>;
 }
 
 export function EvidencePanel({ evidence, testId = 'panel-evidence' }: { evidence: Evidence; testId?: string }) {
@@ -56,15 +61,17 @@ export function EvidencePanel({ evidence, testId = 'panel-evidence' }: { evidenc
 }
 
 export function LoadingBlock({ rows = 3 }: { rows?: number }) {
+  const { t } = useI18n();
   return <div className="stack loading-block" role="status" aria-busy="true">
-    <div className="loading-block-cue"><RaccoonLoader /><p className="loading-block-text">Our little raccoon is getting things ready…</p></div>
+    <div className="loading-block-cue"><RaccoonLoader /><p className="loading-block-text">{t('common.loading')}</p></div>
     {Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: 70 }} aria-hidden="true" />)}
   </div>;
 }
 
 export function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useI18n();
   return <div className="state-box" role="alert" data-testid="state-error"><AlertTriangle size={20} /><strong>{message}</strong>
-    <button className="btn btn-secondary btn-small" onClick={onRetry} data-testid="button-retry"><RotateCcw size={12} /> Try again</button></div>;
+    <button className="btn btn-secondary btn-small" onClick={onRetry} data-testid="button-retry"><RotateCcw size={12} /> {t('common.tryAgain')}</button></div>;
 }
 
 export function EmptyBlock({ title, children }: { title: string; children?: ReactNode }) {
@@ -90,5 +97,10 @@ export function useAsync<T>(run: (signal: AbortSignal) => Promise<T>, key: strin
   return { ...state, retry: () => setNonce(n => n + 1) };
 }
 
+/** Localised proficiency label; out-of-range values fall back to level 0. */
+export function useLevelLabel() {
+  const { t } = useI18n();
+  return (level: number) => t(`level.${level >= 0 && level <= 5 ? Math.trunc(level) : 0}` as MessageKey);
+}
 export const levelLabel = (level: number) => ['Not present', 'New to it', 'Exploring', 'Working knowledge', 'Confident', 'Can teach'][level] ?? 'Not present';
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');

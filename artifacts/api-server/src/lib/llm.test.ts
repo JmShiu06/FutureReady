@@ -25,7 +25,9 @@ describe("shared RunPod Qwen3 service", () => {
       assert.equal(String(init?.body).includes("synthetic-test-key"), false);
       return Response.json({ choices: [{ finish_reason: "stop", message: { content: "A clean fictional career explanation.", reasoning_content: null } }] });
     };
-    assert.deepEqual(await generateLlmExplanation(input, { env, fetcher }), { explanation: "A clean fictional career explanation." });
+    const result = await generateLlmExplanation(input, { env, fetcher });
+    assert.equal(result.explanation, "A clean fictional career explanation.");
+    assert.deepEqual(result.aiModel, { provider: "RunPod (vLLM)", modelId: env.RUNPOD_LLM_MODEL });
   });
 
   it("rejects thinking traces, separate reasoning fields, malformed and truncated outputs", () => {

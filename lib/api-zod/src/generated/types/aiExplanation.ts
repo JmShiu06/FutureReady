@@ -6,9 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AiEvidence } from './aiEvidence';
+import type { AiModelIdentity } from './aiModelIdentity';
 import type { AiSkillSuggestion } from './aiSkillSuggestion';
 
 export interface AiExplanation {
+  aiModel?: AiModelIdentity;
   /**
      * @minLength 1
      * @maxLength 4000

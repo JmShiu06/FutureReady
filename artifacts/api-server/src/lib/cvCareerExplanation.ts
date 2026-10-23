@@ -85,7 +85,7 @@ export function prepareCvCareerExplanation(body: unknown) {
   const warnings = [
     ...(data.extractionLimited ? [CV_EXTRACTION_LIMITATION] : []),
     ...(!data.skills.length ? ["No skills detected from CV."] : []),
-    "Qwen/Qwen3-4B explanations may be inaccurate. Selected skill names are not verified qualifications.",
+    "Language-model explanations may be inaccurate. Selected skill names are not verified qualifications.",
     "Match scores measure dataset skill overlap, not a hiring probability. Missing skills mean not evidenced in this CV.",
     "Course suggestions use the existing verified catalogue; uncovered skills and certification pathways may need further research.",
     "Gap priorities use coverage across distinct reference families, then existing skill alignment; alphabetical ties are not a validated learning prerequisite order.",
