@@ -69,7 +69,35 @@ it("rejects narrative/contact fields at the API boundary and rejects unsupported
     { ...syntheticSections, skillGapAnalysis: "Explain a practice exercise." },
     { ...syntheticSections, improvementSuggestions: "Take the invented Superhero course." },
     { ...syntheticSections, strengths: "You lack communication." },
-  ]) assert.throws(() => parseCvCareerExplanation(JSON.stringify(sections), prepared));
+    { ...syntheticSections, strengths: "The candidate has a strong foundation." },
+    { ...syntheticSections, careerMatchAnalysis: syntheticSections.careerMatchAnalysis.replace("could transfer", "is required") },
+  ]) {
+    if ("score" in sections || JSON.stringify(sections).includes("<think>")) {
+      assert.throws(() => parseCvCareerExplanation(JSON.stringify(sections), prepared));
+    } else {
+      const result = parseCvCareerExplanation(JSON.stringify(sections), prepared);
+      const changed = (Object.keys(syntheticSections) as Array<keyof typeof syntheticSections>)
+        .find(key => sections[key] !== syntheticSections[key])!;
+      assert.match(result.sections[changed], /AI analysis withheld/);
+      assert.ok(result.warnings.some(warning => warning.startsWith("Partial AI analysis:")));
+    }
+  }
+});
+
+it("normalizes title labels without rewriting claims when Qwen puts career insights in one paragraph", () => {
+  const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
+  const sections = { ...syntheticSections, careerMatchAnalysis: syntheticSections.careerMatchAnalysis.replace(/\n+/g, " ") };
+  const result = parseCvCareerExplanation(JSON.stringify(sections), prepared);
+  assert.equal(result.sections.careerMatchAnalysis, syntheticSections.careerMatchAnalysis);
+  assert.ok(!result.warnings.some(warning => warning.startsWith("Partial AI analysis:")));
+});
+
+it("does not pass entirely invalid analysis or malformed structures as partial success", () => {
+  const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
+  const invalid = Object.fromEntries(Object.keys(syntheticSections).map(key => [key, "Visit https://made-up.invalid"]));
+  assert.throws(() => parseCvCareerExplanation(JSON.stringify(invalid), prepared));
+  assert.throws(() => parseCvCareerExplanation(JSON.stringify({ skillAnalysis: "python" }), prepared));
+  assert.throws(() => parseCvCareerExplanation("not JSON", prepared));
 });
 
 it("minimizes legacy language input and rejects language-only analysis", () => {

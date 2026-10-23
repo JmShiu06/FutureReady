@@ -102,9 +102,13 @@ it("rate limits CV requests and never echoes malformed provider text", async () 
   });
   await server(async () => ({ explanation: JSON.stringify({ ...sections, strengths: "The candidate is an expert." }) }), async post => {
     const response = await post({ consent: true, data });
-    assert.equal(response.status, 502);
+    assert.equal(response.status, 200);
     assert.equal(response.headers.get("cache-control"), "no-store");
-    assert.doesNotMatch(JSON.stringify(await response.json()), /candidate is an expert/);
+    const result = GenerateCvCareerExplanationResponse.parse(await response.json());
+    assert.doesNotMatch(result.sections.strengths, /candidate is an expert/);
+    assert.match(result.sections.strengths, /AI analysis withheld/);
+    assert.equal(result.sections.skillAnalysis, sections.skillAnalysis);
+    assert.ok(result.warnings.some(warning => warning.startsWith("Partial AI analysis:")));
   });
 });
 

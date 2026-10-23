@@ -86,6 +86,8 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
   const titleId = view === 'learning' ? 'cvx-learning-result-title' : 'cvx-result-title';
   return <section className="cvx-result" aria-labelledby={titleId} data-testid={view === 'learning' ? 'panel-cvx-learning-result' : 'panel-cvx-result'}>
     <h3 id={titleId}>{view === 'learning' ? 'Your CV learning guidance' : 'Your CV skill analysis'}</h3>
+    {warnings.filter(warning => warning.startsWith('Partial AI analysis:')).map(warning =>
+      <p key={warning} className="cvx-limited" role="status"><AlertTriangle size={13} aria-hidden="true" /> {warning}</p>)}
     <p className="muted small">{view === 'learning'
       ? 'Improvement options use reviewed CV details and verified learning records. AI explains growth opportunities; suggestions do not verify qualifications or exam readiness.'
       : 'Explore how your selected skills work together, where they may transfer and what to practise next. Skill names alone do not verify proficiency, experience or qualifications.'}</p>
