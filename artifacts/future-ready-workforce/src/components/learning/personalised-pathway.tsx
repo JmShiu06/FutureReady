@@ -1,34 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
-import { matchOccupationEvidence, useGetDosmJobMarketInsights } from '@workspace/api-client-react';
+import { useGetDosmJobMarketInsights } from '@workspace/api-client-react';
 import type { PlanningSignal } from '@workspace/workforce-evidence';
 import { useWorkspace } from '@/domain/workspace-context';
 import { activeBaseline, roadmapMilestones } from '@/domain/learning';
-import { occupationSnapshot } from '@/domain/official-roadmap';
 import { completionKey } from '@/domain/services';
 import { demoRoles } from '@/domain/demo-data';
-import { pathwaySamples, sampleStartingSkills } from '@/domain/pathway-samples';
+import { pathwaySamples } from '@/domain/pathway-samples';
 import { buildPathway, describePlanChanges, priorityFingerprint, type PathwayStep } from '@/domain/reskilling-pathway';
 import { readPathwayPreferences } from '@/domain/pathway-preferences';
 import { usePlanningScenario } from '@/hooks/use-planning-scenario';
-import { useAsync, LoadingBlock } from '@/components/workspace/ui';
+import { LoadingBlock } from '@/components/workspace/ui';
 import { PathwayEmpty, PathwayView } from './pathway-view';
 import type { RoadmapBaseline } from '@/domain/types';
 import { malaysianCatalogReference } from '@/domain/resource-catalog';
 import { useAiResearch } from '@/hooks/use-ai-research';
 import { AiResearchEvidence } from '@/components/shared/ai-research-evidence';
-import { SampleCvLinks } from '@/components/shared/fictional-samples';
 import { resolveActivePathway, stepIsDone } from '@/domain/pathway-progress';
 import { PATHWAY_SETTINGS_EVENT } from '@/hooks/use-pathway-progress';
 
 export function PersonalisedPathway() {
-  const { state, startSampleRoadmap } = useWorkspace();
+  const { state } = useWorkspace();
   const [, navigate] = useLocation();
-  const [presetId, setPresetId] = useState<string | null>(null);
-  const [buildError, setBuildError] = useState('');
   const baseline = activeBaseline(state);
-  // This existing endpoint matches synthetic skill names only; no CV, name, or generation request.
-  const occupations = useAsync(signal => matchOccupationEvidence({ skills: sampleStartingSkills(presetId ?? '').map(s => s.name) }, { signal }), presetId ?? '');
   const market = useGetDosmJobMarketInsights();
   const signals = useMemo<PlanningSignal[]>(() => market.data?.occupationGroups
     .filter(g => ['Managers', 'Professionals'].includes(g.label) && g.observations.length)
@@ -37,16 +31,7 @@ export function PersonalisedPathway() {
       previous: g.observations[0].jobOfferings, latest: g.observations.at(-1)!.jobOfferings,
       sourceUrl: g.observations.at(-1)!.dataUrl, period: g.observations.map(o => o.quarter).join(' → '),
     })) ?? [], [market.data]);
-  if (!baseline) return <><SampleCvLinks /><PathwayEmpty presets={pathwaySamples} selectedPresetId={presetId}
-    onSelectPreset={id => { setPresetId(id); setBuildError(''); }}
-    roles={(occupations.data?.occupations ?? []).filter(o => o.recommendationStatus === 'eligible' && o.mapping.status === 'verified' && o.documentedSkills.length).map(o => ({ id: o.id, title: o.mycol.title }))}
-    onBuild={id => {
-      const o = occupations.data?.occupations.find(o => o.id === id);
-      if (!o || !occupations.data || !presetId) return;
-      try { startSampleRoadmap(occupationSnapshot(o, occupations.data), presetId); }
-      catch (error) { setBuildError(error instanceof Error ? error.message : 'This role cannot be built yet.'); }
-    }} loading={occupations.status === 'loading'} error={buildError || occupations.error || ''}
-    onPickRole={() => navigate('/careers-and-jobs?tab=career-paths')} /></>;
+  if (!baseline) return <PathwayEmpty onPickRole={() => navigate('/careers-and-jobs?tab=career-paths')} />;
   if (market.isLoading && !market.data) return <div aria-label="Preparing your pathway with the current market snapshot"><LoadingBlock /></div>;
   return <><ActivePathway key={`${state.audience}:${state.targets[state.audience]}:${baseline.startedAt}`} baseline={baseline}
     signals={signals} marketWarning={market.isError ? 'Market data is unavailable. The plan uses documented role skills and scenario assumptions; refresh Market & AI impact to retry.' : ''} />

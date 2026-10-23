@@ -257,7 +257,7 @@ export function CareerMatcher({ onTopMatch, onConfirmSkills, savedSkills, cvEnab
     {/* 01 Upload */}
     <section className="cm-step" aria-labelledby="cm-s1">
       {cvEnabled ? <>
-      <Step n={1} title="Upload your CV" sub="For the demo, use a sample CV, not a real one. Your CV and document text are not saved." />
+      <Step n={1} title="Upload your CV" sub="Your CV and document text are not saved." />
       <span id="cm-s1" className="sr-only">Step 1, upload your CV</span>
       <div
         className={`cm-drop${dragOver ? ' is-over' : ''}${phase === 'extracting' ? ' is-busy' : ''}`}

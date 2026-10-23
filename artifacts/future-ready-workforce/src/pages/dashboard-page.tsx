@@ -9,7 +9,6 @@ import { RaccoonArt } from '@/components/brand/raccoon-art';
 import { PageHead } from '@/components/workspace/ui';
 import { MatchScore } from '@/components/shared/match-score';
 import { documentedOverlap, officialBaseline } from '@/domain/official-roadmap';
-import { FictionalSamples } from '@/components/shared/fictional-samples';
 import { usePathwayProgress } from '@/hooks/use-pathway-progress';
 
 function SummaryCard({ icon, eyebrow, title, value, foot, href, cta, testId }: {
@@ -81,7 +80,6 @@ function PersonalOverview() {
   return <>
     <PageHead eyebrow={`${audienceLabels[state.audience]} · dashboard`} title={graduate ? 'Turn your studies into a first career move.' : 'Make your next move with a little more clarity.'}
       subtitle="A summary of where you stand. Each card opens the full view." />
-    <FictionalSamples />
     <section className="summary-grid summary-grid-lead">
       <article className="welcome-card">
         <div className="eyebrow">Starting from</div>

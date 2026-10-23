@@ -25,10 +25,7 @@ export type PathwayViewProps = {
 };
 
 export type PathwayEmptyProps = {
-  presets: { id: string; label: string; description: string }[];
-  selectedPresetId: string | null; onSelectPreset: (id: string) => void;
-  roles: { id: string; title: string }[]; onBuild: (roleId: string) => void;
-  loading: boolean; error: string; onPickRole: () => void;
+  onPickRole: () => void;
 };
 
 const PHASES: { key: Phase; cls: string; Icon: typeof Layers; note: string }[] = [
@@ -247,23 +244,10 @@ export function PathwayEmpty(p: PathwayEmptyProps) {
       <span className="pw-phase-icon" aria-hidden><Sparkles size={16} /></span>
       <div><div className="eyebrow">No target role yet</div>
         <h2 className="pw-target">Pick where you're heading. We'll map the steps.</h2>
-        <p className="muted">Choose a role you want to grow into. Try a sample first if you just want to look around.</p></div>
+        <p className="muted">Choose a role in Careers &amp; jobs to build a learning plan using your saved skills.</p></div>
     </div>
-    <fieldset className="pw-presets">
-      <legend>1 · Try a fictional sample profile (optional)</legend>
-      <p className="muted small">Samples are synthetic and kept separate — they never overwrite your saved profile.</p>
-      <div className="pw-preset-grid">{p.presets.map(pr => <label key={pr.id} className={`pw-preset${p.selectedPresetId === pr.id ? ' is-on' : ''}`} data-testid={`card-preset-${pr.id}`}>
-        <input type="radio" name="pw-preset" checked={p.selectedPresetId === pr.id} onChange={() => p.onSelectPreset(pr.id)} data-testid={`radio-preset-${pr.id}`} />
-        <strong>{pr.label}</strong><span>{pr.description}</span></label>)}</div>
-    </fieldset>
     <div className="pw-presets">
-      <h3>2 · Choose a target role</h3>
-      {!p.selectedPresetId && <p className="muted small">Choose a sample above first, or pick a role in Careers &amp; jobs using your saved skills.</p>}
-      {p.error && <div className="match-error" role="alert" data-testid="text-pathway-error">{p.error}</div>}
-      {p.loading ? <div className="pw-role-grid">{[0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 52 }} />)}</div>
-        : p.roles.length ? <div className="pw-role-grid">{p.roles.map(r => <button key={r.id} type="button" className="pw-role" disabled={!p.selectedPresetId} onClick={() => p.onBuild(r.id)} data-testid={`button-build-${r.id}`}><Target size={14} /> {r.title}</button>)}</div>
-          : <p className="muted">No suggested roles yet.</p>}
-      <button type="button" className="text-link" onClick={p.onPickRole} data-testid="button-pick-role">Browse all roles in Careers & jobs →</button>
+      <button type="button" className="btn btn-primary" onClick={p.onPickRole} data-testid="button-pick-role">Pick a role in Careers &amp; jobs</button>
     </div>
   </section>;
 }
