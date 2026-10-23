@@ -160,12 +160,93 @@ test('invalid saved pathway controls recover without consuming or changing works
   assert.equal(result.value.budget, 0);
 });
 test('public catalogue contains reviewed provider metadata and positive stated hours only', () => {
-  assert.equal(courseCatalog.length, 6);
+  assert.equal(new Set(courseCatalog.map(course => course.id)).size, courseCatalog.length);
   for (const course of courseCatalog) {
     assert.match(course.url, /^https:\/\/(www\.open\.edu|www\.netacad\.com)\//);
     assert.ok(course.hours !== null && course.hours > 0);
     assert.ok(course.coverage && course.sourceUrl && course.skills.length && course.sdgs.length);
     assert.equal(course.verified_on, '2026-10-23');
     assert.equal(course.costMYR, 0);
+  }
+});
+
+test('new exact O*NET coverage is selectable at zero budget with or without free-only', () => {
+  const expected = [
+    ['Active Learning', 'ol-learning-how-to-learn', 6, 'Beginner'],
+    ['Learning Strategies', 'ol-learning-how-to-learn', 6, 'Beginner'],
+    ['Monitoring', 'ol-monitoring', 5, 'Beginner'],
+    ['Judgment and Decision Making', 'ol-decision-making', 4, 'Advanced'],
+  ] as const;
+  for (const [skill, id, hours, level] of expected) {
+    for (const freeOnly of [false, true]) {
+      const resource = selectResource(`  ${skill.toUpperCase()}  `, courseCatalog, 0, freeOnly);
+      assert.equal(resource?.id, id);
+      assert.equal(resource.hours, hours);
+      assert.equal(resource.level, level);
+      assert.equal(resource.cost, 'Free');
+      assert.equal(resource.costMYR, 0);
+    }
+  }
+  // Near names and related capabilities are not silently treated as reviewed coverage.
+  for (const skill of ['Learning', 'Decision Making', 'Systems Evaluation', 'Negotiation']) {
+    assert.equal(selectResource(skill, courseCatalog, 1000, false), null);
+  }
+});
+
+test('expanded catalogue reuses learning course and leaves the plan-wide budget for paid gaps', () => {
+  const skills = ['Active Learning', 'Learning Strategies', 'Monitoring', 'Judgment and Decision Making'];
+  const catalog = [...courseCatalog, fixture('paid-negotiation', 'Negotiation', 60), fixture('paid-persuasion', 'Persuasion', 60)];
+  const free = buildPathway(input(skills, { freeOnly: true }));
+  assert.equal(free.steps.length, 4); // Three courses plus the app-estimated portfolio.
+  assert.equal(free.totalHours, 19);
+  assert.equal(free.totalWeeks, 5);
+  assert.equal(free.totalCostMYR, 0);
+  assert.equal(free.unavailableCount, 0);
+  assert.equal(free.unknownDurationCount, 0);
+  assert.equal(free.finishDate, '2026-11-27');
+  assert.deepEqual(free.skills.sort(), [...skills].sort());
+  assert.deepEqual(free.steps.find(s => s.resource?.id === 'ol-learning-how-to-learn')?.milestoneIds.sort(),
+    ['Active Learning', 'Learning Strategies']);
+
+  const paid = buildPathway(input([...skills, 'Negotiation', 'Persuasion'], { budgetMYR: 100, catalog }));
+  assert.equal(paid.totalCostMYR, 60);
+  assert.equal(paid.steps.filter(s => s.status === 'budget').length, 1);
+  assert.ok(paid.steps.filter(s => skills.includes(s.skill)).every(s => s.status === 'available'));
+  const freeOnly = buildPathway(input([...skills, 'Negotiation'], { budgetMYR: 100, freeOnly: true, catalog }));
+  assert.equal(freeOnly.totalCostMYR, 0);
+  assert.equal(freeOnly.steps.find(s => s.skill === 'Negotiation')?.status, 'budget');
+});
+
+test('missing provider time or cost never becomes a made-up duration or free price', () => {
+  const reviewed = courseCatalog.find(r => r.id === 'ol-monitoring')!;
+  const noTime = buildPathway(input(['Monitoring'], { catalog: [{ ...reviewed, hours: null }] }));
+  assert.equal(noTime.steps[0].status, 'available');
+  assert.equal(noTime.steps[0].hours, null);
+  assert.equal(noTime.steps[0].weeks, null);
+  assert.equal(noTime.finishDate, null);
+  assert.equal(noTime.unknownDurationCount, 1);
+  for (const freeOnly of [false, true]) {
+    const noPrice = { ...reviewed, costMYR: null };
+    assert.equal(selectResource('Monitoring', [noPrice], 10000, freeOnly), null);
+    const plan = buildPathway(input(['Monitoring'], { catalog: [noPrice], freeOnly, budgetMYR: 10000 }));
+    assert.equal(plan.steps[0].resource?.costMYR, null);
+    assert.equal(plan.steps[0].hours, null);
+    assert.equal(plan.unavailableCount, 1);
+    assert.equal(plan.finishDate, null);
+  }
+});
+
+test('catalogue expansion cannot change role priorities, scenario bonuses or existing resource SDGs', () => {
+  const skills = ['Active Learning', 'Monitoring', 'Judgment and Decision Making', 'Time Management'];
+  const oldCatalog = courseCatalog.filter(r => !['ol-learning-how-to-learn', 'ol-monitoring', 'ol-decision-making'].includes(r.id));
+  for (const scenario of ['moderate', 'fast'] as const) {
+    const before = buildPathway(input(skills, { catalog: oldCatalog, scenario }));
+    const after = buildPathway(input(skills, { scenario }));
+    assert.equal(priorityFingerprint(after), priorityFingerprint(before));
+    assert.deepEqual(after.steps.map(s => [s.evidenceUrl, s.importance, s.marketEvidence]),
+      before.steps.map(s => [s.evidenceUrl, s.importance, s.marketEvidence]));
+    assert.deepEqual(after.steps.find(s => s.skill === 'Time Management')?.sdgs,
+      before.steps.find(s => s.skill === 'Time Management')?.sdgs);
+    assert.deepEqual(after.steps.at(-1)?.sdgs, before.steps.at(-1)?.sdgs);
   }
 });
