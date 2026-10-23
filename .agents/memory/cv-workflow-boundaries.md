@@ -68,3 +68,9 @@ CV upload and skill review belong on My profile, but consented career analysis b
 **Why:** After separating upload from analysis, the user explicitly requested a useful career-adviser experience with recommended next steps on Skill analysis, rather than dictionary definitions or generic fixed replacements.
 
 **How to apply:** Reuse the same transient, consented explanation across navigation without another AI call or persistent storage. Preserve roadmap milestones and skill review. Be transparent that titles can share pooled skill references: equal scores are not independent evidence or hiring probabilities. Missing CV evidence is not proof of missing ability; never turn names alone into proficiency or experience claims.
+
+Skill-based learning guidance belongs on a subpage of Learning roadmap, not inline on the parent page. Remove the shared “AI Career Explanation” shortcut button, while keeping Skill analysis itself available.
+
+**Why:** The user explicitly requested the guidance subpage and deletion of that button, not removal of Skill analysis or its saved-skill analysis.
+
+**How to apply:** Link to guidance from Learning roadmap, provide a route back, and reuse the existing temporary analysis without additional inference or changes to saved plan/progress.

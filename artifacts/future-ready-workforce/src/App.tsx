@@ -15,6 +15,7 @@ const ProfilePage = lazy(() => import('@/pages/profile-page'));
 const CareersAndJobsPage = lazy(() => import('@/pages/careers-and-jobs-page'));
 const MarketAndAiImpactPage = lazy(() => import('@/pages/market-and-ai-impact-page'));
 const LearningRoadmapPage = lazy(() => import('@/pages/learning-roadmap-page'));
+const SkillLearningGuidancePage = lazy(() => import('@/pages/skill-learning-guidance-page'));
 const RoleDetailPage = lazy(() => import('@/pages/role-detail-page'));
 const TeamPage = lazy(() => import('@/pages/team-page'));
 const JobDetailsPage = lazy(() => import('@/components/job-details-page'));
@@ -53,6 +54,7 @@ function App() {
         <Route path="/careers-and-jobs/roles/:id" component={RoleDetailPage} />
         <Route path="/careers-and-jobs/listings/:id" component={JobDetailsRoute} />
         <Route path="/market-and-ai-impact" component={MarketAndAiImpactPage} />
+        <Route path="/learning-roadmap/skill-guidance" component={SkillLearningGuidancePage} />
         <Route path="/learning-roadmap" component={LearningRoadmapPage} />
         <Route path="/team" component={TeamPage} />
 
