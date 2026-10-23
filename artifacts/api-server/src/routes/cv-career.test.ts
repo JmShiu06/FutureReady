@@ -6,10 +6,8 @@ import { createAiRouter } from "./ai";
 import type { generateLlmExplanation } from "../lib/runpod";
 import { GenerateCvCareerExplanationResponse } from "@workspace/api-zod";
 
-const data = { skills: ["python", "sql"], education: ["Diploma in computing"], workExperience: [],
-  certifications: [], projects: ["Reporting dashboard"], languages: [], extractionLimited: true };
+const data = { skills: ["python", "sql"], languages: [], extractionLimited: true };
 const sections = {
-  candidateSummary: "The reviewed CV reports computing education and a dashboard project.",
   skillAnalysis: "python. Meaning: programming language. Importance: automation. Industries: technology.\n\nsql. Meaning: database query language. Importance: data access. Industries: banking and retail.",
   careerMatchAnalysis: "The supplied roles overlap with these skills, without establishing hiring suitability.",
   skillGapAnalysis: "Other listed skills are not evidenced in the CV.",
@@ -44,19 +42,19 @@ it("requires explicit consent and rejects personal/raw fields before invoking th
   });
 });
 
-it("returns seven grounded sections, no-store and authoritative matches after consent", async () => {
+it("returns six grounded sections, no-store and authoritative matches after consent", async () => {
   await server(async input => {
     assert.equal(input.json, true);
     assert.equal(input.maxTokens, 4000);
     assert.equal("sampleId" in input.context, false);
-    assert.deepEqual(input.context.reviewedCv, data);
+    assert.deepEqual(input.context.reviewedCv, { skills: data.skills, languages: data.languages });
     return { explanation: JSON.stringify(sections) };
   }, async post => {
     const response = await post({ consent: true, data });
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("cache-control"), "no-store");
     const result = GenerateCvCareerExplanationResponse.parse(await response.json());
-    assert.equal(Object.keys(result.sections).length, 7);
+    assert.equal(Object.keys(result.sections).length, 6);
     assert.ok(result.matches.every(match => match.matchedSkills.includes("python") || match.matchedSkills.includes("sql")));
   });
 });

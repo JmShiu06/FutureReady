@@ -33,6 +33,8 @@ export interface LearningMilestone {
   id: string; skill: string; title: string; provider: string; verifiedUrl: string | null;
   synthetic: boolean; durationHours: number | null; costMYR: number | null; prerequisites: string[];
   priority: RequiredSkill['priority']; order: number;
+  activity?: string; timeBasis?: string; costCaveat?: string; reviewedAt?: string;
+  coverage?: string; evidenceUrl?: string; kind?: 'course' | 'practice';
 }
 export interface Scenario {
   id: 'moderate' | 'fast'; label: string; assumptions: string[]; prioritySkills: string[];

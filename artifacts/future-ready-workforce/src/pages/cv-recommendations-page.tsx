@@ -64,7 +64,7 @@ export function MatchedRolesTab() {
           Career names from your uploaded AI Job Market Dataset, ranked by <b>exact / related skill overlap</b> with the skills saved in your profile.
         Related matches are labeled. These are role recommendations, not live vacancies or a hiring probability.
         </p>
-        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open AI Career Explanation</Link>
+      <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>
       </div>
 
       {result && <details className="panel panel-pad" style={{ marginBottom: 16 }} data-testid="details-cv-career-source">

@@ -1,17 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { WorkspaceContext, type WorkspaceContextValue } from './workspace-store';
+export { useWorkspace } from './workspace-store';
 import { blankProfile, migrateLegacySkills } from './demo-data';
 import { clearPlanData, confirmSkillUpdate as applyConfirmation, resetActiveRoadmap as applyResetActiveRoadmap, setMilestoneComplete, startRoadmap as applyStartRoadmap } from './learning';
 import { audiences, defaultWorkspace, loadWorkspace, persistWorkspace, profileSchema } from './storage';
 import type { Audience, DemoProfile, OfficialRoadmapOccupation, WorkspaceState } from './types';
 
-interface WorkspaceContextValue {
-  state: WorkspaceState; profile: DemoProfile; targetRoleId: string; storageWarning: string;
-  setAudience(audience: Audience): void; saveProfile(profile: DemoProfile): void;
-  resetProfile(): void;
-  startRoadmap(roleId: string, occupation?: OfficialRoadmapOccupation): void; resetActiveRoadmap(): void; setMilestoneComplete(key: string, done: boolean): void;
-  confirmSkillUpdate(milestoneId: string, toLevel: number): string;
-}
-const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [loaded] = useState(() => {
     try {
@@ -87,9 +81,4 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     },
   };
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
-}
-export function useWorkspace() {
-  const context = useContext(WorkspaceContext);
-  if (!context) throw new Error('WorkspaceProvider is required.');
-  return context;
 }

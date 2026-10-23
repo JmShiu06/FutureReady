@@ -312,7 +312,7 @@ export function ProfileCvImport({
       {session.draft && (session.draft.certifications.length > 0 || session.draft.languages.length > 0) && <div className="profile-cv-extra" data-testid="list-cv-extra">
         {session.draft.certifications.length > 0 && <div><strong>Certifications found</strong><ul>{session.draft.certifications.map(c => <li key={c.id}>{c.text}</li>)}</ul></div>}
         {session.draft.languages.length > 0 && <div><strong>Languages found</strong><ul>{session.draft.languages.map(c => <li key={c.id}>{c.text}</li>)}</ul></div>}
-        <p>Shown separately from dataset skills. Review them in AI Career Explanation below.</p>
+        <p>Shown separately from dataset skills. Languages are not required or shared in Skill analysis.</p>
       </div>}
       <div className="profile-cv-dialog-footer">
         <button type="button" className="btn btn-secondary btn-small" onClick={() => setReviewDialogOpen(false)}>Back to profile</button>

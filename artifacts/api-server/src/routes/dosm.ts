@@ -6,7 +6,7 @@ import {
   RefreshDosmLabourForceResponse,
 } from "@workspace/api-zod";
 import { z } from "zod";
-import { validateDosmJobMarketInsightsSnapshot } from "../data/dosm-jmi-2026";
+import { dosmJobMarketService } from "../lib/dosmJobMarket";
 import { dosmLabourForceService } from "../lib/dosmData";
 import { searchDosmOccupationEmployment } from "../services/occupation-employment-search";
 
@@ -87,13 +87,24 @@ router.get("/dosm/occupation-employment-search", async (req, res): Promise<void>
 
 router.get("/dosm/job-market-insights", (_req, res): void => {
   try {
-    const result = validateDosmJobMarketInsightsSnapshot();
+    const result = dosmJobMarketService.get();
     GetDosmJobMarketInsightsResponse.parse(result);
     res.json(result);
   } catch {
     res.status(500).json({
       error: "The reviewed DOSM job-market snapshot failed validation.",
     });
+  }
+});
+
+router.post("/dosm/job-market-insights/refresh", async (req, res): Promise<void> => {
+  try {
+    const result = await dosmJobMarketService.refresh();
+    GetDosmJobMarketInsightsResponse.parse(result);
+    res.json(result);
+  } catch (error) {
+    req.log.warn({ error: error instanceof Error ? error.message : "Unknown public source error" }, "DOSM JMI refresh unavailable; previous snapshot retained");
+    res.status(502).json({ error: "DOSM workbook refresh failed or was requested too soon. The last validated snapshot was retained. Retry after one minute." });
   }
 });
 

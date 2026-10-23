@@ -115,6 +115,7 @@ export function CvSessionProvider({ children }: { children: ReactNode }) {
     requestExplanation: () => {
       if (!draft || !consent) return;
       const data = buildPayload(draft);
+      if (!data.skills.length) return;
       explainRef.current?.abort();
       const controller = new AbortController();
       explainRef.current = controller;

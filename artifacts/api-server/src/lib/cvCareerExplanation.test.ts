@@ -6,12 +6,10 @@ import { learningResources } from "../data/learningResources";
 import { cvCertifications } from "../data/cvCertifications";
 
 export const syntheticReviewedCv = {
-  skills: ["python", "sql"], education: ["Diploma in computing"],
-  workExperience: ["Created reporting scripts"], certifications: [], projects: ["Inventory dashboard"],
+  skills: ["python", "sql"],
   languages: ["English"], extractionLimited: true,
 };
 export const syntheticSections = {
-  candidateSummary: "The reviewed CV reports computing education and reporting scripts.",
   skillAnalysis: "python. Meaning: programming language. Importance: automates work. Industries: technology and finance.\n\nsql. Meaning: database query language. Importance: retrieves data. Industries: banking and retail.",
   careerMatchAnalysis: "The supplied roles have some skill overlap, not evidence of hiring suitability.",
   skillGapAnalysis: "The listed missing skills are not evidenced in the CV; they are not proven weaknesses.",
@@ -25,14 +23,15 @@ it("uses only reviewed facts, unchanged match scores and catalogue resources", (
   const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
   const matches = matchCvCareerSkills(syntheticReviewedCv.skills).matches.slice(0, 3);
   assert.deepEqual(prepared.matches.map(match => match.score), matches.map(match => match.score));
-  assert.deepEqual(prepared.request.context.reviewedCv, syntheticReviewedCv);
+  assert.deepEqual(prepared.request.context.reviewedCv, { skills: syntheticReviewedCv.skills, languages: syntheticReviewedCv.languages });
+  assert.deepEqual(Object.keys(prepared.request.context.reviewedCv).sort(), ["languages", "skills"]);
   assert.equal("sampleId" in prepared.request.context, false);
   assert.equal("score" in prepared.request.context.matches[0], false);
   assert.equal(JSON.stringify(syntheticReviewedCv), before);
   assert.ok(prepared.resources.every(resource => [...learningResources, ...cvCertifications].some(record => record.id === resource.id && record.url === resource.url)));
   assert.ok(prepared.resources.some(resource => resource.id === "cert-python-institute-pcep"));
   const result = parseCvCareerExplanation(JSON.stringify(syntheticSections), prepared);
-  assert.equal(Object.keys(result.sections).length, 7);
+  assert.equal(Object.keys(result.sections).length, 6);
   assert.deepEqual(result.matches, prepared.matches);
   assert.ok(result.warnings.includes("Some information may be incomplete due to CV extraction limitations."));
 });
@@ -48,9 +47,9 @@ it("rejects no consent, raw text, arbitrary fields, fabricated skills and oversi
   ]) assert.throws(() => prepareCvCareerExplanation(input), CvCareerInputError);
 });
 
-it("redacts contact details again at the API boundary and rejects unsupported outputs", () => {
-  const prepared = prepareCvCareerExplanation({ consent: true, data: { ...syntheticReviewedCv, workExperience: ["Automated reports; email manager@example.test"] } });
-  assert.doesNotMatch(JSON.stringify(prepared.request.context), /manager@example/);
+it("rejects narrative/contact fields at the API boundary and rejects unsupported outputs", () => {
+  assert.throws(() => prepareCvCareerExplanation({ consent: true, data: { ...syntheticReviewedCv, workExperience: ["Fictional reports"] } }), CvCareerInputError);
+  const prepared = prepareCvCareerExplanation({ consent: true, data: syntheticReviewedCv });
   for (const sections of [
     { ...syntheticSections, score: "high" },
     { ...syntheticSections, skillGapAnalysis: "Hiring probability is 99%." },
@@ -60,12 +59,10 @@ it("redacts contact details again at the API boundary and rejects unsupported ou
     { ...syntheticSections, skillGapAnalysis: "The candidate is proficient in English." },
   ]) assert.throws(() => parseCvCareerExplanation(JSON.stringify(sections), prepared));
   const factual = parseCvCareerExplanation(JSON.stringify({ ...syntheticSections,
-    candidateSummary: "The candidate is fluent in English.",
     careerMatchAnalysis: "Backend: these roles require python and sql. Hiring probability is 99%.",
     strengths: "The candidate is a proficient expert.",
     improvementSuggestions: "Enroll in an invented certification course.",
   }), prepared);
-  assert.doesNotMatch(factual.sections.candidateSummary, /fluent/);
   assert.doesNotMatch(factual.sections.careerMatchAnalysis, /Backend|99%|roles require/);
   for (const match of prepared.matches) assert.ok(factual.sections.careerMatchAnalysis.includes(match.title));
   assert.doesNotMatch(factual.sections.strengths, /proficient expert/);

@@ -42,7 +42,6 @@ export * from './documentedSkill';
 export * from './documentedSkillDomain';
 export * from './dosmJobMarketInsightsResponse';
 export * from './dosmJobMarketObservation';
-export * from './dosmJobMarketObservationQuarter';
 export * from './dosmLabourForceMetadata';
 export * from './dosmLabourForceObservation';
 export * from './dosmLabourForceResponse';

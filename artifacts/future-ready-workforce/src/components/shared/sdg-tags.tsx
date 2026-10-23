@@ -2,10 +2,13 @@ import { Leaf } from 'lucide-react';
 import { sdgGoals, sdgMappings } from '@/domain/demo-data';
 import { mycolSdgMappings, type MycolSdgMapping } from '@workspace/workforce-evidence';
 import { AiExplainButton } from '@/components/ai-drawer';
+import { roleSdgUseCases } from '@workspace/workforce-evidence';
+import { SdgUseCase } from './sdg-use-case';
 
 /** SDG relevance folded into role cards. Relevance to a cited UN target is never measured impact. */
 export function SdgTags({ roleId, compact = false }: { roleId: string; compact?: boolean }) {
   const maps = [...sdgMappings, ...mycolSdgMappings].filter(m => m.roleId === roleId);
+  if (!maps.length && roleSdgUseCases[roleId]) return <SdgUseCase roleId={roleId} />;
   if (!maps.length) return compact
     ? <span className="tag tag-low" title="No reviewed SDG mapping is available for this role. No contribution or impact is implied." data-testid={`text-sdg-none-${roleId}`}>SDG relevance not assessed</span>
     : <p className="muted small" data-testid={`text-sdg-none-${roleId}`}>SDG relevance not assessed. No reviewed mapping is available for this role; this does not imply no relevance or impact.</p>;

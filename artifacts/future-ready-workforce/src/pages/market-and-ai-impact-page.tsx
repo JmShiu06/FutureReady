@@ -7,11 +7,12 @@ import { AiAnnouncementsPanel, SkillFrequencyPanel } from '@/components/workspac
 import { AiExplainButton } from '@/components/ai-drawer';
 import { TabPanel, UrlTabs, type TabDef } from '@/components/shared/url-tabs';
 import { AiImpactTab } from '@/pages/scenarios-page';
+import { PlanningPanel } from '@/components/workspace/planning-panel';
 
 type Tab = 'market' | 'ai-impact';
 const tabs: TabDef<Tab>[] = [
   { key: 'market', label: 'Labour market', icon: <BarChart3 size={14} aria-hidden="true" /> },
-  { key: 'ai-impact', label: 'AI Explanation', icon: <Cpu size={14} aria-hidden="true" /> },
+  { key: 'ai-impact', label: 'Skill analysis', icon: <Cpu size={14} aria-hidden="true" /> },
 ];
 
 export default function MarketAndAiImpactPage() {
@@ -27,6 +28,7 @@ export default function MarketAndAiImpactPage() {
         <div className="tab-intro"><p className="muted small">Latest available DOSM national observations, AI announcements and skill frequencies. Not occupation vacancies or AI causation.</p>
           <AiExplainButton request={{ feature: 'market-trends' }} label="Summarise market trends with AI" /></div>
         <DosmNationalContext />
+        <PlanningPanel />
         <DosmDataPanels />
         <div className="stack" style={{ gap: 18, marginBottom: 22, minWidth: 0 }}>
           <AiAnnouncementsPanel />

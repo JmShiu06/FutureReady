@@ -9,6 +9,14 @@ import type { DosmJobMarketObservation } from './dosmJobMarketObservation';
 import type { DosmOccupationGroup } from './dosmOccupationGroup';
 
 export interface DosmJobMarketInsightsResponse {
+  /**
+     * Null for the bundled reviewed fallback; otherwise the actual successful retrieval time.
+     * @nullable
+     */
+  retrievedAt?: string | null;
+  /** @nullable */
+  warning?: string | null;
+  isStale?: boolean;
   datasetId: string;
   sourceName: string;
   sourceUrl: string;

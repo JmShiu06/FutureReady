@@ -5,10 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { DosmJobMarketObservationQuarter } from './dosmJobMarketObservationQuarter';
 
 export interface DosmJobMarketObservation {
-  quarter: DosmJobMarketObservationQuarter;
+  /** @pattern ^\d{4}-Q[1-4]$ */
+  quarter: string;
   /** @minimum 0 */
   jobOfferings: number;
   publicationDate: Date;

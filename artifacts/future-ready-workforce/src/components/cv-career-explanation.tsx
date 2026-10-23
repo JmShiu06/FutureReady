@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { Link } from 'wouter';
-import { AlertTriangle, BookOpen, Check, ChevronDown, ExternalLink, Languages, Lightbulb, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react';
+import { AlertTriangle, BookOpen, Check, ChevronDown, ExternalLink, Lightbulb, Lock, RotateCcw, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react';
 import { useCvSession, type CvDraft, type DraftItem } from '@/domain/cv-session';
 import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 import { MatchScore } from '@/components/shared/match-score';
@@ -38,12 +38,12 @@ function ItemRow({ field, item, label }: { field: ListField; item: DraftItem; la
 function CvPreview() {
   const { draft, payload, consent, setConsent, requestExplanation, explainPhase, clear } = useCvSession();
   if (!draft || !payload) return null;
-  const sendable = Object.entries(payload).some(([k, v]) => k !== 'extractionLimited' && Array.isArray(v) && v.length > 0);
+  const sendable = payload.skills.length > 0;
   return <section className="cvx-preview" aria-labelledby="cvx-preview-title" data-testid="panel-cvx-preview">
     <div className="cvx-preview-head">
       <div>
         <h3 id="cvx-preview-title">Review what will be shared</h3>
-        <p><Lock size={12} aria-hidden="true" /> Only selected skill names and recognized language names go to RunPod after consent. Education, work history, certifications, projects, fluency ratings, contact details and the CV file are not included.</p>
+        <p><Lock size={12} aria-hidden="true" /> Only selected CV skill names go to RunPod after consent. Languages, education, work history, certifications, projects, proficiency ratings, contact details and the CV file are not included.</p>
       </div>
       <button type="button" className="btn btn-secondary btn-small" onClick={clear} data-testid="button-cvx-discard"><Trash2 size={12} aria-hidden="true" /> Discard CV details</button>
     </div>
@@ -55,22 +55,17 @@ function CvPreview() {
         ? <p className="cvx-empty" data-testid="text-cvx-no-skills">{NO_SKILLS_MESSAGE}</p>
         : <div className="cvx-skill-grid">{draft.skills.map(item => <ItemRow key={item.id} field="skills" item={item} label="skill name" />)}</div>}
     </details>
-    <div className="cvx-field">
-      <h4><Languages size={13} aria-hidden="true" /> Languages <span>{payload.languages.length} selected</span></h4>
-      {draft.languages.length === 0 ? <p className="cvx-empty">No recognized language names detected. No free-text language descriptions are shared.</p>
-        : draft.languages.map(item => <ItemRow key={item.id} field="languages" item={item} label="language name" />)}
-    </div>
 
     <div className="cvx-consent">
       <label>
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} disabled={!sendable || explainPhase === 'loading'} data-testid="checkbox-cvx-consent" />
-        <span>I consent to sending only the selected skill names and language names to RunPod for a one-off explanation. No other CV details are shared. The result is not saved.</span>
+        <span>I consent to sending only the selected CV skill names to RunPod Qwen/Qwen3-4B for a one-off skill analysis. No languages or other CV details are shared. The result is not saved.</span>
       </label>
       <button type="button" className="btn btn-primary" disabled={!consent || !sendable || explainPhase === 'loading'} onClick={requestExplanation} data-testid="button-cvx-generate">
         {explainPhase === 'loading' ? <RaccoonLoader size="small" /> : <Sparkles size={14} aria-hidden="true" />}
-        {explainPhase === 'loading' ? 'Generating explanation' : 'Generate AI career explanation'}
+        {explainPhase === 'loading' ? 'Analysing CV skills' : 'Analyse my CV skills'}
       </button>
-      {!sendable && <p className="cvx-empty">Select at least one detail to generate an explanation.</p>}
+      {!sendable && <p className="cvx-empty">Select at least one CV skill to start analysis. Languages are not required.</p>}
     </div>
   </section>;
 }
@@ -90,10 +85,10 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
   const { sections, matches, resources, warnings } = explanation;
   const titleId = view === 'learning' ? 'cvx-learning-result-title' : 'cvx-result-title';
   return <section className="cvx-result" aria-labelledby={titleId} data-testid={view === 'learning' ? 'panel-cvx-learning-result' : 'panel-cvx-result'}>
-    <h3 id={titleId}>{view === 'learning' ? 'Your CV learning guidance' : 'Your AI career explanation'}</h3>
+    <h3 id={titleId}>{view === 'learning' ? 'Your CV learning guidance' : 'Your CV skill analysis'}</h3>
     <p className="muted small">{view === 'learning'
       ? 'Improvement options use reviewed CV details and verified learning records. AI explains growth opportunities; suggestions do not verify qualifications or exam readiness.'
-      : 'Career alignment uses the selected skill names and dataset references. AI explains skill meanings and gaps; skill and language names do not verify proficiency, experience or qualifications.'}</p>
+      : 'Career alignment uses only selected CV skill names and dataset references. AI explains skill meanings and gaps; skill names do not verify proficiency, experience or qualifications.'}</p>
     {warnings.length > 0 && <ul className="cvx-warnings" data-testid="list-cvx-warnings">{warnings.map(w => <li key={w}>{w}</li>)}</ul>}
     <div className="cvx-sections">
       {sectionDefs.filter(({ key }) => cvExplanationSectionInView(key, view)).map(({ key, title, icon: Icon }, i) => <details className="cvx-card" key={key} open={i === 0} data-testid={`card-cvx-${key}`}>
@@ -127,8 +122,8 @@ export function CvCareerExplanation({ showUploadLink = false }: { showUploadLink
     <div className="cvx-head">
       <span className="cvx-head-icon"><Sparkles size={18} aria-hidden="true" /></span>
       <div>
-        <h2 id="cvx-title">AI Career Explanation</h2>
-        <p>Skill analysis, career matches, gaps and discussion areas based only on selected skill names and languages. Learning guidance is on Learning roadmap.</p>
+        <h2 id="cvx-title">Skill analysis</h2>
+        <p>Analyse skills detected from your CV, explore strengths and gaps, and review career alignment. Languages are not required or shared. Learning guidance is on Learning roadmap.</p>
       </div>
     </div>
     {phase === 'extracting' && <div className="cvx-skeleton" role="status"><span className="sr-only">Reading your CV.</span><RaccoonLoader /><i style={{ width: '80%' }} /><i style={{ width: '60%' }} /></div>}
@@ -156,10 +151,10 @@ export function CvLearningGuidance() {
     </div>
     {hasResultState ? <ExplanationResult view="learning" /> : <div className="cvx-start" data-testid="state-cvx-learning-empty">
       <strong>{phase === 'extracting' ? 'Reading your CV…' : 'No CV learning guidance yet.'}</strong>
-      <p>Upload a CV in My profile, then review and generate its explanation in AI Explanation. Guidance stays in this tab only and clears on a new upload, audience change or reload. Your saved roadmap milestones are separate.</p>
+      <p>Upload a CV in My profile, then review its skills in Skill analysis. Guidance stays in this tab only and clears on a new upload, audience change or reload. Your saved roadmap milestones are separate.</p>
     </div>}
     <Link href={draft ? '/market-and-ai-impact?tab=ai-impact' : '/my-profile'} className="text-link" data-testid="link-cvx-learning-review">
-      {draft ? 'Review CV details or generate guidance in AI Explanation' : 'Upload CV in My profile'}
+      {draft ? 'Review CV skills or generate guidance in Skill analysis' : 'Upload CV in My profile'}
     </Link>
   </section>;
 }

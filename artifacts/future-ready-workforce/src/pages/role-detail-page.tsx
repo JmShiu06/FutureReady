@@ -31,7 +31,7 @@ function SampleRoleDetail({ id }: { id: string }) {
       <div className="role-meta"><span><BriefcaseBusiness size={14} />{role.industry}</span><span><Target size={14} />{role.demandLabel}</span></div>
       <div className="row" style={{ marginTop: 16 }}>
         <BuildRoadmapButton roleId={role.id} testId="button-build-roadmap" />
-        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open AI Career Explanation</Link>
+        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>
       </div>
     </div>
     <div className="detail-layout">

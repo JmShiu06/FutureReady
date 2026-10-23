@@ -115,7 +115,7 @@ export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onAp
     <div aria-live="polite" aria-busy={loading}>
       {loading && <p className="muted small" role="status">Waiting for RunPod. Your existing results remain available.</p>}
       {result && <div className="ai-generated-explanation" data-testid={`result-ai-${feature}`}>
-        <strong>{result.sampleLabel} · AI-generated final answer</strong>
+        <strong>{result.sampleLabel} · Qwen/Qwen3-4B · AI-generated final answer</strong>
         <p style={{ whiteSpace: 'pre-line' }}>{result.explanation}</p>
         {result.suggestions && onApplySkills && <AiSkillSuggestions suggestions={result.suggestions} onApply={onApplySkills} />}
         {result.evidence && result.evidence.length > 0 && <ul className="ai-evidence-list" aria-label="Server-selected evidence">

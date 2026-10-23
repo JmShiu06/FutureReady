@@ -28,7 +28,6 @@ export function recognizeCvLanguageNames(values: string[]): CvLanguageName[] {
 export function buildCvAiPayload(draft: SkillLanguageDraft): CvAiSkillData {
   const skills = [...new Set(draft.skills.filter(item => item.include)
     .map(item => item.text.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 50);
-  const languages = [...new Set(draft.languages.filter(item => item.include)
-    .map(item => item.text).filter((name): name is CvLanguageName => languageNames.includes(name as CvLanguageName)))].slice(0, 12);
-  return { skills, languages, extractionLimited: draft.extractionLimited };
+  // Preserve the existing wire schema without sharing language data.
+  return { skills, languages: [], extractionLimited: draft.extractionLimited };
 }

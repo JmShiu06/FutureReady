@@ -9,6 +9,12 @@ Use a specific UN target and documented duties together to support occupational 
 
 **How to apply:** Preserve unassessed states when evidence is insufficient. Separate source publication/adoption dates from access/review dates. Do not fabricate skill requirements from duty citations.
 
+Conditional project examples are distinct from general occupational mappings. A digital role may illustrate a specific target only within an explicitly stated hypothetical application, with the duty source, target, sub-role exclusions and uncertainty visible. Skills inherit that exercise context, not an unconditional SDG classification.
+
+**Why:** Domain 1 requires role and skill-level explanations, but a generic IT skill or occupation does not by itself establish sustainable-development relevance.
+
+**How to apply:** Keep conditional examples labelled as app interpretations, not measured impacts or newly source-established blanket mappings. Do not promote these examples into general occupational evidence or imply course completion achieves a target.
+
 Do not route real-occupation SDG tags through fictional-role, goal-only AI explanations without a separately approved contract change.
 
 **Why:** A goal selector cannot identify the occupation or its reviewed sub-role scope; silently reusing it could misattribute fictional evidence to a real occupation.

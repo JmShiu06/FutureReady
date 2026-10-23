@@ -3,6 +3,12 @@ name: CV workflow boundaries
 description: User-defined privacy and scope constraints for FutureReady CV work and separate canvas experiments.
 ---
 
+The CV analysis destination is “Skill analysis” and should analyse CV skill names only, not languages. After CV skill grading, offer optional navigation and save grades before leaving; never start inference merely because navigation was accepted.
+
+**Why:** The user explicitly requested skill-only analysis and an optional redirect after grading.
+
+**How to apply:** Keep language data out of analysis payloads, preserve explicit AI consent, and retain old route links for compatibility.
+
 The CV workflow belongs in the existing FutureReady website and follows the current soft brown-and-cream site palette (see frontend-product-boundaries.md). FPS-style canvas frames are separate design references, not approval to replace the live website theme.
 
 **Why:** The user explicitly requested soft brown and cream for the site after earlier palette changes. Collaborative canvas experiments are not blanket approval to restyle the application.

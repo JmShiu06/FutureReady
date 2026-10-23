@@ -40,7 +40,7 @@ it("preserves reference skill lists, 30-skill scores, aliases, and general-caree
 it("uses the same scoped career catalogue in AI context and authoritative result cards", () => {
   const prepared = prepareCvCareerExplanation({
     consent: true,
-    data: { skills: ["python", "sql"], education: [], workExperience: [], certifications: [], projects: [], languages: [], extractionLimited: true },
+    data: { skills: ["python", "sql"], languages: [], extractionLimited: true },
   });
   assert.ok(prepared.matches.length > 0);
   assert.ok(prepared.matches.every(match => titles.includes(match.title)));

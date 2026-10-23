@@ -850,16 +850,9 @@ export interface DosmOccupationEmploymentSearchResponse {
   nationalContext: DosmOccupationEmploymentSearchResponseNationalContext;
 }
 
-export type DosmJobMarketObservationQuarter = typeof DosmJobMarketObservationQuarter[keyof typeof DosmJobMarketObservationQuarter];
-
-
-export const DosmJobMarketObservationQuarter = {
-  '2026-Q1': '2026-Q1',
-  '2026-Q2': '2026-Q2',
-} as const;
-
 export interface DosmJobMarketObservation {
-  quarter: DosmJobMarketObservationQuarter;
+  /** @pattern ^\d{4}-Q[1-4]$ */
+  quarter: string;
   /** @minimum 0 */
   jobOfferings: number;
   publicationDate: string;
@@ -875,6 +868,14 @@ export interface DosmOccupationGroup {
 }
 
 export interface DosmJobMarketInsightsResponse {
+  /**
+     * Null for the bundled reviewed fallback; otherwise the actual successful retrieval time.
+     * @nullable
+     */
+  retrievedAt?: string | null;
+  /** @nullable */
+  warning?: string | null;
+  isStale?: boolean;
   datasetId: string;
   sourceName: string;
   sourceUrl: string;

@@ -30,7 +30,8 @@ const normaliseSkillName = (value: string) => value.normalize('NFKC').trim().rep
 
 export default function ProfilePage() {
   const { state, profile, saveProfile } = useWorkspace();
-  const { phase: cvPhase } = useCvSession();
+  const { phase: cvPhase, draft: cvDraft } = useCvSession();
+  const [analysisPromptOpen, setAnalysisPromptOpen] = useState(false);
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
   const skills = useFieldArray({ control: form.control, name: 'skills' });
   const profileSkills = form.watch('skills') ?? [];
@@ -45,10 +46,12 @@ export default function ProfilePage() {
     const { interestsText, ...rest } = v;
     saveProfile({ ...rest, interests: interestsText.split(',').map(s => s.trim()).filter(Boolean) } as DemoProfile);
     setSaved('Profile updated for this session. Browser storage warnings, if any, are shown above.');
+    if (cvDraft?.skills.length && v.skills.length) setAnalysisPromptOpen(true);
   };
   const applyCvImport = (imported: ProfileSkill[], detectedNames: string[]) => {
     const next = mergeCvSkills(form.getValues('skills'), imported, detectedNames);
     skills.replace(next.skills);
+    if (imported.length && cvDraft?.skills.length) setAnalysisPromptOpen(true);
     setSaved(`${imported.length} new CV skill${imported.length === 1 ? '' : 's'} applied${next.removed.length ? `; ${next.removed.length} skill${next.removed.length === 1 ? '' : 's'} from an earlier CV not found in this one removed` : ''}. Manual skills and skills found again kept their ratings. Save your skills to keep them.`);
   };
   const addSkill = () => {
@@ -99,7 +102,7 @@ export default function ProfilePage() {
     </>}</div>
     <div id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" hidden={section !== 'skills'}>
     <ProfileCvImport existingSkills={profileSkills} onApply={applyCvImport} />
-    {cvPhase === 'ready' && <p className="muted small"><Link href="/market-and-ai-impact?tab=ai-impact" className="text-link" data-testid="link-profile-cv-review">Review extracted CV details in AI Explanation</Link></p>}
+    {cvPhase === 'ready' && <p className="muted small"><Link href="/market-and-ai-impact?tab=ai-impact" className="text-link" data-testid="link-profile-cv-review">Review your CV skills in Skill analysis</Link></p>}
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="stack" noValidate>
         <div className="panel panel-pad">
@@ -156,6 +159,20 @@ export default function ProfilePage() {
         </div>
       </form>
     </Form>
+    <AlertDialog open={analysisPromptOpen} onOpenChange={setAnalysisPromptOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Open Skill analysis?</AlertDialogTitle>
+          <AlertDialogDescription>You’ve finished grading your skills. Would you like to save your skills and open Skill analysis to review the skills detected from your CV? Opening the page does not send anything to AI; you’ll choose which skills to share and give consent there.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid="button-stay-after-grading">Stay here</AlertDialogCancel>
+          <button type="button" className="btn btn-primary" data-testid="button-open-analysis-after-grading" onClick={() => {
+            void form.handleSubmit(v => { onSubmit(v); setAnalysisPromptOpen(false); navigate('/market-and-ai-impact?tab=ai-impact'); }, () => setAnalysisPromptOpen(false))();
+          }}>Save and open Skill analysis</button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </div>
   </>;
 }

@@ -577,7 +577,7 @@ paths:
     get:
       operationId: getDosmJobMarketInsights
       tags: [dosm]
-      summary: Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+      summary: Get the latest validated DOSM major-occupation-group snapshot
       description: Counts are online job offerings, not a complete vacancy count or skill-demand measure.
       responses:
         "200":
@@ -586,6 +586,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DosmJobMarketInsightsResponse"
+  /dosm/job-market-insights/refresh:
+    post:
+      operationId: refreshDosmJobMarketInsights
+      tags: [dosm]
+      summary: Retrieve the latest available quarterly DOSM JMI workbook
+      responses:
+        "200":
+          description: Official workbook retrieved and validated; cached data replaced atomically
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DosmJobMarketInsightsResponse"
+        "502":
+          description: Refresh failed; previous snapshot retained
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /dosm/refresh:
     post:
       operationId: refreshDosmLabourForce
@@ -1861,7 +1879,7 @@ components:
       properties:
         quarter:
           type: string
-          enum: ["2026-Q1", "2026-Q2"]
+          pattern: '^\d{4}-Q[1-4]$'
         jobOfferings:
           type: integer
           minimum: 0
@@ -1891,6 +1909,13 @@ components:
     DosmJobMarketInsightsResponse:
       type: object
       properties:
+        retrievedAt:
+          type: [string, "null"]
+          description: Null for the bundled reviewed fallback; otherwise the actual successful retrieval time.
+        warning:
+          type: [string, "null"]
+        isStale:
+          type: boolean
         datasetId:
           type: string
         sourceName:

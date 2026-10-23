@@ -1028,15 +1028,20 @@ export const GetDosmOccupationEmploymentSearchResponse = zod.object({
 
 /**
  * Counts are online job offerings, not a complete vacancy count or skill-demand measure.
- * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+ * @summary Get the latest validated DOSM major-occupation-group snapshot
  */
+export const getDosmJobMarketInsightsResponseTotalByQuarterItemQuarterRegExp = new RegExp('^\\d{4}-Q[1-4]$');
 export const getDosmJobMarketInsightsResponseTotalByQuarterItemJobOfferingsMin = 0;
 
+export const getDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemQuarterRegExp = new RegExp('^\\d{4}-Q[1-4]$');
 export const getDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemJobOfferingsMin = 0;
 
 
 
 export const GetDosmJobMarketInsightsResponse = zod.object({
+  "retrievedAt": zod.string().nullish().describe('Null for the bundled reviewed fallback; otherwise the actual successful retrieval time.'),
+  "warning": zod.string().nullish(),
+  "isStale": zod.boolean().optional(),
   "datasetId": zod.string(),
   "sourceName": zod.string(),
   "sourceUrl": zod.string().url(),
@@ -1050,7 +1055,7 @@ export const GetDosmJobMarketInsightsResponse = zod.object({
   "caveats": zod.array(zod.string()),
   "reviewedAt": zod.coerce.date(),
   "totalByQuarter": zod.array(zod.object({
-  "quarter": zod.enum(['2026-Q1', '2026-Q2']),
+  "quarter": zod.string().regex(getDosmJobMarketInsightsResponseTotalByQuarterItemQuarterRegExp),
   "jobOfferings": zod.number().int().min(getDosmJobMarketInsightsResponseTotalByQuarterItemJobOfferingsMin),
   "publicationDate": zod.coerce.date(),
   "reportUrl": zod.string().url(),
@@ -1060,8 +1065,56 @@ export const GetDosmJobMarketInsightsResponse = zod.object({
   "id": zod.string().describe('Application-owned stable key; the source workbook provides a label, not a standard occupation code.'),
   "label": zod.string(),
   "observations": zod.array(zod.object({
-  "quarter": zod.enum(['2026-Q1', '2026-Q2']),
+  "quarter": zod.string().regex(getDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemQuarterRegExp),
   "jobOfferings": zod.number().int().min(getDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemJobOfferingsMin),
+  "publicationDate": zod.coerce.date(),
+  "reportUrl": zod.string().url(),
+  "dataUrl": zod.string().url()
+}))
+}))
+})
+
+
+/**
+ * @summary Retrieve the latest available quarterly DOSM JMI workbook
+ */
+export const refreshDosmJobMarketInsightsResponseTotalByQuarterItemQuarterRegExp = new RegExp('^\\d{4}-Q[1-4]$');
+export const refreshDosmJobMarketInsightsResponseTotalByQuarterItemJobOfferingsMin = 0;
+
+export const refreshDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemQuarterRegExp = new RegExp('^\\d{4}-Q[1-4]$');
+export const refreshDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemJobOfferingsMin = 0;
+
+
+
+export const RefreshDosmJobMarketInsightsResponse = zod.object({
+  "retrievedAt": zod.string().nullish().describe('Null for the bundled reviewed fallback; otherwise the actual successful retrieval time.'),
+  "warning": zod.string().nullish(),
+  "isStale": zod.boolean().optional(),
+  "datasetId": zod.string(),
+  "sourceName": zod.string(),
+  "sourceUrl": zod.string().url(),
+  "termsUrl": zod.string().url(),
+  "attribution": zod.string(),
+  "reuseNote": zod.string(),
+  "coverage": zod.string(),
+  "measure": zod.string(),
+  "classification": zod.string(),
+  "methodology": zod.string(),
+  "caveats": zod.array(zod.string()),
+  "reviewedAt": zod.coerce.date(),
+  "totalByQuarter": zod.array(zod.object({
+  "quarter": zod.string().regex(refreshDosmJobMarketInsightsResponseTotalByQuarterItemQuarterRegExp),
+  "jobOfferings": zod.number().int().min(refreshDosmJobMarketInsightsResponseTotalByQuarterItemJobOfferingsMin),
+  "publicationDate": zod.coerce.date(),
+  "reportUrl": zod.string().url(),
+  "dataUrl": zod.string().url()
+})),
+  "occupationGroups": zod.array(zod.object({
+  "id": zod.string().describe('Application-owned stable key; the source workbook provides a label, not a standard occupation code.'),
+  "label": zod.string(),
+  "observations": zod.array(zod.object({
+  "quarter": zod.string().regex(refreshDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemQuarterRegExp),
+  "jobOfferings": zod.number().int().min(refreshDosmJobMarketInsightsResponseOccupationGroupsItemObservationsItemJobOfferingsMin),
   "publicationDate": zod.coerce.date(),
   "reportUrl": zod.string().url(),
   "dataUrl": zod.string().url()

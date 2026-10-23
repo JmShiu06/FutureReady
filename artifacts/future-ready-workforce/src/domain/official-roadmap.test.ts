@@ -121,13 +121,18 @@ test('reset removes only the active roadmap and progress while preserving skills
   assert.equal(resetActiveRoadmap(reset), reset);
 });
 
-test('unavailable courses have no invented costs, durations or broad skill substitutions', () => {
+test('unavailable courses become explicit estimated practices, not invented courses or broad substitutions', () => {
   const milestones = roadmapMilestones(begin());
   assert.ok(milestones.length);
   for (const milestone of milestones) {
-    assert.equal(milestone.verifiedUrl, null);
-    assert.equal(milestone.costMYR, null);
-    assert.equal(milestone.durationHours, null);
+    if (!milestone.verifiedUrl) {
+      assert.equal(milestone.kind, 'practice');
+      assert.match(milestone.timeBasis!, /App-estimated/);
+      assert.match(milestone.coverage!, /No verified course/);
+      assert.ok(milestone.activity!.length > 80);
+    } else assert.equal(milestone.kind, 'course');
+    assert.equal(milestone.costMYR, 0);
+    assert.ok(milestone.durationHours! > 0);
     assert.equal(milestone.synthetic, false);
   }
   // Exercise catalogue compatibility without claiming that O*NET documents these technical labels.

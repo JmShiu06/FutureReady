@@ -10,6 +10,9 @@ export { mycolSdgMappings } from './mycol-sdg';
 export { learningResources, learningResourceCatalog } from './learning-resources';
 export type { CatalogSkill, VerifiedLearningResource } from './learning-resources';
 export type { MycolSdgMapping, SdgCitation } from './mycol-sdg';
+export * from './planning';
+export * from './occupational-learning';
+export * from './sdg-use-cases';
 
 export const sdgMappings: SdgMapping[] = [
   {

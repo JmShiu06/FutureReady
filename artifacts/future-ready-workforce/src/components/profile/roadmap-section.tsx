@@ -8,7 +8,9 @@ import { activeBaseline, roadmapMilestones } from '@/domain/learning';
 import { ChiliProgressBar } from '@/components/chili-progress-bar';
 import { EmptyBlock, PriorityTag, SectionTitle } from '@/components/workspace/ui';
 import { BuildRoadmapButton } from '@/components/build-roadmap-button';
-import { learningResourceCatalog } from '@workspace/workforce-evidence';
+import { learningResourceCatalog, scenarioSkillBonus, type PlanningScenario } from '@workspace/workforce-evidence';
+import { learningSchedule } from '@/domain/learning-schedule';
+import { SdgUseCase } from '@/components/shared/sdg-use-case';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -20,6 +22,7 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
   const [hours, setHours] = useState(profile.learningHours === null ? '' : String(profile.learningHours));
   const [budget, setBudget] = useState(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
   const [msg, setMsg] = useState('');
+  const [scenario, setScenario] = useState<PlanningScenario>('moderate');
   useEffect(() => {
     setHours(profile.learningHours === null ? '' : String(profile.learningHours));
     setBudget(profile.budgetMYR === null ? '' : String(profile.budgetMYR));
@@ -29,18 +32,16 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
   const role = demoRoles.find(r => r.id === targetRoleId);
   const savedPlans = Object.entries(state.baselines).filter(([key]) => key.startsWith(`${state.audience}:`));
   const built = !!activeBaseline(state);
-  const milestones = useMemo(() => roadmapMilestones(state), [state]);
+  const milestones = useMemo(() => roadmapMilestones(state).sort((a, b) => {
+    if (!occupation) return a.order - b.order;
+    const score = (m: typeof a) => 12 * (occupation.documentedSkills.find(s => s.name === m.skill)?.importance ?? 0) + scenarioSkillBonus(m.skill, scenario);
+    return score(b) - score(a) || a.order - b.order;
+  }).map((m, i) => ({ ...m, order: i + 1 })), [state, occupation, scenario]);
   const shown = milestones.filter(m => costFilter === 'all' || (m.costMYR !== null && (costFilter === 'free' ? m.costMYR === 0 : m.costMYR <= 100)));
   const done = milestones.filter(m => state.completion[completionKey(state.audience, m.id)]).length;
   const totalCost = milestones.reduce((t, m) => t + (m.costMYR ?? 0), 0);
   const unknownCosts = milestones.filter(m => m.costMYR === null).length;
-  let week = 1;
-  const schedule = profile.learningHours === null ? [] : milestones.filter(m => m.durationHours !== null).map(m => {
-    const weeks = Math.max(1, Math.ceil(m.durationHours! / profile.learningHours!));
-    const s = { m, start: week, end: week + weeks - 1 };
-    week += weeks;
-    return s;
-  });
+  const schedule = profile.learningHours === null ? [] : learningSchedule(milestones.filter(m => !state.completion[completionKey(state.audience, m.id)]), profile.learningHours);
   const budgetSummary = profile.budgetMYR === null
     ? 'budget not set — add one in Replan to compare.'
     : `budget MYR ${profile.budgetMYR}${totalCost > profile.budgetMYR ? ' — over budget; try the free filter.' : ' — within budget.'}`;
@@ -100,6 +101,9 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
       <div className="panel panel-pad">
         <SectionTitle title="Replan" note="HOURS AND BUDGET" />
         <div className="stack">
+          {occupation && <div className="field"><label htmlFor="roadmap-scenario">Planning scenario (app assumptions)</label>
+            <select id="roadmap-scenario" className="fr-select" value={scenario} onChange={e => setScenario(e.target.value as PlanningScenario)} data-testid="select-roadmap-scenario"><option value="moderate">Moderate AI disruption</option><option value="fast">Fast AI disruption</option></select>
+            <span className="small muted">Reorders gaps only; does not change saved completion or skill levels. Priority = 12 × O*NET importance + scenario skill bonus. Inspect assumptions in Market &amp; AI impact.</span></div>}
           <div className="row"><div className="field" style={{ flex: 1 }}><label htmlFor="rp-h">Hours / week</label><input id="rp-h" type="number" min={1} max={40} className="fr-input" value={hours} onChange={e => setHours(e.target.value)} data-testid="input-replan-hours" /></div>
             <div className="field" style={{ flex: 1 }}><label htmlFor="rp-b">Budget MYR</label><input id="rp-b" type="number" min={0} className="fr-input" value={budget} onChange={e => setBudget(e.target.value)} data-testid="input-replan-budget" /></div></div>
           <button className="btn btn-primary" onClick={apply} data-testid="button-apply-replan">Apply</button>
@@ -119,15 +123,19 @@ export function RoadmapSection({ onReview }: { onReview: () => void }) {
           <div className="stack" style={{ gap: 6 }}>
             <div className="spread"><h3>{m.order}. {m.title}</h3>{!occupation && <PriorityTag priority={m.priority} />}</div>
             {occupation && <span className="small muted">{m.skill} · O*NET importance {occupation.documentedSkills.find(s => s.name === m.skill)?.importance.toFixed(2)} / 5 · no self-rating target</span>}
-            <span className="small">{m.provider} · {m.durationHours === null ? 'Duration unknown' : `${m.durationHours.toFixed(2).replace(/\.00$/, '')} hrs`} · {m.costMYR === null ? 'Cost unknown' : m.costMYR === 0 ? 'Free' : `MYR ${m.costMYR}`}{m.synthetic ? ' · synthetic' : ''}</span>
+             <span className="small">{m.provider} · {m.durationHours === null ? 'Duration unknown' : `${m.durationHours.toFixed(2).replace(/\.00$/, '')} hrs`} · {m.costMYR === null ? 'Cost unknown' : m.costMYR === 0 ? 'No learning-content purchase required' : `MYR ${m.costMYR}`}{m.synthetic ? ' · synthetic' : ''}</span>
+             {m.timeBasis && <span className="small muted">{m.timeBasis} · reviewed {m.reviewedAt}</span>}
+             {m.activity && <p className="small">{m.activity}</p>}
+             {m.coverage && <p className="small muted">{m.coverage} {m.costCaveat}</p>}
             <span className="small">{m.verifiedUrl ? <a href={m.verifiedUrl} target="_blank" rel="noreferrer" className="text-link" data-testid={`link-resource-${m.order}`}>{m.verifiedUrl}</a> : occupation ? 'No verified resource in the current catalogue. This is a planning activity, not a course recommendation.' : 'No verified URL — fictional example'}</span>
             <span className="small muted">Prerequisites: {m.prerequisites.join('; ')}</span>
+             {occupation && <><a className="text-link small" href={m.evidenceUrl ?? occupation.sourceUrl} target="_blank" rel="noreferrer" data-testid={`link-step-evidence-${m.order}`}>O*NET skill evidence · {occupation.release}</a><SdgUseCase roleId={occupation.id} skill={m.skill} /></>}
           </div></div>; })}</div>
         <div className="panel panel-pad"><SectionTitle title="Weekly schedule" note={profile.learningHours === null ? 'SET HOURS IN REPLAN' : `AT ${profile.learningHours} HRS / WEEK`} />
           {profile.learningHours === null
             ? <p className="muted">Set weekly learning hours in Replan to calculate a schedule.</p>
-            : schedule.map(s => <div key={s.m.id} className="week-row"><span className="mono">Wk {s.start}{s.end > s.start ? `–${s.end}` : ''}</span><span>{s.m.skill}</span></div>)}
-          <div className="disclaimer"><Info size={14} /><span>Weeks = known duration hours ÷ weekly learning hours, rounded up. {milestones.some(m => m.durationHours === null) ? 'Activities with unknown duration are unscheduled; this is not a complete timeline.' : 'Shown in milestone order.'}</span></div></div>
+             : schedule.map(s => <div key={s.week} className="week-row"><span className="mono">Wk {s.week}</span><span>{s.activities.map(a => `${a.skill} (${a.hours.toFixed(1)}h)`).join('; ')}</span></div>)}
+           <div className="disclaimer"><Info size={14} /><span>Remaining activities are packed in order into your weekly capacity. Course times are provider estimates; practice times are app estimates. Completed steps are omitted. Unknown-duration activities are not scheduled.</span></div></div>
       </div>}
   </>;
 }

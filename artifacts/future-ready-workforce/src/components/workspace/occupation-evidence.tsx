@@ -200,7 +200,7 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
           : <span className="small muted" data-testid="text-roadmap-unavailable">Roadmap unavailable: no reviewed documented skill requirements.</span>}
         <Link href="/learning-roadmap" className="btn btn-primary btn-small" data-testid="link-occupation-roadmap"><Workflow size={12} /> Continue to my roadmap</Link>
         <Link href="/my-profile" className="btn btn-secondary btn-small" data-testid="link-occupation-profile"><UserRound size={12} /> Update my skills</Link>
-        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation-occupation">Open AI Career Explanation</Link>
+        <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation-occupation">Open Skill analysis</Link>
       </div>
     </div>
     <div className="detail-layout">

@@ -28,7 +28,7 @@ export function CareerPathsTab() {
   return <>
     <div className="tab-intro">
       <p className="muted">Sample career paths ranked by <b>illustrative proficiency coverage</b>, with SDG relevance tags. Malaysian critical occupations below use a separate <b>O*NET documented overlap</b> count.</p>
-      <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open AI Career Explanation</Link>
+      <Link href="/market-and-ai-impact?tab=ai-impact" className="btn btn-secondary btn-small" data-testid="link-ai-career-explanation">Open Skill analysis</Link>
     </div>
     {result.status === 'loading' && !result.data && <LoadingBlock rows={4} />}
     {result.status === 'error' && <ErrorBlock message={result.error ?? 'Could not rank careers.'} onRetry={result.retry} />}

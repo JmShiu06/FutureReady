@@ -1626,7 +1626,7 @@ export const getGetDosmJobMarketInsightsUrl = () => {
 
 /**
  * Counts are online job offerings, not a complete vacancy count or skill-demand measure.
- * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+ * @summary Get the latest validated DOSM major-occupation-group snapshot
  */
 export const getDosmJobMarketInsights = async ( options?: Parameters<typeof customFetch>[1]): Promise<DosmJobMarketInsightsResponse> => {
 
@@ -1673,7 +1673,7 @@ export type GetDosmJobMarketInsightsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get the reviewed DOSM 2026 Q1/Q2 major-occupation-group snapshot
+ * @summary Get the latest validated DOSM major-occupation-group snapshot
  */
 
 export function useGetDosmJobMarketInsights<TData = Awaited<ReturnType<typeof getDosmJobMarketInsights>>, TError = ErrorType<unknown>>(
@@ -1693,6 +1693,80 @@ export function useGetDosmJobMarketInsights<TData = Awaited<ReturnType<typeof ge
 
 
 
+
+export const getRefreshDosmJobMarketInsightsUrl = () => {
+
+
+
+
+  return `/api/dosm/job-market-insights/refresh`
+}
+
+/**
+ * @summary Retrieve the latest available quarterly DOSM JMI workbook
+ */
+export const refreshDosmJobMarketInsights = async ( options?: Parameters<typeof customFetch>[1]): Promise<DosmJobMarketInsightsResponse> => {
+
+  return customFetch<DosmJobMarketInsightsResponse>(getRefreshDosmJobMarketInsightsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRefreshDosmJobMarketInsightsMutationKey = () => ['refreshDosmJobMarketInsights'] as const;
+
+export const getRefreshDosmJobMarketInsightsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshDosmJobMarketInsights>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshDosmJobMarketInsights>>, TError,void, TContext> => {
+
+const mutationKey = getRefreshDosmJobMarketInsightsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshDosmJobMarketInsights>>, void> = () => {
+
+
+          return  refreshDosmJobMarketInsights(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshDosmJobMarketInsightsMutationResult = NonNullable<Awaited<ReturnType<typeof refreshDosmJobMarketInsights>>>
+
+    export type RefreshDosmJobMarketInsightsMutationError = ErrorType<ErrorResponse>
+
+
+    /**
+ * @summary Retrieve the latest available quarterly DOSM JMI workbook
+ */
+export const useRefreshDosmJobMarketInsights = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshDosmJobMarketInsights>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof refreshDosmJobMarketInsights>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRefreshDosmJobMarketInsightsMutationOptions(options));
+    }
 
 export const getRefreshDosmLabourForceUrl = () => {
 
