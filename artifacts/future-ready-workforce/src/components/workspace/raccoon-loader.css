@@ -9,14 +9,12 @@
   align-items: center;
   vertical-align: middle;
 }
-.raccoon-loader-regular { width: min(240px, 62vw); gap: 6px; }
+.raccoon-loader-regular { width: min(150px, 48vw); gap: 4px; }
 .raccoon-loader-small { width: auto; }
 .raccoon-loader-art {
   display: block;
   width: 100%;
   height: auto;
-  /* Multiply drops the off-white paper into the warm theme without editing the artwork's pixels. */
-  mix-blend-mode: multiply;
   user-select: none;
   animation: raccoon-loader-float 3.2s ease-in-out infinite;
   will-change: transform;
@@ -44,10 +42,10 @@
 .loading-block-cue { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px 0 4px; }
 .loading-block-text { margin: 0; color: #6c5744; font-size: 13px; text-align: center; }
 .cvx-skeleton > .raccoon-loader { justify-self: center; }
-.profile-cv-drop > .raccoon-loader-regular { width: min(120px, 40vw); }
+.profile-cv-drop > .raccoon-loader-regular { width: min(90px, 28vw); }
 .profile-cv-result-title { display:flex; align-items:center; gap:6px; }
 
-@media (max-width: 640px) { .raccoon-loader-regular { width: min(180px, 56vw); } }
+@media (max-width: 640px) { .raccoon-loader-regular { width: min(110px, 56vw); } }
 @media (prefers-reduced-motion: reduce) {
   .raccoon-loader-art, .raccoon-loader .paw-lit, .raccoon-loader .paw-glow { animation: none !important; }
   /* Static: first paw lit so the cue still reads as "in progress". */
