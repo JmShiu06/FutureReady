@@ -36,7 +36,9 @@ import { useI18n } from '@/i18n/i18n-context';
 export function AiAnnouncementsPanel() {
   const { ui } = useI18n();
   const queryClient = useQueryClient();
-  const query = useGetAiAnnouncements();
+  const query = useGetAiAnnouncements({
+    query: { queryKey: getGetAiAnnouncementsQueryKey(), retry: false, refetchOnWindowFocus: false },
+  });
   const refresh = useRefreshAiAnnouncements();
   const data = query.data;
 
@@ -53,6 +55,17 @@ export function AiAnnouncementsPanel() {
             onClick={() =>
               refresh.mutate(undefined, {
                 onSuccess: next => queryClient.setQueryData(getGetAiAnnouncementsQueryKey(), next),
+                onError: () => {
+                  queryClient.setQueryData(getGetAiAnnouncementsQueryKey(), (previous: typeof data) =>
+                    previous
+                      ? {
+                          ...previous,
+                          isStale: true,
+                          warning: "The latest refresh failed. Showing the previously retrieved announcements.",
+                        }
+                      : previous,
+                  );
+                },
               })
             }
             data-testid="button-refresh-announcements"
@@ -68,7 +81,7 @@ export function AiAnnouncementsPanel() {
           <p><a href={OFFICIAL_ANNOUNCEMENTS_URL} target="_blank" rel="noopener noreferrer">{ui('Open the official Ministry of Digital announcements page')}</a></p>
         </div>
       )}
-      {refresh.isSuccess && (
+      {refresh.isSuccess && !refresh.data.isStale && (
         <div role="status" className="small muted" style={{ marginBottom: 12 }}>
           Retrieved from the Ministry of Digital page at {fmtTimestamp(refresh.data.retrievedAt)}.
         </div>
@@ -82,9 +95,11 @@ export function AiAnnouncementsPanel() {
       )}
       {data && (
         <>
-          {data.isStale && (
+          {(data.isStale || query.isError) && (
             <div role="alert" className="state-box" style={{ marginBottom: 12 }} data-testid="stale-announcements">
-              {data.warning ?? "These announcements may be out of date."}
+              {data.warning ?? (query.isError
+                ? "The latest refresh failed. Showing the previously retrieved announcements."
+                : "These announcements may be out of date.")}
             </div>
           )}
           {data.items.length === 0 ? (

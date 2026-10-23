@@ -34,7 +34,9 @@ test("keeps the earlier copy and marks it stale when a refresh fails", async () 
   const service = createAiAnnouncementService({
     now: () => now,
     cacheTtlMs: 1_000,
-    fetchImpl: async () => (fail ? new Response("no", { status: 503 }) : new Response(html, { status: 200 })),
+    fetchImpl: async () => (fail
+      ? new Response("no", { status: 503, headers: { "retry-after": "300" } })
+      : new Response(html, { status: 200 })),
   });
   const first = await service.get();
   assert.equal(first.isStale, false);
@@ -44,7 +46,65 @@ test("keeps the earlier copy and marks it stale when a refresh fails", async () 
   assert.equal(stale.isStale, true);
   assert.match(stale.warning ?? "", /refresh failed/i);
   assert.equal(stale.retrievedAt, first.retrievedAt);
+  assert.equal(stale.sourceFailure?.responseStatus, 503);
+  assert.equal(stale.sourceFailure?.responseHeaders["retry-after"], "300");
   await assert.rejects(service.refresh(), /HTTP 503/);
+});
+
+test("captures safe HTTP failure diagnostics without logging cookies or unsanitized body content", async () => {
+  const service = createAiAnnouncementService({
+    fetchImpl: async () => new Response(
+      `<html><script>private script text</script><p>Automated readers wait. Contact test.person@example.com</p><p>Bearer abc123secret</p></html>`,
+      {
+        status: 503,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "retry-after": "300",
+          server: "ministry-edge",
+          "set-cookie": "session=private-cookie",
+        },
+      },
+    ),
+  });
+  await assert.rejects(service.get(), error => {
+    const diagnostics = (error as Error & { diagnostics: {
+      requestUrl: string;
+      responseStatus: number | null;
+      responseHeaders: Record<string, string>;
+      contentType: string | null;
+      sanitizedExcerpt: string | null;
+      failureKind: string;
+    } }).diagnostics;
+    assert.equal(diagnostics.requestUrl, "https://www.digital.gov.my/en-GB/siaran");
+    assert.equal(diagnostics.responseStatus, 503);
+    assert.equal(diagnostics.responseHeaders["retry-after"], "300");
+    assert.equal(diagnostics.responseHeaders["content-type"], "text/html; charset=utf-8");
+    assert.equal(diagnostics.responseHeaders.server, "ministry-edge");
+    assert.equal("set-cookie" in diagnostics.responseHeaders, false);
+    assert.equal(diagnostics.contentType, "text/html; charset=utf-8");
+    assert.equal(diagnostics.failureKind, "http_status");
+    assert.match(diagnostics.sanitizedExcerpt ?? "", /Automated readers wait/);
+    assert.match(diagnostics.sanitizedExcerpt ?? "", /\[EMAIL\]/);
+    assert.match(diagnostics.sanitizedExcerpt ?? "", /Bearer \[REDACTED\]/);
+    assert.doesNotMatch(diagnostics.sanitizedExcerpt ?? "", /test\.person@example\.com|abc123secret|private-cookie|private script text/);
+    assert.ok((diagnostics.sanitizedExcerpt ?? "").length <= 300);
+    return true;
+  });
+});
+
+test("classifies an aborted upstream request as a timeout", async () => {
+  const service = createAiAnnouncementService({
+    requestTimeoutMs: 5,
+    fetchImpl: (_url, init) => new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+    }),
+  });
+  await assert.rejects(service.get(), error => {
+    const diagnostics = (error as Error & { diagnostics: { failureKind: string; responseStatus: number | null } }).diagnostics;
+    assert.equal(diagnostics.failureKind, "timeout");
+    assert.equal(diagnostics.responseStatus, null);
+    return true;
+  });
 });
 
 test("throws when the source fails and nothing is cached", async () => {

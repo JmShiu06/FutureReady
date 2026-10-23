@@ -10,6 +10,19 @@ const MAX_LOG_EXCERPT_CHARS = 300;
 const STALE_AFTER_DAYS = 14;
 const DEFAULT_RETRY_AFTER_SECONDS = 60;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const LOGGABLE_RESPONSE_HEADERS = [
+  "retry-after",
+  "content-type",
+  "content-length",
+  "date",
+  "server",
+  "via",
+  "cache-control",
+  "age",
+  "x-request-id",
+  "cf-ray",
+  "x-cache",
+] as const;
 
 export type AiAnnouncementFetchDiagnostics = {
   requestUrl: string;
@@ -84,6 +97,67 @@ function retryAfterSeconds(value: string | null, now: Date): number {
   return Math.min(86_400, seconds);
 }
 
+function safeExcerpt(text: string): string {
+  return text
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&(?:nbsp|#160);/gi, " ")
+    .replace(/&(?:amp|#38);/gi, "&")
+    .replace(/&(?:lt|#60);/gi, "<")
+    .replace(/&(?:gt|#62);/gi, ">")
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [REDACTED]")
+    .replace(/\b(?:token|api[_ -]?key|authorization|cookie)\s*[:=]\s*["']?[^"' \t,;]+/gi, "credential=[REDACTED]")
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[EMAIL]")
+    .replace(/\b(?:\+?\d[\d ().-]{7,}\d)\b/g, "[PHONE]")
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, "[IP]")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, MAX_LOG_EXCERPT_CHARS);
+}
+
+function responseDiagnostics(
+  requestUrl: string,
+  responseStatus: number | null,
+  headers: Headers | null,
+  sanitizedExcerpt: string | null,
+  failureKind: AiAnnouncementFetchDiagnostics["failureKind"],
+): AiAnnouncementFetchDiagnostics {
+  const responseHeaders: Record<string, string> = {};
+  for (const name of LOGGABLE_RESPONSE_HEADERS) {
+    const value = headers?.get(name);
+    if (value) responseHeaders[name] = value.slice(0, 300);
+  }
+  return {
+    requestUrl,
+    responseStatus,
+    responseHeaders,
+    contentType: headers?.get("content-type")?.slice(0, 200) ?? null,
+    sanitizedExcerpt,
+    failureKind,
+  };
+}
+
+async function readErrorExcerpt(response: Response): Promise<string | null> {
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("text/") && !contentType.includes("json") && !contentType.includes("xml")) return null;
+  if (!response.body) return null;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let result = "";
+  try {
+    while (result.length < MAX_ERROR_BODY_BYTES) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      result += decoder.decode(value, { stream: true }).slice(0, MAX_ERROR_BODY_BYTES - result.length);
+    }
+    result += decoder.decode();
+    return safeExcerpt(result);
+  } finally {
+    void reader.cancel().catch(() => undefined);
+  }
+}
+
 /**
  * Reads the server-rendered Ministry of Digital press-release listing.
  * Throws if the page structure no longer yields any valid entry, so a layout
@@ -120,7 +194,12 @@ export function parseMinistryListing(html: string): { all: number; items: AiAnno
   return { all, items };
 }
 
-function toResponse(cache: CacheEntry, now: Date, fallbackUsed: boolean) {
+function toResponse(
+  cache: CacheEntry,
+  now: Date,
+  fallbackUsed: boolean,
+  sourceFailure?: AiAnnouncementFetchDiagnostics,
+) {
   const newest = cache.items[0]?.publishedOn;
   const ageDays = newest
     ? (now.getTime() - new Date(`${newest}T00:00:00.000Z`).getTime()) / 86_400_000
@@ -137,6 +216,7 @@ function toResponse(cache: CacheEntry, now: Date, fallbackUsed: boolean) {
     retrievedAt: cache.retrievedAt,
     isStale: fallbackUsed || tooOld,
     warning,
+    ...(sourceFailure ? { sourceFailure } : {}),
     limitations: [
       "Entries are retrieved by reading the public listing page because the Ministry offers no RSS feed or API; a site redesign can interrupt retrieval.",
       "Only titles that explicitly mention AI are listed. Announcements are qualitative context, not skill-demand measurements or forecasts.",
@@ -164,16 +244,45 @@ export function createAiAnnouncementService(options: ServiceOptions = {}) {
         signal: controller.signal,
       });
       if (!response.ok) {
+        const excerpt = await readErrorExcerpt(response);
+        const diagnostics = responseDiagnostics(listingUrl, response.status, response.headers, excerpt, "http_status");
         throw new AiAnnouncementSourceUnavailableError(
           `The Ministry of Digital listing returned HTTP ${response.status}.`,
           retryAfterSeconds(response.headers.get("retry-after"), now()),
           response.status,
+          diagnostics,
         );
       }
       const html = await response.text();
       if (html.length > MAX_HTML_BYTES) throw new Error("The Ministry of Digital page was unexpectedly large.");
       const retrieved = now();
-      return { items: parseMinistryListing(html).items, retrievedAt: retrieved.toISOString(), expiresAt: retrieved.getTime() + cacheTtlMs };
+      try {
+        return { items: parseMinistryListing(html).items, retrievedAt: retrieved.toISOString(), expiresAt: retrieved.getTime() + cacheTtlMs };
+      } catch (error) {
+        const diagnostics = responseDiagnostics(
+          listingUrl,
+          response.status,
+          response.headers,
+          safeExcerpt(error instanceof Error ? error.message : "Response could not be processed."),
+          "response_processing",
+        );
+        throw new AiAnnouncementSourceUnavailableError(
+          "The Ministry of Digital page response could not be processed.",
+          DEFAULT_RETRY_AFTER_SECONDS,
+          response.status,
+          diagnostics,
+        );
+      }
+    } catch (error) {
+      if (error instanceof AiAnnouncementSourceUnavailableError) throw error;
+      const timedOut = controller.signal.aborted;
+      const failureKind = timedOut ? "timeout" : "network";
+      throw new AiAnnouncementSourceUnavailableError(
+        timedOut ? "The Ministry of Digital listing request timed out." : "The official announcement listing could not be reached.",
+        DEFAULT_RETRY_AFTER_SECONDS,
+        undefined,
+        responseDiagnostics(listingUrl, null, null, safeExcerpt(error instanceof Error ? error.message : "Request failed."), failureKind),
+      );
     } finally {
       clearTimeout(timeout);
     }
@@ -202,12 +311,12 @@ export function createAiAnnouncementService(options: ServiceOptions = {}) {
     try {
       if (retryAt > current.getTime() && lastFailure) {
         if (!cache) throw lastFailure;
-        return toResponse(cache, current, true);
+        return toResponse(cache, current, true, lastFailure.diagnostics);
       }
-      return toResponse(await fetchAndCache(), now(), false);
+       return toResponse(await fetchAndCache(), now(), false);
     } catch (error) {
       if (!cache) throw error;
-      return toResponse(cache, now(), true);
+       return toResponse(cache, now(), true, error instanceof AiAnnouncementSourceUnavailableError ? error.diagnostics : undefined);
     }
   }
 
