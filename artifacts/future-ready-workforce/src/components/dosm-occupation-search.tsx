@@ -42,6 +42,31 @@ export function DosmOccupationSearch() {
 
   return (
     <section className="dosm-occupation-search panel" aria-labelledby="dosm-occupation-title" data-testid="panel-dosm-occupation-search">
+      {query.data && latest && (
+        <section className="dosm-occupation-national" aria-labelledby="dosm-national-title" data-testid="panel-dosm-national-context">
+          <div className="dosm-occupation-national-heading">
+            <div>
+              <h3 id="dosm-national-title">Malaysia-wide context</h3>
+              <p>All occupations · {formatMonth(latest.date)}</p>
+            </div>
+            <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noreferrer">OpenDOSM source</a>
+          </div>
+          {query.data.nationalContext.isStale && query.data.nationalContext.warning && (
+            <p className="dosm-occupation-warning" role="status">{query.data.nationalContext.warning}</p>
+          )}
+          <div className="dosm-occupation-stats">
+            <StatCard label="People employed" value={formatPeople(latest.employedThousands)} />
+            <StatCard label="People unemployed" value={formatPeople(latest.unemployedThousands)} />
+            <StatCard label="Unemployment rate" value={`${latest.unemploymentRate.toFixed(1)}%`} />
+            <StatCard label="Employment-to-population ratio" value={`${latest.employmentPopulationRatio.toFixed(1)}%`} />
+          </div>
+          <p className="dosm-occupation-rate-explainer">National figures, not rates for a specific job.</p>
+          <details className="dosm-occupation-methodology">
+            <summary>About these rates</summary>
+            <p>The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for the searched job.</p>
+          </details>
+        </section>
+      )}
       <div className="dosm-occupation-heading">
         <div className="dosm-occupation-icon" aria-hidden="true"><UsersRound size={18} /></div>
         <div>
@@ -85,28 +110,6 @@ export function DosmOccupationSearch() {
 
       {query.data && latest && (
         <>
-          <section className="dosm-occupation-national" aria-labelledby="dosm-national-title" data-testid="panel-dosm-national-context">
-            <div className="dosm-occupation-national-heading">
-              <div>
-                <h3 id="dosm-national-title">Malaysia-wide context</h3>
-                <p>All occupations · latest DOSM observation: {formatMonth(latest.date)}</p>
-              </div>
-              <a className="text-link" href={query.data.nationalContext.metadata.sourceUrl} target="_blank" rel="noreferrer">OpenDOSM source</a>
-            </div>
-            {query.data.nationalContext.isStale && query.data.nationalContext.warning && (
-              <p className="dosm-occupation-warning" role="status">{query.data.nationalContext.warning}</p>
-            )}
-            <div className="dosm-occupation-stats">
-              <StatCard label="People employed" value={formatPeople(latest.employedThousands)} note="All Malaysian occupations" />
-              <StatCard label="People unemployed" value={formatPeople(latest.unemployedThousands)} note="All Malaysian occupations" />
-              <StatCard label="Unemployment rate" value={`${latest.unemploymentRate.toFixed(1)}%`} note="National labour force" />
-              <StatCard label="Employment-to-population ratio" value={`${latest.employmentPopulationRatio.toFixed(1)}%`} note="National working-age population" />
-            </div>
-            <p className="dosm-occupation-rate-explainer">
-              The national unemployment rate is unemployed people divided by the labour force. The employment-to-population ratio is the share of the working-age population that is employed. Neither is a rate for the searched job.
-            </p>
-          </section>
-
           <div className="dosm-occupation-results-heading">
             <div>
               <h3>{debouncedKeyword ? `Results for “${debouncedKeyword}”` : "Search results"}</h3>

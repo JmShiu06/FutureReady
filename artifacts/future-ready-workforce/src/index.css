@@ -260,7 +260,7 @@ h3 { font:700 14px var(--display-font); margin:0; }
   line-height: 1.5;
 }
 .dosm-occupation-scope svg { flex: 0 0 auto; margin-top: 1px; }
-.dosm-occupation-national { margin-top: 15px; padding: 16px; border: 1px solid hsl(32 22% 84%); border-radius: 11px; background: hsl(39 38% 96%); }
+.dosm-occupation-national { margin: 0 0 24px; padding: 16px; border: 1px solid hsl(32 22% 84%); border-radius: 10px; background: transparent; }
 .dosm-occupation-national-heading, .dosm-occupation-results-heading, .dosm-occupation-card-heading {
   display: flex;
   align-items: flex-start;
@@ -270,7 +270,7 @@ h3 { font:700 14px var(--display-font); margin:0; }
 .dosm-occupation-national-heading h3, .dosm-occupation-results-heading h3 { margin: 0 0 4px; font-size: 1rem; }
 .dosm-occupation-national-heading p, .dosm-occupation-results-heading span { margin: 0; color: hsl(var(--muted-foreground)); font-size: .84rem; }
 .dosm-occupation-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 13px; }
-.dosm-occupation-stat { min-width: 0; padding: 11px; border: 1px solid hsl(32 20% 87%); border-radius: 9px; background: hsl(40 45% 98%); }
+.dosm-occupation-stat { min-width: 0; padding: 4px 0; }
 .dosm-occupation-stat span, .dosm-occupation-stat small { display: block; color: hsl(var(--muted-foreground)); font-size: .77rem; line-height: 1.4; }
 .dosm-occupation-stat strong { display: block; margin: 7px 0 3px; color: hsl(26 25% 19%); font-size: 1.1rem; line-height: 1.2; overflow-wrap: anywhere; }
 .dosm-occupation-rate-explainer { margin: 12px 0 0; color: hsl(var(--muted-foreground)); font-size: .83rem; line-height: 1.5; }
