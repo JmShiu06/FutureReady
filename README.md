@@ -195,4 +195,4 @@ The internal workspace folder name `future-ready-workforce` is retained for code
 
 ## Licence and Third-Party Notices
 
-Third-party packages, models and datasets are governed by their respective licences and terms. Confirm the intended project-wide licence and include the appropriate `LICENSE` file before redistributing the project. A project licence does not replace the separate licences or permissions required for third-party data and models.
+The project is licensed under Apache License 2.0. The team confirmed that Shiu Jun Ming is authorized to apply this licence to the project contributions; the copyright attribution in `LICENSE` remains unchanged because no different ownership arrangement was confirmed. Third-party packages, models and datasets are governed by their respective licences and terms. The project licence does not replace the separate licences or permissions required for third-party data and models.
