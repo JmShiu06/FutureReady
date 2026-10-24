@@ -108,7 +108,7 @@ The uploaded CV is processed by the Replit-hosted backend. The raw CV file and f
 ## How to Run and Verify
 
 Option 1 — Run on Replit (Recommended)
-Open the [Replit Workspace]<https://replit.com/@shiujm2007/FutureReady> , or import this repository via Create Repl → Import from GitHub.
+Open the [Replit Workspace](https://replit.com/@shiujm2007/FutureReady) , or import this repository via Create Repl → Import from GitHub.
 Click Run. Replit uses the .replit file to start python src/main.py.
 
 The repository is a **pnpm TypeScript workspace**. In Replit, open the project and use its configured **Run** workflow. To install dependencies in a compatible Node.js 20 environment:
