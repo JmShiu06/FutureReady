@@ -8,7 +8,7 @@
     "build": "vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:domain": "NODE_OPTIONS='--import=./tests/register-css-loader.mjs' tsx --tsconfig tsconfig.test.json --test src/domain/*.test.ts",
+    "test:domain": "NODE_OPTIONS='--import=./tests/register-css-loader.mjs' tsx --tsconfig tsconfig.test.json --test src/domain/*.test.ts src/domain/*.test.tsx",
     "test:browser": "playwright test",
     "test:saved-pathway": "playwright test tests/browser/saved-pathway.spec.ts --workers=1",
     "test:cv-profile-browser": "node --test tests/profile-cv-import.browser.test.mjs"

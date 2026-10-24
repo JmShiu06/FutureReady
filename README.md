@@ -77,6 +77,7 @@ pnpm run typecheck:libs
 pnpm --filter @workspace/api-server run typecheck
 pnpm --filter @workspace/future-ready-workforce run typecheck
 pnpm --filter @workspace/api-server test
+pnpm --filter @workspace/future-ready-workforce run test:domain
 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/future-ready-workforce run build
 ```
 

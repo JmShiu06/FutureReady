@@ -23,7 +23,7 @@ FutureReady helps users explore career options, understand skill gaps, and plan 
 - CV files are sent to the API for local extraction/OCR. Users review the extracted skill names before adding them to their browser-local profile. Raw CV content is not sent to the language model.
 - Optional AI explanations use the server-side `RUNPOD_LLM_API_KEY`, `RUNPOD_LLM_BASE_URL` and `RUNPOD_LLM_MODEL` settings. Keep credentials in Replit Secrets, never in source or public configuration.
 - An unused credential-shaped RunPod setting was removed from `.replit` on 2026-10-24. It was tracked previously: rotate the associated RunPod credential. Git history was not rewritten, so the old value may remain in past commits.
-- TypeScript checks passed on 2026-10-24. The complete API test suite had 170 passing and 5 failing tests: three AI-context tests fail because the job-details provider has no catalogue in the test context, and two AI-explanation route tests returned 502 instead of their expected 200. The frontend domain suite had 81 passing tests; one test file could not load because the raw `tsx` runner does not handle its CSS import. The production web build passed. These results do not prove live model generation works.
+- Verification on 2026-10-24: all 175 API tests and 98 frontend domain tests passed, along with the full workspace TypeScript check and production web build. The former job-fit failures came from an unbound provider method, not a missing catalogue or API key. The domain test command handles CSS and automatic JSX, and renders translated components with their required provider. These offline/mocked results do not prove live model generation works.
 
 ## Stack
 

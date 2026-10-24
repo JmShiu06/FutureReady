@@ -6,3 +6,4 @@
 - [LLM boundary verification](llm-boundary-verification.md) — test prompts through real provider preflight with mocked transport; model discovery alone does not verify generation.
 - [Listing completeness](listing-completeness.md) — partial catalogue loads or score batches must not masquerade as complete search results or global rankings.
 - [Product naming](product-naming.md) — the official user-facing product name is FutureReady; keep technical slugs and general workforce terminology unchanged.
+- [Node UI test boundaries](node-ui-test-boundaries.md) — distinguish Node test-environment failures from browser regressions; use deliberate locale/provider state.

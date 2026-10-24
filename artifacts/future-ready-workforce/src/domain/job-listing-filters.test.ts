@@ -96,7 +96,9 @@ it('renders the fictional badge and safe external searches for every sample list
     assert.equal((links.match(/rel="noopener noreferrer"/g) ?? []).length, 3);
     assert.match(links, /JobStreet Malaysia \(homepage\)/);
     assert.match(links, /MYFutureJobs \(homepage\)/);
-    assert.match(links, /doesn&#x27;t list, verify or apply for real vacancies/);
+    assert.match(links, /links do not verify vacancies or endorse employers/);
+    assert.match(links, /open the provider homepage only/);
+    assert.match(links, /a title-specific search could not be confirmed/);
     assert.doesNotMatch(links, /No application link|Open application|\/apply/);
   }
 });
