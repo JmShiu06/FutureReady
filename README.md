@@ -22,11 +22,11 @@ FutureReady helps users review skills identified from a CV, explore career optio
 
 | Resource | Link / status |
 | --- | --- |
-| GitHub repository | [JmShiu06/FutureReady-Workforce](https://github.com/JmShiu06/FutureReady-Workforce) *(current repository URL; update if the repository is renamed)* |
-| Replit workspace | Add and verify the current workspace URL before submission. |
-| Live demo | Add and test the current public deployment URL before submission. |
-| Slide deck | Add the presentation link if required by SDC. |
-| Demo video | Add the demo video link if available or required. |
+| GitHub repository | <https://github.com/JmShiu06/FutureReady-Workforce> |
+| Replit workspace | <https://replit.com/@shiujm2007/FutureReady> |
+| Live demo | <https://future-ready-workforce-shiujm2007.replit.app> |
+| Slide deck | <https://canva.link/065dwvdzjbe0fzb> |
+| Demo video | <https://youtu.be/vNEGPrsNgKE> |
 
 ## The Problem
 
@@ -183,15 +183,15 @@ The internal workspace folder name `future-ready-workforce` is retained for code
 
 ## Submission Checklist
 
-- [ ] Add and test the current live demo URL and Replit workspace URL.
-- [ ] Confirm team names and roles.
-- [ ] Add the final preliminary proposal and Technical Tools Declaration PDFs to `submission/`.
-- [ ] Add the Replit and RunPod proof-of-use PDFs to `submission/`.
-- [ ] Add the slide deck/demo video links if required by SDC.
-- [ ] Verify dataset/model licences and required attribution.
-- [ ] Rotate any credential that may have been exposed and confirm no secrets remain in tracked files or Git history.
-- [ ] Re-run type checks, tests and the production build; update the verification note above.
-- [ ] Confirm all repository and deployment links work for judges.
+- ☑ Add and test the current live demo URL and Replit workspace URL.
+- ☑ Confirm team names and roles.
+- ☑ Add the final preliminary proposal and Technical Tools Declaration PDFs to `submission/`.
+- ☑ Add the Replit and RunPod proof-of-use PDFs to `submission/`.
+- ☑ Add the slide deck/demo video links if required by SDC.
+- ☑ Verify dataset/model licences and required attribution.
+- ☑ Rotate any credential that may have been exposed and confirm no secrets remain in tracked files or Git history.
+- ☑ Re-run type checks, tests and the production build; update the verification note above.
+- ☑ Confirm all repository and deployment links work for judges.
 
 ## Licence and Third-Party Notices
 
