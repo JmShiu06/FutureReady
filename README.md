@@ -160,8 +160,9 @@ RunPod provides GPU computing for Qwen3-4B, served through vLLM and called by th
 ├── scripts/                        # Project scripts and checks
 ├── docs/                           # Project documentation and diagrams
 ├── package.json                    # Workspace scripts
-├── pnpm-workspace.yaml              # pnpm workspace configuration
-├── .replit                         # Replit configuration (no secrets should be stored here)
+├── pnpm-workspace.yaml             # pnpm workspace configuration
+├── .replit                        # Replit configuration (no secrets should be stored here)
+├── submission                     # Document submission
 └── README.md
 ```
 
