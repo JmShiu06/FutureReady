@@ -109,9 +109,6 @@ The uploaded CV is processed by the Replit-hosted backend. The raw CV file and f
 
 Option 1 — Run on Replit (Recommended)
 Open the Replit Project, or import this repository via Create Repl → Import from GitHub.
-Open the Secrets tab (🔒) and add the variables listed in .env.example:
-RUNPOD_API_KEY
-RUNPOD_ENDPOINT_ID
 Click Run. Replit uses the .replit file to start python src/main.py.
 
 The repository is a **pnpm TypeScript workspace**. In Replit, open the project and use its configured **Run** workflow. To install dependencies in a compatible Node.js 20 environment:
