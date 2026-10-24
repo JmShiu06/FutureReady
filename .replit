@@ -22,8 +22,3 @@ timeoutMs = 20000
 [nix]
 channel = "stable-25_05"
 packages = ["glibcLocales", "postgresql"]
-
-[userenv]
-
-[userenv.shared]
-Runpod1 = "rpa_75KPN6MLDNJS4SX7UK129PJ4AH0D4RJ8SHI9KMJK1908ta"

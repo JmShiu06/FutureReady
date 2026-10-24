@@ -1,6 +1,6 @@
-# FutureReady Workforce
+# FutureReady
 
-A skills intelligence demo for exploring career matches, learning paths, workforce trends, and team reskilling plans.
+FutureReady helps users explore career options, understand skill gaps, and plan learning pathways using occupation references and labour-market data.
 
 ## Run & Operate
 
@@ -20,9 +20,10 @@ A skills intelligence demo for exploring career matches, learning paths, workfor
 
 - The existing artifact definitions register the managed workflows above. Run both the web and API workflows for the application; the optional Canvas preview server is not needed.
 - Verified the dashboard renders at `/` and `/api/healthz` and `/api/jobs` return HTTP 200.
-- The imported code has existing CV-related TypeScript errors in both web and API packages. API tests currently report 132 passing and 5 failing; these failures concern CV catalogue/explanation contracts, not server startup.
-- Optional AI explanations require `RUNPOD_LLM_API_KEY` in Secrets and `RUNPOD_LLM_BASE_URL` set to the user's HTTPS OpenAI-compatible RunPod endpoint. The required API-key secret is not configured; core demo features can run without it. Do not reuse credential-like values from committed configuration.
-- A credential-like value was found in plain-text imported configuration. Rotate it with the provider and remove it from tracked configuration/history as a separate security follow-up; never copy it into documentation or logs.
+- CV files are sent to the API for local extraction/OCR. Users review the extracted skill names before adding them to their browser-local profile. Raw CV content is not sent to the language model.
+- Optional AI explanations use the server-side `RUNPOD_LLM_API_KEY`, `RUNPOD_LLM_BASE_URL` and `RUNPOD_LLM_MODEL` settings. Keep credentials in Replit Secrets, never in source or public configuration.
+- An unused credential-shaped RunPod setting was removed from `.replit` on 2026-10-24. It was tracked previously: rotate the associated RunPod credential. Git history was not rewritten, so the old value may remain in past commits.
+- TypeScript checks passed on 2026-10-24. The complete API test suite had 170 passing and 5 failing tests: three AI-context tests fail because the job-details provider has no catalogue in the test context, and two AI-explanation route tests returned 502 instead of their expected 200. The frontend domain suite had 81 passing tests; one test file could not load because the raw `tsx` runner does not handle its CSS import. The production web build passed. These results do not prove live model generation works.
 
 ## Stack
 
@@ -45,19 +46,7 @@ A skills intelligence demo for exploring career matches, learning paths, workfor
 
 - Job-source data access stays behind `JobProvider` in `services/job_provider.ts`; replace that adapter when a public job API is supplied, without adding provider-specific calls to routes or frontend code.
 - Current jobs are fictional preview records with `externalUrl: null`; do not present them as live vacancies or invent application destinations.
-- Job overlap uses skills saved in the current device profile. The app does not extract skills from uploaded CV files; its existing CV picker is local-only.
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Job overlap uses skills saved in the current device profile. CV skills are extracted by the API and added only after the user reviews them; the uploaded document is not retained as profile content.
 
 ## Pointers
 

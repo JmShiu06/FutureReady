@@ -30,7 +30,7 @@ function Shell({ children, page }: { children: ReactNode; page: string }) {
     <aside className="sidebar">
       <Link href="/" className="brand" data-testid="link-brand">
         <span className="brand-mark"><Activity size={19} strokeWidth={2.4} /></span>
-        <span className="brand-name">FutureReady<span>Workforce intelligence</span></span>
+        <span className="brand-name">FutureReady<span>Career &amp; skills insights</span></span>
       </Link>
       <div className="nav-caption">WORKSPACE</div>
       <nav className="nav-list" aria-label="Main navigation">

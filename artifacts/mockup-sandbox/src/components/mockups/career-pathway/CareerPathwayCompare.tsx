@@ -126,7 +126,7 @@ export function CareerPathwayCompare() {
   return (
     <main className="cpc-shell">
       <header className="cpc-topbar">
-        <a href="#compare" className="cpc-brand"><span className="cpc-brand-mark"><Compass size={17} /></span><span>FutureReady<small>WORKFORCE INTELLIGENCE</small></span></a>
+        <a href="#compare" className="cpc-brand"><span className="cpc-brand-mark"><Compass size={17} /></span><span>FutureReady<small>CAREER &amp; SKILLS INSIGHTS</small></span></a>
         <div className="cpc-top-status"><i /> PERSONAL FIELD GUIDE <span>02 / 03</span></div>
       </header>
       <section className="cpc-heading" id="compare">

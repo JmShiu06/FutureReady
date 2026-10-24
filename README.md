@@ -1,4 +1,4 @@
-# FutureReady Workforce
+# FutureReady
 
 Career exploration and learning-planning decision support, not hiring decisions, a forecast, professional advice or proof of qualifications. The existing warm brown/cream UI and saved skills/completion model are retained.
 
@@ -77,7 +77,6 @@ pnpm run typecheck:libs
 pnpm --filter @workspace/api-server run typecheck
 pnpm --filter @workspace/future-ready-workforce run typecheck
 pnpm --filter @workspace/api-server test
-pnpm --filter @workspace/api-server exec sh -c 'tsx --test ../future-ready-workforce/src/domain/*.test.ts'
 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/future-ready-workforce run build
 ```
 

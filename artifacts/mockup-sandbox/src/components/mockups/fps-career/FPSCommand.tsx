@@ -91,7 +91,7 @@ export function FPSCommand() {
   return <div className="fps-root">
     <div className="fps-grain" aria-hidden="true" />
     <aside className="fps-rail">
-      <div className="fps-brand" aria-label="FutureReady Workforce">
+      <div className="fps-brand" aria-label="FutureReady">
         <span className="fps-brand-mark">
           <svg className="fps-brand-mascot" viewBox="0 0 36 36" fill="none" role="img" aria-label="Chili pepper with a raccoon face">
             <path d="M18.2 7.1c5.5-3.5 10.3-1.1 9.2 3.7-.4 1.5-1.2 2.7-.9 4.1 4.5 5.1 3.5 12.7-2.4 16.2-5.7 3.4-13.9 1.4-17-4.1-3.6-6.5.4-13.7 7.7-16.1 1.3-.5 2.3-1.8 3.4-3.8Z" fill="#D84E30" stroke="#8E432A" strokeWidth=".8"/>
@@ -104,7 +104,7 @@ export function FPSCommand() {
             <path d="M18 23.5c-.9 1.2-2.2 1.8-3.8 1.8m3.8-1.8c.9 1.2 2.2 1.8 3.8 1.8" stroke="#293731" strokeWidth="1" strokeLinecap="round"/>
           </svg>
         </span>
-        <span className="fps-brand-copy">FUTUREREADY<small>WORKFORCE INTELLIGENCE</small></span>
+        <span className="fps-brand-copy">FUTUREREADY<small>CAREER &amp; SKILLS INSIGHTS</small></span>
       </div>
       <div className="fps-rail-label">COMMAND DECK <span>•</span></div>
       <nav className="fps-nav" aria-label="Workspace navigation">

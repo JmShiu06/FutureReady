@@ -5,7 +5,7 @@ import type { Locale } from './locales';
 
 /** English is the source catalog; every other locale must provide exactly the same keys (checked by TypeScript and tests). */
 const enCore = {
-  'app.tagline': 'Workforce intelligence',
+  'app.tagline': 'Career & skills insights',
   'nav.caption': 'WORKSPACE',
   'nav.main': 'Main navigation',
   'nav.dashboard': 'Dashboard',
@@ -189,7 +189,7 @@ export type Catalog = Record<MessageKey, string>;
 type CoreCatalog = Record<keyof typeof enCore, string>;
 
 const ms: CoreCatalog = {
-  'app.tagline': 'Kecerdasan tenaga kerja',
+  'app.tagline': 'Wawasan kerjaya & kemahiran',
   'nav.caption': 'RUANG KERJA',
   'nav.main': 'Navigasi utama',
   'nav.dashboard': 'Papan pemuka',
@@ -368,7 +368,7 @@ const ms: CoreCatalog = {
 };
 
 const zhCN: CoreCatalog = {
-  'app.tagline': '劳动力洞察',
+  'app.tagline': '职业与技能洞察',
   'nav.caption': '工作区',
   'nav.main': '主导航',
   'nav.dashboard': '概览',
@@ -547,7 +547,7 @@ const zhCN: CoreCatalog = {
 };
 
 const zhTW: CoreCatalog = {
-  'app.tagline': '勞動力洞察',
+  'app.tagline': '職涯與技能洞察',
   'nav.caption': '工作區',
   'nav.main': '主導覽',
   'nav.dashboard': '總覽',
@@ -726,7 +726,7 @@ const zhTW: CoreCatalog = {
 };
 
 const ko: CoreCatalog = {
-  'app.tagline': '인력 인사이트',
+  'app.tagline': '진로 및 기술 인사이트',
   'nav.caption': '워크스페이스',
   'nav.main': '주요 메뉴',
   'nav.dashboard': '대시보드',
@@ -905,7 +905,7 @@ const ko: CoreCatalog = {
 };
 
 const ta: CoreCatalog = {
-  'app.tagline': 'பணியாளர் நுண்ணறிவு',
+  'app.tagline': 'தொழில் மற்றும் திறன் நுண்ணறிவு',
   'nav.caption': 'பணியிடம்',
   'nav.main': 'முதன்மை வழிசெலுத்தல்',
   'nav.dashboard': 'முகப்பு',
@@ -1084,7 +1084,7 @@ const ta: CoreCatalog = {
 };
 
 const ja: CoreCatalog = {
-  'app.tagline': '人材インテリジェンス',
+  'app.tagline': 'キャリアとスキルの洞察',
   'nav.caption': 'ワークスペース',
   'nav.main': 'メインナビゲーション',
   'nav.dashboard': 'ダッシュボード',
@@ -1263,7 +1263,7 @@ const ja: CoreCatalog = {
 };
 
 const id: CoreCatalog = {
-  'app.tagline': 'Wawasan tenaga kerja',
+  'app.tagline': 'Wawasan karier & keterampilan',
   'nav.caption': 'RUANG KERJA',
   'nav.main': 'Navigasi utama',
   'nav.dashboard': 'Dasbor',

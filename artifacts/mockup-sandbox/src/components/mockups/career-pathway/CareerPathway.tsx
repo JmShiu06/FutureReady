@@ -57,7 +57,7 @@ export function CareerPathway() {
       <header className="atlas-top">
         <a className="atlas-brand" href="#top" aria-label="FutureReady home">
           <span className="atlas-brand-mark"><Compass size={19} strokeWidth={1.8} /></span>
-          <span>FutureReady<small>WORKFORCE INTELLIGENCE</small></span>
+          <span>FutureReady<small>CAREER &amp; SKILLS INSIGHTS</small></span>
         </a>
         <div className="atlas-top-right"><span className="atlas-demo-dot" />LOCAL EXPLORATION <span className="atlas-top-divider" /> <span>01 / 03</span></div>
       </header>
@@ -144,7 +144,7 @@ export function CareerPathway() {
         </div>
       </section>
 
-      <footer className="atlas-footer"><span>FUTUREREADY WORKFORCE INTELLIGENCE</span><span>EXPLORE WITH CURIOSITY <span className="atlas-footer-star">✳</span></span><span>01 — PATHWAYS</span></footer>
+      <footer className="atlas-footer"><span>FUTUREREADY</span><span>EXPLORE WITH CURIOSITY <span className="atlas-footer-star">✳</span></span><span>01 — PATHWAYS</span></footer>
     </main>
   );
 }
