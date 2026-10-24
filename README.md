@@ -22,7 +22,7 @@ FutureReady helps users review skills identified from a CV, explore career optio
 
 | Resource | Link / status |
 | --- | --- |
-| GitHub repository | <https://github.com/JmShiu06/FutureReady-Workforce> |
+| GitHub repository | <https://github.com/JmShiu06/FutureReady)> |
 | Replit workspace | <https://replit.com/@shiujm2007/FutureReady> |
 | Live demo | <https://future-ready-workforce-shiujm2007.replit.app> |
 | Slide deck | <https://canva.link/065dwvdzjbe0fzb> |
