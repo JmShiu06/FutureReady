@@ -5,6 +5,21 @@ import { emptyListingFilters, filterListings, orderListingsByMatch, matchesQuery
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SampleListingBadge, ExternalJobLinks } from '../components/shared/external-job-links';
+import { I18nProvider } from '../i18n/i18n-context';
+
+function renderWithI18n(node: React.ReactNode) {
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: { localStorage: { getItem: () => 'en' } },
+  });
+  try {
+    return renderToStaticMarkup(createElement(I18nProvider, null, node));
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
+    else Reflect.deleteProperty(globalThis, 'window');
+  }
+}
 
 it('round-trips every listing control and page through detail and return links', () => {
   const state = {
@@ -73,9 +88,9 @@ it('combines every requested filter without mutating the catalogue or any scores
 
 it('renders the fictional badge and safe external searches for every sample listing', () => {
   for (const job of sampleJobs) {
-    const badge = renderToStaticMarkup(createElement(SampleListingBadge, { testId: `badge-${job.id}` }));
+    const badge = renderWithI18n(createElement(SampleListingBadge, { testId: `badge-${job.id}` }));
     assert.match(badge, /Sample listing \(fictional\)/, job.id);
-    const links = renderToStaticMarkup(createElement(ExternalJobLinks, { occupationTitle: job.occupationName, testIdSuffix: job.id }));
+    const links = renderWithI18n(createElement(ExternalJobLinks, { occupationTitle: job.occupationName, testIdSuffix: job.id }));
     assert.match(links, /See real jobs on LinkedIn/);
     assert.equal((links.match(/target="_blank"/g) ?? []).length, 3);
     assert.equal((links.match(/rel="noopener noreferrer"/g) ?? []).length, 3);

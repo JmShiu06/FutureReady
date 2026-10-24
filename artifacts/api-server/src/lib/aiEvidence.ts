@@ -127,7 +127,9 @@ export async function prepareAiContext(input: AiExplanationInput, dependencies: 
   }
   if (input.feature === "job-fit") {
     if (!input.jobId) throw new AiContextError(422, "Select an existing job listing before asking for a job-fit explanation.");
-    const job = await (dependencies.getJob ?? jobProvider.getJobDetails)(input.jobId);
+    // Keep provider methods bound to their instance: DemoJobProvider reads its catalogue via `this`.
+    const getJob = dependencies.getJob ?? ((id: string) => jobProvider.getJobDetails(id));
+    const job = await getJob(input.jobId);
     if (!job) throw new AiContextError(422, "This listing is no longer available. Return to Job Search and choose an existing listing.");
     const scores = await jobProvider.matchJobs(base.context.skills as string[], [job.id]);
     const match = scores.find(s => s.jobId === job.id);
