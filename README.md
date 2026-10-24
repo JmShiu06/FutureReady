@@ -1,78 +1,130 @@
 # FutureReady
 
-Career exploration and learning-planning decision support, not hiring decisions, a forecast, professional advice or proof of qualifications. The existing warm brown/cream UI and saved skills/completion model are retained.
+**Career exploration and learning planning for students and job seekers.**
 
-## Domain 1 demonstration
+FutureReady helps users review skills identified from a CV, explore career options, understand possible skill gaps, and plan learning activities. It is a decision-support prototype—not a hiring decision, a prediction of employment outcomes, professional advice, or proof of a person's qualifications.
 
-1. Open **Market & AI impact → Labour market → Future-role planning priorities**.
-2. Select **Synthetic snapshot A**, then **Synthetic snapshot B**. Both use exactly the same fictional skill names. Counts/dates are labelled synthetic; neither input replaces your saved profile or official observations.
-3. Compare the two scenario columns and switch **Moderate/Fast AI disruption**. Inspect every component, task assumption and missing-skill priority. Existing occupation-overlap scores remain separate and unchanged.
-4. Expand **Complete fictional HR pathway** for a read-only, ordered pathway and a 5-hour/week, MYR 0 learning-content budget schedule. It includes verified OpenLearn material and explicitly authored exercises, not 22 invented courses.
-5. For your own plan, select an eligible occupation in Careers & jobs, build its roadmap, enter weekly hours and budget, and optionally switch the roadmap planning scenario. Completion is not proficiency; skill updates still require confirmation. Switching scenario changes displayed order, not stored completion.
+> **For judging:** Use fictional examples or a sample CV without real personal information. Demo data and planning scenarios are labelled where applicable.
 
-All generated demonstration records remain clearly marked. Do not use real personal information for a judging demo. Source-backed role descriptions and fictional signal values are different kinds of evidence.
+## Team Information
 
-## Public signals and refresh
+| Field | Details |
+| --- | --- |
+| Team name | Chili Raccoon 7 |
+| Domain | Education Technology (EdTech) & Workforce Development |
+| SDG track | SDG 4 — Quality Education |
+| Project name | FutureReady |
+| Team leader | [Shiu Jun Ming](https://github.com/JmShiu06) ([`JmShiu06`](https://github.com/JmShiu06)) |
+| University | Xiamen University Malaysia (XMUM) |
+| Team size | 5 members |
 
-Normal mode uses DOSM's official **Job Market Insights, Table 2** online job-offering counts. The initial bundled fallback contains 2026-Q1/Q2. These are broad major-occupation groups, not an estimate of all vacancies or individual skill demand. Two-quarter changes are volatile and can be seasonal.
+## Project Links
 
-- [DOSM Q2 2026 release](https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q22026), published 18 August 2026.
-- [Official source workbook](https://www.dosm.gov.my/portal-main/release-document-log?release_document_id=20742).
-- `GET /api/dosm/job-market-insights`: current validated in-process snapshot.
-- **Refresh DOSM job-posting signals** / `POST /api/dosm/job-market-insights/refresh`: checks recent quarterly official release pages, reads the public XLSX Table 2, requires two complete quarters, recognised labels and reconciled totals, then replaces the cached snapshot atomically. No LLM call occurs. Requests are coalesced and limited to one attempt/minute. Publication dates after refresh refer to the retrieved workbook, including retrospective values. `reviewedAt` remains the parser/source-mapping review date, not a new human review.
-- On failure, the previous snapshot stays visible with a warning. No fictional fallback is inserted. The cache is in process; a server restart restores the bundled reviewed snapshot until a successful refresh. The existing monthly OpenDOSM refresh remains separate.
-- New quarters can change broad-group levels, quarter-to-quarter direction, planning ranks and learning priorities. They do **not** change saved skills, overlap scores, completed steps, O*NET content or resource prices. If DOSM changes workbook labels/layout, manual parser review is required.
+| Resource | Link / status |
+| --- | --- |
+| GitHub repository | [JmShiu06/FutureReady-Workforce](https://github.com/JmShiu06/FutureReady-Workforce) *(current repository URL; update if the repository is renamed)* |
+| Replit workspace | Add and verify the current workspace URL before submission. |
+| Live demo | Add and test the current public deployment URL before submission. |
+| Slide deck | Add the presentation link if required by SDC. |
+| Demo video | Add the demo video link if available or required. |
 
-The existing static global skill-mention dataset is not a time series and is **not** used as evidence of skill growth. National unemployment is context only, not an occupation-level ranking input. Ministry AI announcements remain qualitative context, not measured task-exposure coefficients.
+## The Problem
 
-## Transparent calculations
+Students and early-career job seekers may find it difficult to understand which skills are relevant to a career and how to improve gaps in their current profile. Career requirements, labour-market information, and learning resources are spread across different sources.
 
-All choices below are app-authored planning assumptions, not fitted parameters:
+## Our Solution
 
-- Exact-name overlap = matched documented O*NET skills / documented skills × 100.
-- Signal index = latest group offerings / largest latest count among Managers and Professionals × 100.
-- Fractional change = (latest − previous) / previous.
-- Trend index = clamp(50 + 50 × fractional change, 0–100). Missing/zero prior value uses a disclosed neutral 50, not manufactured growth.
-- Planning baseline = 0.55 × overlap + 0.30 × signal index + 0.15 × trend index.
-- Scenario suitability = clamp(baseline + adaptation weight × assumed adaptation relevance − automation weight × assumed routine share, 0–100).
-- Moderate weights: adaptation 8, automation 6; Fast: adaptation 24, automation 22. Per-role task assumptions/rationales are inspectable in the UI and `lib/workforce-evidence/src/planning.ts`. These are workshop assumptions, not measured exposure or a claim of future job loss.
-- Missing-skill priority = clamp(12 × O*NET importance + 0.2 × (0.7 × signal index + 0.3 × trend index) + scenario skill bonus, 0–100).
-- Systems/critical-thinking/monitoring/programming/complex-problem skills receive Moderate +4 / Fast +18. Communication/negotiation/instructing skills receive Moderate +8 / Fast +5. Other skills +0. Pattern matches and tie-breaks are inspectable in the pure calculation module.
-- Within an already selected roadmap, the broad-group signal is constant across its skills, so ordering uses 12 × importance + scenario bonus. This does not reinterpret a proficiency self-rating as an O*NET assessment.
+FutureReady brings career exploration, CV-based skill review, skill-gap analysis, learning planning, and labour-market context into one web application. It combines bundled career and skill references with selected official Malaysian data sources. Qwen3-4B, served through RunPod, can provide explanations for selected skills when the user gives consent.
 
-Source-backed MyCOL occupation scope and O*NET 31.0 US skill evidence remain distinct from Malaysian job-market observations. A broad-group posting signal is weak evidence for an individual role and no evidence of growth in a named skill.
+## Key Features
 
-## Actionable learning without fabricated courses
+- **CV skill review:** Upload a supported CV file. The backend extracts text from PDF/DOCX documents and uses OCR for supported images. Users review and confirm the detected skill information.
+- **Career matching:** Compare selected skills with the application's occupation and skill references. Match scores represent reference overlap, not hiring probability or verified ability.
+- **Skill-gap analysis and learning plans:** Review missing skills and follow a roadmap using the existing resource catalogue and clearly labelled self-directed practice suggestions.
+- **Career and labour-market insights:** Explore DOSM job-offering figures at broad occupation-group level and monthly labour-force context from OpenDOSM.
+- **Future-role planning scenarios:** Compare Moderate and Fast AI-disruption scenarios. Their weights and task assumptions are app-authored planning assumptions, not measured forecasts of job losses.
+- **Government announcements:** View dated Ministry of Digital Malaysia announcements as qualitative policy context. These announcements are not treated as measured skill-demand data.
+- **Job Search demonstration:** Uses fictional sample listings; the current prototype does not connect to a live vacancy API.
 
-- Existing exact verified technical coverage (Python, SQL, AWS) is retained; no broad “Programming means Python course” substitution.
-- New reviewed first-party OpenLearn resources: **Effective communication in the workplace** (24 hours provider-stated full-course time; explicit active-listening coverage), and **Managing and managing people** (8 hours provider-stated; published time-management learning outcome). Partial coverage is disclosed, not mastery. Content reviewed 2026-10-23.
-- Other gaps receive bounded, role-context **self-directed practice**, with instructions, expected output and explicitly **app-estimated** hours. These are not provider courses, certificates, qualifications or observed outcomes. Unverified paid-course coverage/cost remains unknown.
-- No required content purchase is not zero total cost: device/internet/tool costs and optional certificates may differ. Check the provider for current availability/terms.
-- Roadmaps contain source links, review dates, coverage limits, prerequisites and cost caveats. Ordered remaining tasks are packed into the selected weekly capacity; long tasks span weeks, short ones share a week. No calendar deadline or completion guarantee is claimed.
+## Technology Stack
 
-## SDG evidence and limits
+| Layer | Technology / service |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite 7, Tailwind CSS 4, Wouter, Radix UI |
+| Backend | Node.js 20, Express 5, REST API, Zod validation |
+| CV processing | `pdf-parse`, `pdfjs-dist`, Mammoth, Multer, Tesseract.js and English OCR data |
+| AI explanations | Qwen3-4B served by vLLM on a RunPod GPU Pod |
+| Hosting / development | Replit |
+| Source control | GitHub |
+| Browser-side storage | `localStorage` for profile, selected skills, preferences and learning progress |
+| Production database | No active production database is connected in the current prototype |
 
-Existing reviewed clinical-nursing (3.8) and HR labour-relations (8.8) mappings retain their scope limits. All seven currently eligible reviewed occupations also have explicit **conditional project use cases** and each recommended skill/practice can expand the same target-plus-duty explanation:
+## Architecture
 
-- HR labour relations → 8.8; clinical care coordination → 3.8.
-- Systems analysis, software, database administration and defensive cybersecurity → **16.6 only in the stated hypothetical accountable public-institution service project**, not generic IT work.
-- Data-scientist subset → **17.18 only in the stated statistical-capacity/disaggregated-development-data use case**, not generic business analytics; the original target's 2020 deadline is disclosed.
+```mermaid
+flowchart TD
+    U[User] --> FE[React frontend]
+    FE <--> LS[(Browser localStorage)]
+    FE <--> API[Express backend API]
+    API --> CV[CV text extraction and OCR]
+    API --> MATCH[Career matching and skill-gap analysis]
+    MATCH --> REF[(Bundled occupation, skill and learning references)]
+    API <--> ODS[OpenDOSM API: monthly labour-force data]
+    API <--> JMI[DOSM Job Market Insights reports and workbooks]
+    API <--> MIN[Ministry announcements webpage: qualitative context]
+    API -- After consent; selected skill and language names only --> AI[Qwen3-4B via vLLM on RunPod]
+    AI --> API
+```
 
-UN targets ([3](https://sdgs.un.org/goals/goal3), [8](https://sdgs.un.org/goals/goal8), [16](https://sdgs.un.org/goals/goal16), [17](https://sdgs.un.org/goals/goal17)) and specific O*NET task pages are cited in the UI. Targets were adopted 2015-09-25; live duty-page publication dates are not asserted. Conditional examples reviewed 2026-10-23 are app interpretations, not new official MyCOL/UN classifications, general occupational mappings or measured/guaranteed impacts. Real-occupation evidence is not routed through fictional goal-only AI explanations.
+The uploaded CV is processed by the Replit-hosted backend. The raw CV file and full extracted CV text are not sent to RunPod. The AI explanation context uses selected skill and language names; the application keeps matching scores and approved reference information under server-side control. Profile information and learning progress are mainly stored in the user's browser.
 
-## CV contract repair and privacy
+## Data Sources and Interpretation
 
-The frontend and strict API schema allow only selected **skill names, language names and local extraction-limitation metadata**. The repaired backend now matches that contract rather than calling `.map()` on removed education/experience fields. Only skill/language names enter the LLM context; extraction metadata remains local. No raw CV, name, contact details, narrative or proficiency is added. Consent is still required and results remain non-persistent/no-store.
+- **OpenDOSM:** Official monthly Labour Force Survey data for labour-market context.
+- **DOSM Job Market Insights:** Official release pages and workbooks, including Table 2 online job-offering counts for broad occupation groups. These counts do not represent all vacancies or specific skill demand.
+- **Ministry of Digital Malaysia:** Public announcements are used for qualitative context only. The page can limit automated requests or become temporarily unavailable.
+- **O*NET 31.0 and MyCOL:** Occupation and skill references with different geographic scopes. US O*NET skill data is not Malaysian employment statistics.
+- **Static job-title / skill references:** Bundled reference data is not a live vacancy feed and should not be treated as a time series of skill demand. Check the original source and licence for the job-title CSV before redistribution.
+- **Learning resources:** The app uses a curated catalogue and links to provider materials where available. Some gaps are addressed through app-authored self-directed practice, not invented courses or certificates.
+- **Synthetic examples:** Synthetic profiles, scenario snapshots and demonstration figures must remain labelled as fictional and must not be presented as real workforce measurements.
 
-The explanation contract has six sections. Matching facts, factual strengths limits, certification/resource suggestions remain server-controlled; model prose cannot replace matching scores or the allowlisted fields. The visible generation action identifies **Qwen/Qwen3-4B**. Secrets/provider defaults were not changed. Automated tests use synthetic fixtures and a mock provider, not paid generation.
+### Transparent scoring and limitations
 
-This repairs the confirmed schema mismatch; it does not prove every real CV extraction/OCR case succeeds or a live Qwen generation works. No real CV or live generation was used for verification.
+- Career-match percentages measure overlap between selected/documented skills and the application's skill references; they do not estimate the chance of being hired.
+- Job-market signals are based on broad occupation groups and may vary by quarter or season.
+- Moderate/Fast scenario results depend on disclosed app-authored assumptions. They are not validated predictions of future employment or automation.
+- CV extraction/OCR can miss information. Users should review detected skills and only confirm information that is accurate.
+- AI explanations can be incomplete or incorrect. Do not treat them as verified qualifications or professional advice.
 
-## Running and verification
+## Privacy and Safe Demonstration
 
-Use the existing managed API and web workflows. For shell checks:
+- Use a fictional CV or a sample with real personal details removed during judging.
+- CV files are uploaded to the backend for text extraction/OCR and are processed in memory by the current application flow.
+- The raw CV file, full extracted text, name, contact details and narrative are not sent to the RunPod AI explanation service.
+- AI explanation requests require consent and use selected skill and language names in the model context.
+- Profile information and learning progress stored in browser `localStorage` remain on that browser/device until cleared by the user or browser.
+- Do not commit API keys or passwords. Keep required credentials in server-side Replit Secrets.
 
-```sh
+## How to Run and Verify
+
+The repository is a **pnpm TypeScript workspace**. In Replit, open the project and use its configured **Run** workflow. To install dependencies in a compatible Node.js 20 environment:
+
+```bash
+pnpm install --frozen-lockfile
+```
+
+For local development, the API and frontend have separate workspace scripts. Start them in separate terminals after installing dependencies:
+
+```bash
+pnpm --filter @workspace/api-server run dev
+pnpm --filter @workspace/future-ready-workforce run dev
+```
+
+The RunPod explanation feature also requires the correct server-side model endpoint settings and credentials. Configure them through Replit Secrets; never paste secret values into this README or commit them to GitHub.
+
+### Verification commands
+
+```bash
 pnpm run typecheck:libs
 pnpm --filter @workspace/api-server run typecheck
 pnpm --filter @workspace/future-ready-workforce run typecheck
@@ -81,6 +133,66 @@ pnpm --filter @workspace/future-ready-workforce run test:domain
 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/future-ready-workforce run build
 ```
 
-The last build command supplies local build-only non-secret configuration; managed workflows supply their own routing. Do not paste credentials into terminal commands or documentation.
+Automated AI tests use synthetic fixtures and a mock provider. Passing those tests does not prove that live Qwen generation or every real-world CV/OCR case has been verified. Re-run the checks before submission and update this note to reflect the latest results.
 
-For a GitHub submission, review included files and remove private uploads/data before sharing. Keep source attribution and this explanation of synthetic versus official inputs. Repository visibility and judge access have **not** been verified. No publishing or deployment is performed by these instructions.
+## How We Use the Sponsor Platforms
+
+### Replit
+
+Replit is used as the development and hosting platform for the web application and backend. The current project uses Replit's configured workspace workflow. Add the required Replit proof-of-use document to `submission/` before final submission.
+
+### RunPod
+
+RunPod provides GPU computing for Qwen3-4B, served through vLLM and called by the backend for AI explanations. The application uses a server-side connection; do not publish API keys or private endpoint credentials. Add the required RunPod proof-of-use document to `submission/` before final submission.
+
+## Repository Structure
+
+```text
+.
+├── artifacts/
+│   ├── api-server/                 # Express API and backend logic
+│   └── future-ready-workforce/     # React frontend
+├── lib/                            # Shared libraries and occupation/skill evidence
+├── scripts/                        # Project scripts and checks
+├── docs/                           # Project documentation and diagrams
+├── package.json                    # Workspace scripts
+├── pnpm-workspace.yaml              # pnpm workspace configuration
+├── .replit                         # Replit configuration (no secrets should be stored here)
+└── README.md
+```
+
+The internal workspace folder name `future-ready-workforce` is retained for code compatibility; the product name shown to users is **FutureReady**.
+
+## Known Challenges and Future Improvements
+
+- Verify the live Qwen/RunPod connection and required Replit Secrets; automated tests currently use a mock provider.
+- Continue testing CV extraction/OCR against different PDF, DOCX and image formats.
+- Improve fallback behaviour when external data sources or announcement pages are unavailable.
+- Verify the original source and licence terms for each dataset before public redistribution.
+- Add a live vacancy API only if a suitable source, licence and implementation are confirmed.
+
+## Team
+
+| Name | Role | GitHub |
+| --- | --- | --- |
+| Shiu Jun Ming | Team Lead / RunPod | [@JmShiu06](https://github.com/JmShiu06) |
+| Matheson Lee Zing Ming | Backend / AI | [@Imposter1083](https://github.com/Imposter1083) |
+| Lian Xin Yi | Frontend | [@lianxinyi99-debug](https://github.com/lianxinyi99-debug) |
+| Chew Wen Zhe | Frontend | [@cookedporkchop](https://github.com/cookedporkchop) |
+| Lim Lik Fung | Frontend / Backend | [@Milkdromeda37](https://github.com/Milkdromeda37) |
+
+## Submission Checklist
+
+- [ ] Add and test the current live demo URL and Replit workspace URL.
+- [ ] Confirm team names and roles.
+- [ ] Add the final preliminary proposal and Technical Tools Declaration PDFs to `submission/`.
+- [ ] Add the Replit and RunPod proof-of-use PDFs to `submission/`.
+- [ ] Add the slide deck/demo video links if required by SDC.
+- [ ] Verify dataset/model licences and required attribution.
+- [ ] Rotate any credential that may have been exposed and confirm no secrets remain in tracked files or Git history.
+- [ ] Re-run type checks, tests and the production build; update the verification note above.
+- [ ] Confirm all repository and deployment links work for judges.
+
+## Licence and Third-Party Notices
+
+Third-party packages, models and datasets are governed by their respective licences and terms. Confirm the intended project-wide licence and include the appropriate `LICENSE` file before redistributing the project. A project licence does not replace the separate licences or permissions required for third-party data and models.
