@@ -34,9 +34,9 @@ export function DosmNationalContext({ showDefinition = true }: { showDefinition?
       <div className="dosm-occupation-national-heading">
         <div>
           <h3 id="dosm-national-title">{ui('Malaysia-wide context')}</h3>
-          <p>{latest ? <>{ui('All occupations ·')} {formatMonth(latest.date, locale)}</> : <>All occupations · DOSM monthly Labour Force Survey</>}</p>
+          <p>{latest ? <>{ui('All occupations ·')} {formatMonth(latest.date, locale)}</> : <>{ui('All occupations · DOSM monthly Labour Force Survey')}</>}</p>
         </div>
-        {context && <a className="text-link" href={context.metadata.sourceUrl} target="_blank" rel="noreferrer" data-testid="link-dosm-national-source">OpenDOSM source</a>}
+        {context && <a className="text-link" href={context.metadata.sourceUrl} target="_blank" rel="noreferrer" data-testid="link-dosm-national-source">{ui('OpenDOSM source')}</a>}
       </div>
       {query.isPending && <p className="small muted" role="status">{ui('Loading verified DOSM labour-market data…')}</p>}
       {query.isError && (

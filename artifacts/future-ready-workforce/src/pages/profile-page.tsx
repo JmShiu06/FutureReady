@@ -31,7 +31,7 @@ const normaliseSkillName = (value: string) => value.normalize('NFKC').trim().rep
 export default function ProfilePage() {
   const { state, profile, saveProfile } = useWorkspace();
   const { phase: cvPhase, draft: cvDraft } = useCvSession();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const audienceName = t(`audience.${state.audience}`);
   const [analysisPromptOpen, setAnalysisPromptOpen] = useState(false);
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: toForm(profile) });
@@ -128,8 +128,8 @@ export default function ProfilePage() {
             /></FormControl></FormItem>} />
             <button type="button" className="icon-button" onClick={() => skills.remove(i)} aria-label={t('profile.removeSkill', { name: f.name })} data-testid={`button-remove-skill-${i}`}><Trash2 size={14} /></button>
           </div>)}
-          {form.formState.errors.skills?.root?.message && <p className="field-error" role="alert">{form.formState.errors.skills.root.message}</p>}
-          {form.formState.errors.skills?.message && <p className="field-error" role="alert">{form.formState.errors.skills.message}</p>}
+          {form.formState.errors.skills?.root?.message && <p className="field-error" role="alert">{ui(form.formState.errors.skills.root.message)}</p>}
+          {form.formState.errors.skills?.message && <p className="field-error" role="alert">{ui(form.formState.errors.skills.message)}</p>}
           <div className="row" style={{ marginTop: 14 }}>
             <input className="fr-input" style={{ maxWidth: 260 }} maxLength={80} value={newSkill} onChange={e => { setNewSkill(e.target.value); setSkillError(''); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }} placeholder={t('profile.addSkillPlaceholder')} aria-label={t('profile.newSkillName')} data-testid="input-new-skill" />
             <input className="fr-input" style={{ maxWidth: 160 }} value={newCategory} onChange={e => setNewCategory(e.target.value)} aria-label={t('profile.newSkillCategory')} data-testid="input-new-skill-category" />

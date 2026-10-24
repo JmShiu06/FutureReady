@@ -66,14 +66,14 @@ function CvPreview() {
 
 function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
   const { explanation, explainPhase, explainError, requestExplanation, consent } = useSkillAnalysis();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   if (explainPhase === 'loading') return <div className="cvx-skeleton" role="status" aria-live="polite" data-testid="status-cvx-loading">
     <span className="sr-only">{t('sa.loadingSr')}</span>
     <RaccoonLoader />
     {Array.from({ length: 4 }, (_, i) => <i key={i} style={{ width: `${92 - i * 14}%` }} />)}
   </div>;
   if (explainPhase === 'error') return <div className="cvx-error" role="alert" data-testid="error-cvx">
-    <p>{explainError}</p>
+    <p>{ui(explainError)}</p>
     <button type="button" className="btn btn-secondary btn-small" onClick={requestExplanation} disabled={!consent} data-testid="button-cvx-retry"><RotateCcw size={12} aria-hidden="true" /> {t('common.tryAgain')}</button>
   </div>;
   if (!explanation) return null;
@@ -110,7 +110,7 @@ function ExplanationResult({ view = 'career' }: { view?: CvExplanationView }) {
             </article>)}</div>)}
           {key === 'improvementSuggestions' && resources.length > 0 && <ul className="cvx-resources">{resources.map(r => <li key={r.id}>
             <a href={r.url} target="_blank" rel="noopener noreferrer" data-testid={`link-cvx-resource-${r.id}`}>{r.title} <ExternalLink size={11} aria-hidden="true" /><span className="sr-only"> {t('common.newTab')}</span></a>
-            <span>{r.provider} · {r.cost}{r.skills.length ? ` · ${r.skills.join(', ')}` : ''}</span>
+            <span>{r.provider} · {ui(r.cost)}{r.skills.length ? ` · ${r.skills.join(', ')}` : ''}</span>
           </li>)}</ul>}
         </div>
       </details>)}

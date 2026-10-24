@@ -11,7 +11,7 @@ export function PathwayContribution({ plan }: { plan: PathwayPlan }) {
       const unknown = steps.filter(s => s.hours === null).length;
       return <div key={target.target} className="small" style={{ marginBottom: 12 }}>
         <b><a href={target.sourceUrl} target="_blank" rel="noreferrer">{t('learn.target', { n: target.target })}</a> · {t('learn.targetStats', { steps: steps.length, hours: steps.reduce((sum, s) => sum + (s.hours ?? 0), 0) })}{unknown ? ` ${t('rm.unstated', { n: unknown })}` : ''}</b>
-        <p>{target.reason}</p><details><summary>{t('learn.targetSteps')}</summary><ul>{steps.map(s => <li key={s.id}>{s.skill} · {s.hours === null ? t('learn.hoursUnknown') : t('rm.hrs', { n: s.hours })}</li>)}</ul></details>
+        <p>{target.reason}</p><details><summary>{t('learn.targetSteps')}</summary><ul>{steps.map(s => <li key={s.id}>{s.kind === 'project' ? t('learn.applySkills') : s.skill} · {s.hours === null ? t('learn.hoursUnknown') : t('rm.hrs', { n: s.hours })}</li>)}</ul></details>
       </div>;
     })}
   </details>;

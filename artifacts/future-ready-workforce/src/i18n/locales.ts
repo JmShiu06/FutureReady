@@ -17,6 +17,14 @@ export const LOCALE_LABELS: Record<Locale, { native: string; familiar?: string }
   id: { native: 'Bahasa Indonesia', familiar: 'Indonesian' },
 };
 
+/** BCP 47 tags for dates and numbers; English keeps the app's established Malaysian formatting. */
+const INTL_TAGS: Record<Locale, string> = {
+  en: 'en-MY', ms: 'ms-MY', 'zh-CN': 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', ta: 'ta-MY', ja: 'ja-JP', id: 'id-ID',
+};
+export function intlLocale(locale: Locale): string {
+  return INTL_TAGS[locale] ?? 'en-MY';
+}
+
 export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }

@@ -26,7 +26,7 @@ export function DosmGroupCard({ group, data }: { group: DosmKeywordGroup; data: 
         </p>
       )}
       {group.matchedVia.length > 0 && (
-        <p className="dosm-matched-via" data-testid={`text-dosm-matched-via-${group.code}`}>{ui('Matched by')} {group.matchedVia.join(", ")}</p>
+        <p className="dosm-matched-via" data-testid={`text-dosm-matched-via-${group.code}`}>{ui('Matched by')} {group.matchedVia.map(via => ui(via)).join(", ")}</p>
       )}
       <div className="dosm-occupation-count">
         <strong data-testid={`text-dosm-employed-${group.code}`}>{formatPeople(group.employedThousands, locale)}</strong>
@@ -74,20 +74,20 @@ export function DosmSourcesDetails({ data }: { data: Source }) {
           <dt>{ui('Employment by occupation')}</dt>
         <dd>
           <a className="text-link" href={data.occupationSource.sourceUrl} target="_blank" rel="noopener noreferrer">{data.occupationSource.sourceName}</a>
-          {" · "}{data.occupationSource.table}. The table reports annual counts in thousands for {data.occupationSource.classification}; the latest year shown is {data.occupationSource.referenceYear}.
+          {" · "}{data.occupationSource.table}. {ui('The table reports annual counts in thousands for {classification}; the latest year shown is {year}.', { classification: data.occupationSource.classification, year: data.occupationSource.referenceYear })}
         </dd>
-        <dt>Job-title lookup</dt>
+        <dt>{ui('Job-title lookup')}</dt>
         <dd>
           <a className="text-link" href={data.titleSearchSource.url} target="_blank" rel="noopener noreferrer">{data.titleSearchSource.edition} · {data.titleSearchSource.publisher}</a>
-          {" · "}{data.titleSearchSource.recordsInSearchIndex} reviewed occupation records are searchable here, compared with {data.titleSearchSource.totalOccupationsListed} listed in the source. {data.titleSearchSource.scopeNote}
+          {" · "}{ui('{records} reviewed occupation records are searchable here, compared with {total} listed in the source.', { records: data.titleSearchSource.recordsInSearchIndex, total: data.titleSearchSource.totalOccupationsListed })} {data.titleSearchSource.scopeNote}
         </dd>
           <dt>{ui('Unemployment and rates')}</dt>
         <dd>
           <a className="text-link" href={data.nationalContext.metadata.sourceUrl} target="_blank" rel="noopener noreferrer">DOSM OpenDOSM monthly Labour Force Survey</a>
-          {" · "}These are current Malaysia-wide totals. DOSM’s occupation table does not provide unemployment by occupation or a job-specific employment rate.
+          {" · "}{ui('These are current Malaysia-wide totals. DOSM’s occupation table does not provide unemployment by occupation or a job-specific employment rate.')}
         </dd>
-        <dt>Shared filters</dt>
-        <dd>Occupation and group filters use the first digit of the 4-digit MASCO code. Skill, SDG and “Matches my skills” narrow which groups appear using reviewed group skills and mapped sample-listing evidence; they never change the DOSM counts. Keyword matches beyond DOSM/MyCOL titles are labelled on each card.</dd>
+        <dt>{ui('Shared filters')}</dt>
+        <dd>{ui('Occupation and group filters use the first digit of the 4-digit MASCO code. Skill, SDG and “Matches my skills” narrow which groups appear using reviewed group skills and mapped sample-listing evidence; they never change the DOSM counts. Keyword matches beyond DOSM/MyCOL titles are labelled on each card.')}</dd>
       </dl>
     </details>
   );

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { LOCALES, LOCALE_STORAGE_KEY, isLocale, readStoredLocale, writeStoredLocale, matchBrowserLocale, interpolate } from '../i18n/locales';
 import { catalogs, en, translate } from '../i18n/messages';
 import { detailCatalogs, enDetail } from '../i18n/messages-detail';
+import { interfaceCopyEntries, interfacePatternSources, translateInterfaceCopy } from '../i18n/messages-interface';
 
 const memory = (init: Record<string, string> = {}) => {
   const data = { ...init };
@@ -85,4 +86,30 @@ it('interpolates every secondary placeholder in every language without translati
       if (placeholders.length) assert.ok(rendered.includes(original), `${locale}.${key} preserved source`);
     }
   }
+});
+
+it('keeps every interface copy row complete, placeholder-safe and reachable from run-time sentences', () => {
+  const placeholders = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
+  const entries = interfaceCopyEntries();
+  const sources = new Set(entries.map(([source]) => source));
+  for (const [source, row] of entries) {
+    assert.equal(row.length, LOCALES.length, `${source} locales`);
+    assert.equal(row[0], source, `${source} English source`);
+    row.forEach((text, i) => {
+      assert.ok(text.trim(), `${LOCALES[i]} empty: ${source}`);
+      assert.deepEqual(placeholders(text), placeholders(source), `${LOCALES[i]} placeholders: ${source}`);
+    });
+  }
+  for (const template of interfacePatternSources()) assert.ok(sources.has(template), `pattern template missing: ${template}`);
+});
+
+it('translates run-time sentences without translating the names inside them', () => {
+  assert.equal(translateInterfaceCopy('zh-CN', 'Self-directed practice: Speaking'), '自主练习：Speaking');
+  assert.equal(translateInterfaceCopy('ms', 'Choose a level above your current level (3).'), 'Pilih tahap yang lebih tinggi daripada tahap semasa anda (3).');
+  const explanation = 'Listed in MyCOL 2024/2025 as a critical occupation by TalentCorp. The reviewed mapping to O*NET 15-1212.00 is an approximate match. 5 of 15 skills O*NET documents for this occupation appear in your profile.';
+  const ja = translateInterfaceCopy('ja', explanation);
+  assert.ok(ja.includes('MyCOL 2024/2025') && ja.includes('15-1212.00') && ja.includes('近似的な一致'), ja);
+  assert.equal(translateInterfaceCopy('en', explanation), explanation);
+  assert.equal(translateInterfaceCopy('ko', 'Human Resource Managers'), 'Human Resource Managers');
+  assert.equal(translateInterfaceCopy('ta', 'Make your next move with a little more clarity.') === 'Make your next move with a little more clarity.', false);
 });

@@ -114,11 +114,11 @@ export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onAp
       </select>
       </>}
       <button type="button" className="btn btn-secondary" disabled={loading || (feature === 'cv-analysis' && !cvDetectedSkill)} onClick={() => void explain()} data-testid={`button-ai-demo-${feature}`}>
-        {loading ? 'Generating explanation…' : aiFeatureActions[feature]}
+        {loading ? ui('Generating explanation…') : ui(aiFeatureActions[feature])}
       </button>
     </div>
     <div aria-live="polite" aria-busy={loading}>
-      {loading && <p className="muted small" role="status">Waiting for the AI service. Your existing results remain available.</p>}
+      {loading && <p className="muted small" role="status">{ui('Waiting for the AI service. Your existing results remain available.')}</p>}
       {result && <div className="ai-generated-explanation" data-testid={`result-ai-${feature}`}>
         <strong>{result.sampleLabel} · {ui('AI-generated final answer')}</strong>
         <AiModelLabel output={result.aiModel} testId={`label-ai-model-result-${feature}`} />
@@ -134,6 +134,6 @@ export function AiExplanationPanel({ feature, jobId, goal, cvDetectedSkill, onAp
         <span>{ui('Model reasoning traces are rejected. General explanation only—not verified evidence, a hiring decision, or a forecast.')}</span>
       </div>}
     </div>
-    {error && <div className="ai-generated-error" role="alert"><p>{error}</p><button type="button" className="btn btn-secondary" disabled={loading} onClick={() => void explain()} data-testid={`button-ai-retry-${feature}`}>{ui('Retry AI request')}</button></div>}
+    {error && <div className="ai-generated-error" role="alert"><p>{ui(error)}</p><button type="button" className="btn btn-secondary" disabled={loading} onClick={() => void explain()} data-testid={`button-ai-retry-${feature}`}>{ui('Retry AI request')}</button></div>}
   </section>;
 }

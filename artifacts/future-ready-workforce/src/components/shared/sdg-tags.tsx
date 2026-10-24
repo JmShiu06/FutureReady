@@ -8,7 +8,7 @@ import { useI18n } from '@/i18n/i18n-context';
 
 /** SDG relevance folded into role cards. Relevance to a cited UN target is never measured impact. */
 export function SdgTags({ roleId, compact = false }: { roleId: string; compact?: boolean }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const maps = [...sdgMappings, ...mycolSdgMappings].filter(m => m.roleId === roleId);
   if (!maps.length && roleSdgUseCases[roleId]) return <SdgUseCase roleId={roleId} />;
   if (!maps.length) return compact
@@ -29,7 +29,7 @@ export function SdgTags({ roleId, compact = false }: { roleId: string; compact?:
             <p className="small">{t('sdg.reviewNote', { date: reviewed.reviewedAt })}</p>
             <p className="small"><b>{t('sdg.scope')}:</b> {reviewed.scope}</p>
             {reviewed.citations.map((citation, index) => <p className="small" key={citation.url}>
-              <b>{citation.kind}:</b>{' '}
+              <b>{ui(citation.kind)}:</b>{' '}
               <a className="text-link" href={citation.url} target="_blank" rel="noreferrer" data-testid={`link-sdg-citation-${roleId}-${m.goal}-${index}`}>{citation.title}</a>
               <span className="muted"> · {citation.observation}</span><br />
               <span className="muted">{t('sdg.citationDates', { published: citation.publishedAt ?? t('sdg.notStated'), accessed: citation.accessedAt })}</span>

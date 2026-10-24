@@ -8,25 +8,30 @@ import { RaccoonLoader } from '@/components/workspace/raccoon-loader';
 import type { MessageKey } from '@/i18n/messages';
 import { enDetail } from '@/i18n/messages-detail';
 
+/** Titles, notes and info may be English source copy (translated here) or text that is already localised. */
 export function SectionTitle({ title, note, action, info }: { title: string; note?: string; action?: ReactNode; info?: string }) {
+  const { ui } = useI18n();
+  const shown = ui(title);
   return <div className="section-head"><div>
     <div className="section-title-line">
-      <h2>{title}</h2>
+      <h2>{shown}</h2>
       {info && <details className="section-info">
-        <summary aria-label={`${title} information`} title={`${title} information`} data-testid={`info-${slug(title)}`}>i</summary>
-        <div className="section-info-popup" role="note">{info}</div>
+        <summary aria-label={ui('{title} information', { title: shown })} title={ui('{title} information', { title: shown })} data-testid={`info-${slug(title)}`}>i</summary>
+        <div className="section-info-popup" role="note">{ui(info)}</div>
       </details>}
     </div>
-    {note && <div className="section-kicker">{note}</div>}
+    {note && <div className="section-kicker">{ui(note)}</div>}
   </div>{action}</div>;
 }
 
 export function PageHead({ eyebrow, title, subtitle, action }: { eyebrow: string; title: string; subtitle?: string; action?: ReactNode }) {
-  return <div className="page-head"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1>{subtitle && <p className="page-subtitle">{subtitle}</p>}</div>{action}</div>;
+  const { ui } = useI18n();
+  return <div className="page-head"><div><div className="eyebrow">{ui(eyebrow)}</div><h1>{ui(title)}</h1>{subtitle && <p className="page-subtitle">{ui(subtitle)}</p>}</div>{action}</div>;
 }
 
 export function SkillMeter({ level }: { level: number }) {
-  return <div className="skill-meter" aria-label={`Level ${level} of 5`}>{[1, 2, 3, 4, 5].map(n => <i className={n <= level ? 'on' : ''} key={n} />)}</div>;
+  const { ui } = useI18n();
+  return <div className="skill-meter" aria-label={ui('Level {level} of 5', { level })}>{[1, 2, 3, 4, 5].map(n => <i className={n <= level ? 'on' : ''} key={n} />)}</div>;
 }
 
 export function Bar({ value, alt, label }: { value: number; alt?: boolean; label: string }) {
@@ -47,16 +52,16 @@ export function GapStatus({ gap }: { gap: SkillGap }) {
 }
 
 export function EvidencePanel({ evidence, testId = 'panel-evidence' }: { evidence: Evidence; testId?: string }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const warnings = evidenceWarnings(evidence);
   return <div className="evidence" data-testid={testId}>
     <dl>
       <dt>{t('detail.evidenceType')}</dt><dd>{t(evidence.kind === 'synthetic' ? 'detail.synthetic' : 'detail.observed')}</dd>
-      <dt>{t('detail.sourceName')}</dt><dd>{evidence.sourceName}</dd>
+      <dt>{t('detail.sourceName')}</dt><dd>{ui(evidence.sourceName)}</dd>
       <dt>{t('detail.sourceUrl')}</dt><dd>{evidence.sourceUrl ? <a href={evidence.sourceUrl} target="_blank" rel="noreferrer" className="text-link">{evidence.sourceUrl}</a> : t('detail.noUrl')}</dd>
       <dt>{t('detail.observationPeriod')}</dt><dd>{t('detail.dateRange', { start: evidence.observationStart ?? t('detail.unknown'), end: evidence.observationEnd ?? t('detail.unknown') })}</dd>
       <dt>{t('detail.updated')}</dt><dd>{evidence.lastUpdated ?? t('detail.missing')}</dd>
-      <dt>{t('detail.notes')}</dt><dd>{evidence.notes}</dd>
+      <dt>{t('detail.notes')}</dt><dd>{ui(evidence.notes)}</dd>
     </dl>
     {warnings.length > 0 && <ul className="warn-list" data-testid={`${testId}-warnings`}>{warnings.map(w => <li key={w}>{evidenceWarningKeys[w] ? t(evidenceWarningKeys[w]) : w}</li>)}</ul>}
   </div>;
@@ -71,13 +76,14 @@ export function LoadingBlock({ rows = 3 }: { rows?: number }) {
 }
 
 export function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void }) {
-  const { t } = useI18n();
-  return <div className="state-box" role="alert" data-testid="state-error"><AlertTriangle size={20} /><strong>{message}</strong>
+  const { t, ui } = useI18n();
+  return <div className="state-box" role="alert" data-testid="state-error"><AlertTriangle size={20} /><strong>{ui(message)}</strong>
     <button className="btn btn-secondary btn-small" onClick={onRetry} data-testid="button-retry"><RotateCcw size={12} /> {t('common.tryAgain')}</button></div>;
 }
 
 export function EmptyBlock({ title, children }: { title: string; children?: ReactNode }) {
-  return <div className="state-box" data-testid="state-empty"><RaccoonArt name="sleeping" size={92} className="state-raccoon" /><strong>{title}</strong>{children}</div>;
+  const { ui } = useI18n();
+  return <div className="state-box" data-testid="state-empty"><RaccoonArt name="sleeping" size={92} className="state-raccoon" /><strong>{ui(title)}</strong>{children}</div>;
 }
 
 type AsyncState<T> = { status: 'loading' | 'error' | 'success'; data?: T; error?: string };

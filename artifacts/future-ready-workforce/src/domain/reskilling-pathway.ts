@@ -156,11 +156,20 @@ export function summarizePathway(steps: PathwayStep[], hoursPerWeek: number, now
 export function priorityFingerprint(plan: PathwayPlan) {
   return JSON.stringify(plan.steps.map(s => [s.id, s.phase, s.priority, s.scenarioBonus]));
 }
-export function describePlanChanges(before: PathwayPlan, after: PathwayPlan) {
+export type PlanChange =
+  | { kind: 'new'; skill: string }
+  | { kind: 'moved'; skill: string; fromPriority: number; toPriority: number; fromStep: number; toStep: number };
+/** Structured changes so the interface can word them in the chosen language. */
+export function planChangeItems(before: PathwayPlan, after: PathwayPlan): PlanChange[] {
   const old = new Map(before.steps.map((s, i) => [s.id, { s, i }]));
-  return after.steps.flatMap((s, i) => {
+  return after.steps.flatMap((s, i): PlanChange[] => {
     const prev = old.get(s.id);
-    return !prev ? [`${s.skill}: new step`] : prev.i !== i || prev.s.priority !== s.priority
-      ? [`${s.skill}: priority ${prev.s.priority} → ${s.priority}; step ${prev.i + 1} → ${i + 1}`] : [];
+    return !prev ? [{ kind: 'new', skill: s.skill }] : prev.i !== i || prev.s.priority !== s.priority
+      ? [{ kind: 'moved', skill: s.skill, fromPriority: prev.s.priority, toPriority: s.priority, fromStep: prev.i + 1, toStep: i + 1 }] : [];
   });
+}
+export function describePlanChanges(before: PathwayPlan, after: PathwayPlan) {
+  return planChangeItems(before, after).map(c => c.kind === 'new'
+    ? `${c.skill}: new step`
+    : `${c.skill}: priority ${c.fromPriority} → ${c.toPriority}; step ${c.fromStep} → ${c.toStep}`);
 }

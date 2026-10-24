@@ -51,7 +51,7 @@ export function ProfileCvImport({
   const reviewDialogRef = useRef<HTMLDialogElement>(null);
   const linkedInPreviewRef = useRef<HTMLDialogElement>(null);
   const session = useCvSession();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const isCv = (skill: Pick<ProfileSkill, 'cvDetected' | 'category'>) => !!skill.cvDetected || skill.category === 'CV detected';
   const detectedKeys = new Set(reviewSkills.map(skill => skillKey(skill.name)));
   // Skills that stay after applying: all manual skills plus earlier CV skills detected again.
@@ -286,7 +286,7 @@ export function ProfileCvImport({
                     checked={skill.alreadyInProfile || skill.selected}
                     disabled={skill.alreadyInProfile || (!skill.selected && selectedSkills.length >= remainingSlots)}
                     onChange={event => toggleSkill(index, event.target.checked)}
-                    aria-label={`Add ${skill.name} to profile`}
+                    aria-label={ui('Add {name} to profile', { name: skill.name })}
                   />
                   <strong>{skill.name}</strong>
                   <span className="cv-skill-check" title={t('cv.foundInCv')} role="img" aria-label={t('cv.foundInCv')}><Check size={12} /></span>

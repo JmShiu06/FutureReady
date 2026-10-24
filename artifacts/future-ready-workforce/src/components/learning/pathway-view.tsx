@@ -47,7 +47,7 @@ function Sdgs({ ids, testid }: { ids: number[]; testid: string }) {
 }
 
 function ResourceBlock({ step }: { step: PathwayStep }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const r = step.resource;
   if (step.kind === 'project') {
     return <div className="pw-resource pw-project" data-testid={`text-project-${step.id}`}>
@@ -77,9 +77,9 @@ function ResourceBlock({ step }: { step: PathwayStep }) {
     <strong className="pw-res-title">{r.title}</strong>
     <div className="pw-chips">
       <span className="pw-chip">{r.provider}</span>
-      <span className="pw-chip">{step.status === 'check-availability' ? t('learn.costUnknown') : r.cost}</span>
+      <span className="pw-chip">{step.status === 'check-availability' ? t('learn.costUnknown') : ui(r.cost)}</span>
       <span className="pw-chip">{step.hours != null ? t('rm.hrs', { n: step.hours }) : t('learn.durationUnknown')}</span>
-      <span className="pw-chip">{r.level}</span>
+      <span className="pw-chip">{ui(r.level)}</span>
       {step.status === 'check-availability' && <span className="pw-chip pw-chip-warn">{t('learn.availability')}</span>}
     </div>
     {url && <a className="btn btn-secondary btn-small pw-open" href={url} target="_blank" rel="noopener noreferrer" data-testid={`link-course-${step.id}`}>{t('learn.open')} <ExternalLink size={12} /></a>}
@@ -87,7 +87,7 @@ function ResourceBlock({ step }: { step: PathwayStep }) {
 }
 
 function WhyDetails({ step, r }: { step: PathwayStep; r: Resource | null }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   return <details className="pw-why" data-testid={`details-why-${step.id}`}>
     <summary>{t('learn.why')}</summary>
     <p className="small muted">{t('detail.sourceLanguage')}</p>
@@ -95,10 +95,10 @@ function WhyDetails({ step, r }: { step: PathwayStep; r: Resource | null }) {
       <dt>{t('learn.priority')}</dt><dd>{step.priority.toFixed(1)}{step.importance != null ? <> · {t('learn.importance', { n: step.importance })}</> : ''}</dd>
       {step.kind !== 'project' && <><dt>{t('learn.calculation')}</dt><dd>{t(step.importance != null ? 'learn.officialCalculation' : 'learn.sampleCalculation')} {t('learn.orderNote')}</dd></>}
       {step.scenarioBonus > 0 && <><dt>{t('learn.scenarioBonus')}</dt><dd>+{step.scenarioBonus.toFixed(1)}</dd></>}
-      {step.marketEvidence && <><dt>{t('learn.inputs')}</dt><dd>{t('learn.marketInputs', { scenario: t(step.marketEvidence.scenario === 'fast' ? 'rm.fastShort' : 'rm.moderateShort'), signal: step.marketEvidence.signalIndex, trend: step.marketEvidence.trendIndex, period: step.marketEvidence.period })}
+      {step.marketEvidence && <><dt>{t('learn.inputs')}</dt><dd>{t('learn.marketInputs', { scenario: t(step.marketEvidence.scenario === 'fast' ? 'rm.fastShort' : 'rm.moderateShort'), signal: step.marketEvidence.signalIndex, trend: step.marketEvidence.trendIndex, period: ui(step.marketEvidence.period) })}
         {safeUrl(step.marketEvidence.url) && <> · <a className="pw-link" href={step.marketEvidence.url} target="_blank" rel="noopener noreferrer">{t('learn.workbook')}</a></>}</dd></>}
       {step.coveredSkills.length > 1 && <><dt>{t('learn.also')}</dt><dd>{step.coveredSkills.join(', ')}</dd></>}
-      <dt>{t('learn.choice')}</dt><dd>{step.whyResource || '—'}</dd>
+      <dt>{t('learn.choice')}</dt><dd>{step.whyResource ? ui(step.whyResource) : '—'}</dd>
       {!!step.sdgTargets?.length && <><dt>{t('learn.whySdg')}</dt><dd>{step.sdgTargets.map(target => <p key={target.target}>
         <a href={target.sourceUrl} target="_blank" rel="noreferrer">{t('learn.target', { n: target.target })}</a>: {target.reason}
         {target.dutyUrl && <> · <a href={target.dutyUrl} target="_blank" rel="noreferrer">{t('learn.duty')}</a></>} · {t('learn.reviewed', { date: target.reviewedOn })}.

@@ -48,46 +48,51 @@ function startMonthForPeriod(latestDate: string, months: number) {
   return latestMonth.toISOString().slice(0, 7);
 }
 
-const fmtMonth = (date: string) =>
-  new Date(`${date}T00:00:00`).toLocaleDateString("en-MY", {
+const fmtMonth = (date: string, tag = "en-MY") =>
+  new Date(`${date}T00:00:00`).toLocaleDateString(tag, {
     month: "short",
     year: "numeric",
   });
 
-const fmtDate = (date: string) =>
-  new Date(`${date}T00:00:00`).toLocaleDateString("en-MY", {
+const fmtDate = (date: string, tag = "en-MY") =>
+  new Date(`${date}T00:00:00`).toLocaleDateString(tag, {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
 
-const fmtTimestamp = (date: string) =>
-  new Date(date).toLocaleString("en-MY", {
+const fmtTimestamp = (date: string, tag = "en-MY") =>
+  new Date(date).toLocaleString(tag, {
     dateStyle: "medium",
     timeStyle: "short",
   });
 
 function sourceLinks(
   metadata: Pick<DosmJobMarketInsightsResponse, "sourceUrl" | "termsUrl" | "attribution">,
+  ui: (source: string) => string,
 ) {
   return (
     <p className="small muted" style={{ lineHeight: 1.7 }}>
       {metadata.attribution}{" "}
       <a className="text-link" href={metadata.sourceUrl} target="_blank" rel="noreferrer">
-        DOSM release
+        {ui('DOSM release')}
       </a>{" "}
       ·{" "}
       <a className="text-link" href={metadata.termsUrl} target="_blank" rel="noreferrer">
-        Terms of Use
+        {ui('Terms of Use')}
       </a>
     </p>
   );
 }
 
 import { useI18n } from '@/i18n/i18n-context';
+import { intlLocale } from '@/i18n/locales';
 
 export function DosmDataPanels() {
-  const { ui } = useI18n();
+  const { ui, t, locale } = useI18n();
+  const tag = intlLocale(locale);
+  const month = (date: string) => fmtMonth(date, tag);
+  const stamp = (date: string) => fmtTimestamp(date, tag);
   const [fromMonth, setFromMonth] = useState("");
   const [toMonth, setToMonth] = useState("");
   const [metric, setMetric] = useState<RateMetric>("unemploymentRate");
@@ -113,7 +118,7 @@ export function DosmDataPanels() {
   const availableStartMonth = observationRows[0]?.date.slice(0, 7);
   const periodIsLimited = Boolean(requestedStartMonth && availableStartMonth && requestedStartMonth < availableStartMonth);
   const latest = displayedRows.at(-1);
-  const selectedMetricLabel = rateOptions.find(option => option.value === metric)?.label ?? "Rate";
+  const selectedMetricLabel = ui(rateOptions.find(option => option.value === metric)?.label ?? "Rate");
   const invalidRange = Boolean(fromMonth && toMonth && fromMonth > toMonth);
 
   return (
@@ -135,7 +140,7 @@ export function DosmDataPanels() {
                 })
               }
               disabled={refreshMutation.isPending}
-              title="Refreshes the monthly OpenDOSM series only"
+              title={ui("Refreshes the monthly OpenDOSM series only")}
               data-testid="button-refresh-dosm"
             >
               <RefreshCw size={14} className={refreshMutation.isPending ? "spin" : undefined} />
@@ -184,7 +189,7 @@ export function DosmDataPanels() {
               data-testid="select-dosm-metric"
             >
               {rateOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+                <option key={option.value} value={option.value}>{ui(option.label)}</option>
               ))}
             </select>
           </div>
@@ -203,8 +208,7 @@ export function DosmDataPanels() {
         )}
         {refreshMutation.isSuccess && (
           <div role="status" className="small muted" style={{ marginBottom: 12 }}>
-            OpenDOSM returned {refreshMutation.data.observationsLoaded} validated monthly records;
-            latest observation {fmtMonth(refreshMutation.data.latestObservationDate)}.
+            {ui('OpenDOSM returned {count} validated monthly records; latest observation {month}.', { count: refreshMutation.data.observationsLoaded, month: month(refreshMutation.data.latestObservationDate) })}
           </div>
         )}
 
@@ -219,7 +223,7 @@ export function DosmDataPanels() {
           <>
             {labourForceQuery.data.isStale && (
               <div role="alert" className="state-box" style={{ marginBottom: 14 }}>
-                {labourForceQuery.data.warning ?? "The displayed official data may be stale."}
+                {ui(labourForceQuery.data.warning ?? "The displayed official data may be stale.")}
               </div>
             )}
 
@@ -230,9 +234,9 @@ export function DosmDataPanels() {
             ) : (
               <>
                 <p className="small muted" style={{ marginTop: 0 }} data-testid="text-dosm-reference-period">
-                  {ui('Reference period: latest observation')} {fmtMonth(labourForceQuery.data.metadata.latestObservationDate)} ·
-                  Retrieved from OpenDOSM {fmtTimestamp(labourForceQuery.data.metadata.retrievedAt)} ·
-                  Publication date: not provided by the API.
+                  {ui('Reference period: latest observation')} {month(labourForceQuery.data.metadata.latestObservationDate)} ·{" "}
+                  {ui('Retrieved from OpenDOSM {time}', { time: stamp(labourForceQuery.data.metadata.retrievedAt) })} ·{" "}
+                  {ui('Publication date: not provided by the API.')}
                 </p>
                 {latest && (
                   <div
@@ -243,16 +247,16 @@ export function DosmDataPanels() {
                       marginBottom: 16,
                     }}
                   >
-                    <MetricCard label="Labour force" value={formatCompactCount(latest.labourForceThousands)} note={`Thousands of people · ${fmtMonth(latest.date)}`} />
-                    <MetricCard label="Unemployed" value={formatCompactCount(latest.unemployedThousands)} note="Thousands of people" />
-                    <MetricCard label="Unemployment rate" value={`${formatRate(latest.unemploymentRate)}%`} note="DOSM observed rate" />
-                    <MetricCard label="Participation rate" value={`${formatRate(latest.participationRate)}%`} note="DOSM observed rate" />
+                    <MetricCard label={ui("Labour force")} value={formatCompactCount(latest.labourForceThousands)} note={ui('Thousands of people · {month}', { month: month(latest.date) })} />
+                    <MetricCard label={ui("Unemployed")} value={formatCompactCount(latest.unemployedThousands)} note={ui("Thousands of people")} />
+                    <MetricCard label={ui("Unemployment rate")} value={`${formatRate(latest.unemploymentRate)}%`} note={ui("DOSM observed rate")} />
+                    <MetricCard label={ui("Participation rate")} value={`${formatRate(latest.participationRate)}%`} note={ui("DOSM observed rate")} />
                   </div>
                 )}
 
                 <div className="panel chart-card" style={{ marginBottom: 16, minWidth: 0 }}>
-                  <SectionTitle title={selectedMetricLabel} note={`${displayedRows.length} MONTHLY OBSERVATIONS · PERCENT`} />
-                  <div className="row" role="group" aria-label="Historical date range" data-testid="controls-dosm-period">
+                  <SectionTitle title={selectedMetricLabel} note={ui('{count} MONTHLY OBSERVATIONS · PERCENT', { count: displayedRows.length })} />
+                  <div className="row" role="group" aria-label={ui("Historical date range")} data-testid="controls-dosm-period">
                     {periodOptions.map(option => (
                       <button
                         key={option.value}
@@ -266,22 +270,22 @@ export function DosmDataPanels() {
                         }}
                         data-testid={`button-dosm-range-${option.value}`}
                       >
-                        {option.label}
+                        {ui(option.label)}
                       </button>
                     ))}
                   </div>
                   <p className="small muted" style={{ margin: "8px 0 12px" }} data-testid="text-dosm-range-summary">
                     {displayedRows.length > 0
-                      ? `Showing ${fmtMonth(displayedRows[0].date)}–${fmtMonth(displayedRows.at(-1)!.date)} · ${displayedRows.length} observed monthly records. Missing months are not estimated.`
+                      ? ui('Showing {start}–{end} · {count} observed monthly records. Missing months are not estimated.', { start: month(displayedRows[0].date), end: month(displayedRows.at(-1)!.date), count: displayedRows.length })
                       : ui('No observations are available for this range.')}
                     {periodIsLimited && availableStartMonth
-                      ? ` The source starts in ${fmtMonth(`${availableStartMonth}-01`)}; only available history is shown.`
+                      ? ` ${ui('The source starts in {month}; only available history is shown.', { month: month(`${availableStartMonth}-01`) })}`
                       : ""}
                   </p>
                   <div
                     className="chart-box"
                     role="img"
-                    aria-label={`${selectedMetricLabel} by month for ${selectedPeriodOption?.label ?? "the selected month filters"}. Exact values are available in the observations table.`}
+                    aria-label={ui('{metric} by month for {period}. Exact values are available in the observations table.', { metric: selectedMetricLabel, period: selectedPeriodOption ? ui(selectedPeriodOption.label) : ui("the selected month filters") })}
                     data-testid="chart-dosm-labour-force"
                     data-range={selectedPeriod ?? "custom"}
                     data-observation-count={displayedRows.length}
@@ -296,11 +300,11 @@ export function DosmDataPanels() {
                           dataKey="date"
                           tick={{ fontSize: 10 }}
                           minTickGap={34}
-                          tickFormatter={fmtMonth}
+                          tickFormatter={value => month(String(value))}
                         />
                         <YAxis tick={{ fontSize: 10 }} tickFormatter={value => `${formatRate(Number(value))}%`} />
                         <Tooltip
-                          labelFormatter={value => fmtMonth(String(value))}
+                          labelFormatter={value => month(String(value))}
                           formatter={value => [`${formatRate(Number(value))}%`, selectedMetricLabel]}
                         />
                         <Line
@@ -326,15 +330,15 @@ export function DosmDataPanels() {
                         <th>{ui('Labour force (thousands)')}</th>
                         <th className="dosm-employed">{ui('Employed (thousands)')}</th>
                         <th className="dosm-unemployed">{ui('Unemployed (thousands)')}</th>
-                        <th>Participation</th>
-                        <th>Employment-to-population</th>
-                        <th>Unemployment</th>
+                        <th>{ui('Participation')}</th>
+                        <th>{ui('Employment-to-population')}</th>
+                        <th>{ui('Unemployment')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {displayedRows.slice(-12).reverse().map(row => (
                         <tr key={row.date}>
-                          <td>{fmtMonth(row.date)}</td>
+                          <td>{month(row.date)}</td>
                           <td className="mono">{formatCompactCount(row.labourForceThousands)}</td>
                           <td className="mono dosm-employed">{formatCompactCount(row.employedThousands)}</td>
                           <td className="mono dosm-unemployed">{formatCompactCount(row.unemployedThousands)}</td>
@@ -351,6 +355,7 @@ export function DosmDataPanels() {
 
             <details className="panel panel-pad" style={{ marginTop: 14, minWidth: 0 }} data-testid="panel-dosm-lfs-methodology">
               <summary>{ui('Source, methodology & cautions')}</summary>
+              {locale !== 'en' && <p className="small muted" style={{ marginTop: 10 }}>{t('detail.sourceLanguage')}</p>}
               <dl className="evidence" style={{ marginTop: 12 }}>
                 <dt>{ui('Source')}</dt>
                 <dd>
@@ -359,16 +364,16 @@ export function DosmDataPanels() {
                   </a>
                 </dd>
                 <dt>API</dt>
-                <dd><a className="text-link" href={labourForceQuery.data.metadata.apiUrl} target="_blank" rel="noreferrer">OpenDOSM endpoint</a></dd>
-                <dt>License</dt>
+                <dd><a className="text-link" href={labourForceQuery.data.metadata.apiUrl} target="_blank" rel="noreferrer">{ui('OpenDOSM endpoint')}</a></dd>
+                <dt>{ui('License')}</dt>
                 <dd>
                   {labourForceQuery.data.metadata.license} ·{" "}
-                  <a className="text-link" href={labourForceQuery.data.metadata.licenseUrl} target="_blank" rel="noreferrer">license terms</a>
+                  <a className="text-link" href={labourForceQuery.data.metadata.licenseUrl} target="_blank" rel="noreferrer">{ui('license terms')}</a>
                 </dd>
-                <dt>Coverage</dt><dd>{labourForceQuery.data.metadata.coverage}</dd>
-                <dt>Latest source observation</dt><dd>{fmtMonth(labourForceQuery.data.metadata.latestObservationDate)}</dd>
-                <dt>Retrieved</dt><dd>{fmtTimestamp(labourForceQuery.data.metadata.retrievedAt)}</dd>
-                <dt>Methodology</dt><dd>{labourForceQuery.data.metadata.methodology}</dd>
+                <dt>{ui('Coverage')}</dt><dd>{labourForceQuery.data.metadata.coverage}</dd>
+                <dt>{ui('Latest source observation')}</dt><dd>{month(labourForceQuery.data.metadata.latestObservationDate)}</dd>
+                <dt>{ui('Retrieved')}</dt><dd>{stamp(labourForceQuery.data.metadata.retrievedAt)}</dd>
+                <dt>{ui('Methodology')}</dt><dd>{labourForceQuery.data.metadata.methodology}</dd>
                 <dt>{ui('Attribution')}</dt><dd>{labourForceQuery.data.metadata.attribution}</dd>
               </dl>
               <ul className="warn-list">
@@ -395,7 +400,8 @@ function MetricCard({ label, value, note }: { label: string; value: string; note
 }
 
 function JobMarketInsightsPanel() {
-  const { ui } = useI18n();
+  const { ui, t, locale } = useI18n();
+  const tag = intlLocale(locale);
   const query = useGetDosmJobMarketInsights();
   return (
     <section className="panel panel-pad" style={{ minWidth: 0 }} data-testid="panel-dosm-job-market">
@@ -428,9 +434,9 @@ function JobMarketInsightsPanel() {
             {query.data.totalByQuarter.map(total => (
               <MetricCard
                 key={total.quarter}
-                label={`Total online offerings · ${total.quarter}`}
+                label={ui('Total online offerings · {quarter}', { quarter: total.quarter })}
                 value={formatCompactCount(total.jobOfferings)}
-                note={`Published ${fmtDate(total.publicationDate)}`}
+                note={ui('Published {date}', { date: fmtDate(total.publicationDate, tag) })}
               />
             ))}
           </div>
@@ -462,13 +468,14 @@ function JobMarketInsightsPanel() {
 
           <details className="panel panel-pad" style={{ marginTop: 14, minWidth: 0 }} data-testid="panel-dosm-jmi-methodology">
             <summary>{ui('Source, methodology & cautions')}</summary>
+            {locale !== 'en' && <p className="small muted" style={{ marginTop: 10 }}>{t('detail.sourceLanguage')}</p>}
             <dl className="evidence" style={{ marginTop: 12 }}>
               <dt>{ui('Source')}</dt><dd>{query.data.sourceName}</dd>
               <dt>{ui('Measure')}</dt><dd>{query.data.measure}</dd>
-              <dt>Coverage</dt><dd>{query.data.coverage}</dd>
+              <dt>{ui('Coverage')}</dt><dd>{query.data.coverage}</dd>
               <dt>{ui('Classification')}</dt><dd>{query.data.classification}</dd>
-              <dt>Methodology</dt><dd>{query.data.methodology}</dd>
-              <dt>{ui('Snapshot reviewed')}</dt><dd>{fmtDate(query.data.reviewedAt)}</dd>
+              <dt>{ui('Methodology')}</dt><dd>{query.data.methodology}</dd>
+              <dt>{ui('Snapshot reviewed')}</dt><dd>{fmtDate(query.data.reviewedAt, tag)}</dd>
               <dt>{ui('Attribution')}</dt><dd>{query.data.attribution}</dd>
               <dt>{ui('Reuse terms')}</dt>
               <dd><a className="text-link" href={query.data.termsUrl} target="_blank" rel="noreferrer">Malaysian Government Open Data Terms of Use 1.0</a></dd>
@@ -476,9 +483,9 @@ function JobMarketInsightsPanel() {
               <dd>
                 {query.data.totalByQuarter.map(item => (
                   <span key={item.quarter}>
-                    <a className="text-link" href={item.reportUrl} target="_blank" rel="noreferrer">{item.quarter} report</a>
+                    <a className="text-link" href={item.reportUrl} target="_blank" rel="noreferrer">{ui('{quarter} report', { quarter: item.quarter })}</a>
                     {" · "}
-                    <a className="text-link" href={item.dataUrl} target="_blank" rel="noreferrer">data workbook</a>
+                    <a className="text-link" href={item.dataUrl} target="_blank" rel="noreferrer">{ui('data workbook')}</a>
                     {" · "}
                   </span>
                 ))}
@@ -487,7 +494,7 @@ function JobMarketInsightsPanel() {
             <ul className="warn-list">
               {query.data.caveats.map(caveat => <li key={caveat}>{caveat}</li>)}
             </ul>
-            {sourceLinks(query.data)}
+            {sourceLinks(query.data, ui)}
           </details>
         </>
       )}

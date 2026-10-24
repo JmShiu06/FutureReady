@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { state, storageWarning } = useWorkspace();
   const { candidateName, phase } = useCvSession();
-  const { t, sessionOnly } = useI18n();
+  const { t, ui, sessionOnly } = useI18n();
   const crumbs = pageTitle(location).map(k => t(k));
   const current = activeKey(location);
   const displayName = phase === 'ready' ? candidateName || t('shell.unknown') : t('shell.yourProfile');
@@ -82,7 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="main-content page-enter" key={location}>
         <div className="banner banner-demo" role="note" data-testid="banner-demo"><ShieldCheck size={14} /><span><strong>{t('banner.demoTitle')}</strong> {t('banner.demoBody')}</span></div>
         {sessionOnly && <div className="banner banner-warn" role="status" data-testid="banner-language-session"><AlertTriangle size={14} /><span>{t('lang.sessionOnly')}</span></div>}
-        {storageWarning && <div className="banner banner-warn" role="alert" data-testid="banner-storage"><AlertTriangle size={14} /><span>{storageWarning}</span></div>}
+        {storageWarning && <div className="banner banner-warn" role="alert" data-testid="banner-storage"><AlertTriangle size={14} /><span>{ui(storageWarning)}</span></div>}
         {children}
       </main>
     </div>

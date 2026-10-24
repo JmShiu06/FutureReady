@@ -1,3 +1,5 @@
+import { useI18n } from '@/i18n/i18n-context';
+
 /**
  * The single renderer for every score shown in Careers & jobs and its detail views.
  * It never calculates a score: callers pass the value already returned by the
@@ -46,10 +48,12 @@ type Props = {
 };
 
 export function MatchScore({ metric, value, matched, considered, variant = 'pill', testId, className = '' }: Props) {
-  const meta = matchMetricMeta[metric];
+  const { ui } = useI18n();
+  const source = matchMetricMeta[metric];
+  const meta = { label: ui(source.label), short: ui(source.short), meaning: ui(source.meaning) };
   const clamped = Math.max(0, Math.min(100, value));
-  const counts = matched !== undefined && considered !== undefined ? `${matched} of ${considered}` : null;
-  const aria = `${meta.label}: ${value}%${counts ? `, ${counts} skills` : ''}`;
+  const counts = matched !== undefined && considered !== undefined ? ui('{matched} of {considered}', { matched, considered }) : null;
+  const aria = counts ? ui('{label}: {value}%, {counts} skills', { label: meta.label, value, counts }) : ui('{label}: {value}%', { label: meta.label, value });
   if (variant === 'pill') {
     return <span className={`ms ms-pill ms-${metric} ${className}`} title={meta.meaning} aria-label={aria} data-testid={testId}>
       <b>{value}%</b><span>{meta.short}</span>
@@ -63,6 +67,6 @@ export function MatchScore({ metric, value, matched, considered, variant = 'pill
   }
   return <div className={`ms ms-panel ms-${metric} ${className}`} data-testid={testId}>
     <div className="ms-dial" role="img" aria-label={aria} style={{ ['--ms-v' as string]: `${clamped * 3.6}deg` }}><span>{value}%</span></div>
-    <div className="ms-copy"><strong>{meta.label}</strong>{counts && <span className="mono">{counts} skills</span>}<span>{meta.meaning}</span></div>
+    <div className="ms-copy"><strong>{meta.label}</strong>{counts && <span className="mono">{ui('{counts} skills', { counts })}</span>}<span>{meta.meaning}</span></div>
   </div>;
 }

@@ -2,11 +2,11 @@ import { researchLabel } from '@workspace/workforce-evidence';
 import { useAiResearch } from '@/hooks/use-ai-research';
 import { useI18n } from '@/i18n/i18n-context';
 export function AiResearchEvidence({ controls = false }: { controls?: boolean }) {
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const ai = useAiResearch();
   const snapshot = ai.data?.snapshot;
   return <div className="small" data-testid="ai-research-evidence">
-    <p><b>{researchLabel}</b></p>
+    <p><b>{ui(researchLabel)}</b></p>
     {controls && <button className="btn btn-secondary btn-small" disabled={ai.busy} onClick={ai.refresh}> {t(ai.busy ? 'learn.aiFetching' : 'learn.aiRefresh')}</button>}
     <p role="status">{snapshot ? t('learn.aiUpdated', { date: snapshot.fetchedAt }) : t('learn.aiNotFetched')}</p>
     {(ai.data?.error || ai.isError || ai.refreshError) && <p role="alert">{ai.data?.error ?? t('learn.aiUnavailable')}</p>}

@@ -7,7 +7,7 @@ import { activeBaseline, roadmapMilestones } from '@/domain/learning';
 import { completionKey } from '@/domain/services';
 import { demoRoles } from '@/domain/demo-data';
 import { pathwaySamples } from '@/domain/pathway-samples';
-import { buildPathway, describePlanChanges, priorityFingerprint, type PathwayStep } from '@/domain/reskilling-pathway';
+import { buildPathway, planChangeItems, priorityFingerprint, type PathwayStep } from '@/domain/reskilling-pathway';
 import { readPathwayPreferences } from '@/domain/pathway-preferences';
 import { usePlanningScenario } from '@/hooks/use-planning-scenario';
 import { LoadingBlock } from '@/components/workspace/ui';
@@ -23,7 +23,7 @@ import { useI18n } from '@/i18n/i18n-context';
 export function PersonalisedPathway() {
   const { state } = useWorkspace();
   const [, navigate] = useLocation();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const baseline = activeBaseline(state);
   const market = useGetDosmJobMarketInsights();
   const signals = useMemo<PlanningSignal[]>(() => market.data?.occupationGroups
@@ -37,13 +37,13 @@ export function PersonalisedPathway() {
   if (market.isLoading && !market.data) return <div aria-label={t('learn.preparing')}><LoadingBlock /></div>;
   return <><ActivePathway key={`${state.audience}:${state.targets[state.audience]}:${baseline.startedAt}`} baseline={baseline}
     signals={signals} marketWarning={market.isError ? t('learn.marketWarning') : ''} />
-    <aside className="disclaimer"><a href={malaysianCatalogReference.url} target="_blank" rel="noreferrer">{malaysianCatalogReference.title}</a> · {malaysianCatalogReference.status}. {malaysianCatalogReference.note}</aside></>;
+    <aside className="disclaimer"><a href={malaysianCatalogReference.url} target="_blank" rel="noreferrer">{malaysianCatalogReference.title}</a> · {ui(malaysianCatalogReference.status)}. {ui(malaysianCatalogReference.note)}</aside></>;
 }
 
 function ActivePathway({ baseline, signals, marketWarning }: { baseline: RoadmapBaseline; signals: PlanningSignal[]; marketWarning: string }) {
   const { state, profile, targetRoleId, setMilestoneComplete, resetActiveRoadmap, storageWarning } = useWorkspace();
   const [, navigate] = useLocation();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const { scenario, setScenario, scenarioWarning } = usePlanningScenario();
   const ai = useAiResearch();
   const key = `frw-pathway-v1:${state.audience}:${targetRoleId}:${baseline.startedAt}`;
@@ -75,7 +75,9 @@ function ActivePathway({ baseline, signals, marketWarning }: { baseline: Roadmap
   const candidate = buildPathway({ ...input, scenario, signals, researchWeights: ai.weights });
   const fingerprint = priorityFingerprint(candidate);
   const changed = fingerprint !== priorityFingerprint(plan) && fingerprint !== preferences.ignoredFingerprint;
-  const changes = changed ? describePlanChanges(plan, candidate) : [];
+  const changes = changed ? planChangeItems(plan, candidate).map(c => c.kind === 'new'
+    ? ui('{skill}: new step', { skill: c.skill })
+    : ui('{skill}: priority {from} → {to}; step {fromStep} → {toStep}', { skill: c.skill, from: c.fromPriority, to: c.toPriority, fromStep: c.fromStep, toStep: c.toStep })) : [];
   const reason = preferences.accepted.scenario !== scenario
     ? t('rm.reasonScenario', { scenario: scenario === 'fast' ? t('rm.fastShort') : t('rm.moderateShort') })
     : t('rm.reasonData');
@@ -95,5 +97,5 @@ function ActivePathway({ baseline, signals, marketWarning }: { baseline: Roadmap
     onAcceptChanges={() => setPreferences(p => ({ ...p, accepted: { scenario, signals, researchWeights: ai.weights,
       researchFetchedAt: ai.data?.snapshot?.fetchedAt, researchSource: ai.demo ? 'demo' : ai.data?.snapshot ? 'arxiv' : 'unavailable' }, ignoredFingerprint: undefined }))}
     onKeepPlan={() => setPreferences(p => ({ ...p, ignoredFingerprint: fingerprint }))}
-    storageWarning={[storageWarning, saveWarning, scenarioWarning, marketWarning].filter(Boolean).join(' ')} /></>;
+    storageWarning={[storageWarning, saveWarning, scenarioWarning, marketWarning].filter(Boolean).map(w => ui(w)).join(' ')} /></>;
 }

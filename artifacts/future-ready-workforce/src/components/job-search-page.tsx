@@ -25,7 +25,7 @@ const desktop = () => typeof window === 'undefined' || window.matchMedia('(min-w
 
 export function JobSearchPage({ profileSkills }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t } = useI18n();
+  const { t, ui, locale } = useI18n();
   const modeLabel: Record<string, string> = Object.fromEntries(MODES.map(m => [m, t(`search.mode.${m}`)]));
   const levelLabel: Record<string, string> = Object.fromEntries(LEVELS.map(l => [l, t(`search.level.${l}`)]));
   const searchState = useMemo(() => readListingSearch(searchParams), [searchParams]);
@@ -185,10 +185,10 @@ export function JobSearchPage({ profileSkills }: Props) {
           <span className="jobs-filter-label">{t('search.occupation')}</span>
           <select className="select-field" value={occupationValue} onChange={e => setOccupation(e.target.value)} data-testid="select-filter-occupation">
             <option value="">{t('search.allOccupations')}</option>
-            {occupationGroups.map(g => <optgroup key={g.code ?? 'other'} label={g.label}>
-              {g.code && <option value={`group:${g.code}`}>{t('search.allIn', { label: g.label })}</option>}
+            {occupationGroups.map(g => { const label = g.code ? groupLabels[g.code] ?? ui('MASCO major group {code}', { code: g.code }) : ui('Other examples (no MASCO group)'); return <optgroup key={g.code ?? 'other'} label={label}>
+              {g.code && <option value={`group:${g.code}`}>{t('search.allIn', { label })}</option>}
               {g.occupations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-            </optgroup>)}
+            </optgroup>; })}
           </select>
         </label>
         <label className="jx-field">
@@ -264,6 +264,7 @@ export function JobSearchPage({ profileSkills }: Props) {
           <p>{t('search.emptyListings')}{matchOnly ? ` ${t('search.emptyMatchOnly')}` : ''}</p>
           {emptyHelp}
         </div>}
+        {!listingsLoading && visible.length > 0 && locale !== 'en' && <p className="small muted jx-note" data-testid="text-source-language-listings">{t('detail.sourceLanguage')}</p>}
         {!listingsLoading && visible.length > 0 && <div className="jobs-list" data-testid="list-jobs">
           {visible.map((job, index) => {
             const score = scoreState.scores.get(job.id);

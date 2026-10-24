@@ -63,7 +63,7 @@ function AggregateOverview() {
 
 function PersonalOverview() {
   const { state, profile, targetRoleId } = useWorkspace();
-  const { t } = useI18n();
+  const { t, ui } = useI18n();
   const ranked = useMemo(() => rankCareers(profile), [profile]);
   const target = demoRoles.find(r => r.id === targetRoleId) ?? demoRoles[0];
   const occupation = officialBaseline(state)?.occupation;
@@ -75,13 +75,13 @@ function PersonalOverview() {
   const graduate = state.audience === 'graduate';
   const audienceDetails = graduate
     ? [profile.qualification, profile.studyField].filter(Boolean).join(' · ')
-    : profile.experienceYears === null ? '' : `${profile.experienceYears} years of experience`;
-  const profileContext = [audienceDetails, profile.location, profile.workPreference,
-    profile.learningHours === null ? '' : `${profile.learningHours} learning hrs/week`,
-    profile.budgetMYR === null ? '' : `budget MYR ${profile.budgetMYR}`].filter(Boolean).join(' · ');
+    : profile.experienceYears === null ? '' : ui('{count} years of experience', { count: profile.experienceYears });
+  const profileContext = [audienceDetails, profile.location, profile.workPreference ? ui(profile.workPreference) : '',
+    profile.learningHours === null ? '' : ui('{count} learning hrs/week', { count: profile.learningHours }),
+    profile.budgetMYR === null ? '' : ui('budget MYR {amount}', { amount: profile.budgetMYR })].filter(Boolean).join(' · ');
   return <>
-    <PageHead eyebrow={`${audienceLabels[state.audience]} · dashboard`} title={graduate ? 'Turn your studies into a first career move.' : 'Make your next move with a little more clarity.'}
-      subtitle="A summary of where you stand. Each card opens the full view." />
+    <PageHead eyebrow={ui('{audience} · dashboard', { audience: t(`audience.${state.audience}`) })} title={graduate ? ui('Turn your studies into a first career move.') : ui('Make your next move with a little more clarity.')}
+      subtitle={ui('A summary of where you stand. Each card opens the full view.')} />
     <section className="summary-grid summary-grid-lead">
       <article className="welcome-card">
         <div className="eyebrow">{t('dash.startingFrom')}</div>
@@ -96,7 +96,7 @@ function PersonalOverview() {
       <SummaryCard icon={<RouteIcon size={15} />} eyebrow={t('dash.currentTarget')} title={occupation?.title ?? t('dash.noTarget')} testId="target"
         value={overlap ? <MatchScore metric="onet" value={overlap.score} matched={overlap.matched} considered={overlap.total} variant="pill" testId="stat-target-overlap" />
           : undefined}
-        foot={overlap ? `${overlap.total - overlap.matched} documented skills not in profile` : t('dash.chooseOccupation')} href={occupation ? `/careers-and-jobs/roles/${occupation.id}` : '/careers-and-jobs?tab=career-paths'} cta={occupation ? t('dash.roleDetail') : t('dash.chooseTarget')} />
+        foot={overlap ? ui('{count} documented skills not in profile', { count: overlap.total - overlap.matched }) : t('dash.chooseOccupation')} href={occupation ? `/careers-and-jobs/roles/${occupation.id}` : '/careers-and-jobs?tab=career-paths'} cta={occupation ? t('dash.roleDetail') : t('dash.chooseTarget')} />
     </section>
     <section className="summary-grid">
       <SummaryCard icon={<UserRound size={15} />} eyebrow={t('nav.profile')} title={t('dash.skillsSaved', { count: profile.skills.length })} testId="profile"

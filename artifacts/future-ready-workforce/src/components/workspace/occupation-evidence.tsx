@@ -47,9 +47,7 @@ export function useOccupationEvidence() {
 type OccupationEvidenceQuery = ReturnType<typeof useOccupationEvidence>;
 type MatchedOccupation = OccupationEvidenceResult['occupations'][number];
 
-const relationLabel: Record<OccupationEvidence['mapping']['relation'], string> = {
-  exact: 'Exact match', approximate: 'Approximate match', broader: 'O*NET occupation is broader', narrower: 'O*NET occupation is narrower',
-};
+const relationKey = (relation: OccupationEvidence['mapping']['relation']) => `detail.relation.${relation}` as const;
 
 function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
   const { t, ui } = useI18n();
@@ -63,7 +61,7 @@ function SourceFooter({ data }: { data: OccupationEvidenceResult }) {
 }
 
 export function OfficialOccupationsPanel({ query, sdgGoal }: { query: OccupationEvidenceQuery; sdgGoal?: number }) {
-  const { ui } = useI18n();
+  const { t, ui } = useI18n();
   const { profile } = useWorkspace();
   const eligible = query.data?.occupations.filter(o => o.recommendationStatus === 'eligible' && (!sdgGoal || roleSupportsGoal(o.id, sdgGoal))) ?? [];
   const excluded = query.data?.occupations.filter(o => o.recommendationStatus === 'excluded') ?? [];
@@ -71,8 +69,8 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
     <SectionTitle title="Malaysian critical occupations" note="OFFICIAL EVIDENCE · MYCOL 2024/2025 + O*NET 31.0"
       info="MyCOL status is TalentCorp's classification. O*NET is United States occupational reference data. Neither is a hiring probability or a measure of local demand." />
     <p className="muted" style={{ marginTop: 0 }}>
-      {ui('Separate from the illustrative coverage above. Each occupation is on TalentCorp’s MyCOL 2024/2025 list and mapped by review to an O*NET occupation.')}
-      The count shows how many skills O*NET documents for that occupation appear by name in your profile. DOSM statistics in Market & AI impact are not used here.
+      {ui('Separate from the illustrative coverage above. Each occupation is on TalentCorp’s MyCOL 2024/2025 list and mapped by review to an O*NET occupation.')}{' '}
+      {ui('The count shows how many skills O*NET documents for that occupation appear by name in your profile. DOSM statistics in Market & AI impact are not used here.')}
     </p>
     <p className="muted small">{ui('SDG tags are separately reviewed thematic links, not official MyCOL classifications or measured impact. Expand a tag for UN targets, occupational duties, scope limits and citation dates. Other occupations remain unassessed.')}</p>
     {query.isPending && <LoadingBlock rows={2} />}
@@ -81,14 +79,14 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
       {profile.skills.length === 0 && <div className="state-box" style={{ marginBottom: 14 }}>{ui('Add skills to your profile to compare them with O*NET documented skills.')}</div>}
       <div className="grid-2">{eligible.map(o => <article key={o.id} className="role-card" data-testid={`card-occupation-${o.id}`}>
         <div className="spread"><strong>{o.mycol.title}</strong><span className="match-pill">{o.mycol.edition}</span></div>
-        <span className="muted small">MASCO {o.mycol.masco4} → O*NET {o.onet.code} {o.onet.title} · {relationLabel[o.mapping.relation]}</span>
+        <span className="muted small">MASCO {o.mycol.masco4} → O*NET {o.onet.code} {o.onet.title} · {t(relationKey(o.mapping.relation))}</span>
         <SdgTags roleId={o.id} compact />
         <MatchScore metric="onet" variant="bar" value={o.overlap!.score} matched={o.overlap!.matchedSkills.length} considered={o.overlap!.skillsConsidered} testId={`text-occupation-overlap-${o.id}`} />
         <div className="row">
           {o.overlap!.matchedSkills.map(s => <span key={s} className="chip">{s}</span>)}
           {o.overlap!.missingSkills.slice(0, 4).map(s => <span key={s} className="chip gap">{s}</span>)}
         </div>
-        <p className="muted small" style={{ margin: 0 }} data-testid={`text-occupation-why-${o.id}`}>{o.explanation}</p>
+        <p className="muted small" style={{ margin: 0 }} data-testid={`text-occupation-why-${o.id}`}>{ui(o.explanation)}</p>
         {o.mapping.status === 'verified' && o.documentedSkills.length > 0
           ? <BuildRoadmapButton roleId={officialPlanId(o.id)} occupation={occupationSnapshot(o, query.data!)} testId={`button-build-roadmap-${o.id}`} />
           : <span className="small muted">{ui('Roadmap unavailable: no reviewed documented skill requirements.')}</span>}
@@ -98,7 +96,7 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
         <div className="section-kicker">{ui('Not used for recommendations')}</div>
         <div className="gap-list">{excluded.map(o => <div className="gap-row" key={o.id} data-testid={`row-occupation-excluded-${o.id}`}>
           <span><strong>{o.mycol.title}</strong><small>MASCO {o.mycol.masco4} → O*NET {o.onet.code} {o.onet.title}</small></span>
-          <span className="small muted" style={{ maxWidth: 360, textAlign: 'right' }}>{o.exclusionReason}</span>
+          <span className="small muted" style={{ maxWidth: 360, textAlign: 'right' }}>{o.exclusionReason ? ui(o.exclusionReason) : null}</span>
         </div>)}</div>
       </div>}
       <SourceFooter data={query.data} />
@@ -107,7 +105,7 @@ export function OfficialOccupationsPanel({ query, sdgGoal }: { query: Occupation
 }
 
 function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOccupation; index: number }) {
-  const { ui } = useI18n();
+  const { t, ui } = useI18n();
   const overlap = occupation.overlap;
   return <article className="role-card" data-testid={`card-compare-${index}`}>
     <div className="spread">
@@ -115,21 +113,21 @@ function OccupationComparisonCard({ occupation, index }: { occupation: MatchedOc
       <span className="match-pill">{occupation.mycol.edition}</span>
     </div>
     <span className="muted small">
-      MASCO {occupation.mycol.masco4} → O*NET {occupation.onet.code} {occupation.onet.title} · {relationLabel[occupation.mapping.relation]}
+      MASCO {occupation.mycol.masco4} → O*NET {occupation.onet.code} {occupation.onet.title} · {t(relationKey(occupation.mapping.relation))}
     </span>
     <SdgTags roleId={occupation.id} compact />
     {occupation.recommendationStatus === 'excluded' || !overlap
       ? <div className="state-box" style={{ marginTop: 12 }} data-testid={`text-compare-excluded-${index}`}>
-        {occupation.exclusionReason ?? 'A skill comparison is not available for this occupation.'}
+        {ui(occupation.exclusionReason ?? 'A skill comparison is not available for this occupation.')}
       </div>
       : <>
         <MatchScore metric="onet" variant="bar" className="ms-spaced" value={overlap.score} matched={overlap.matchedSkills.length} considered={overlap.skillsConsidered} />
         <div className="row" style={{ marginTop: 8 }}>
           {overlap.matchedSkills.map(skill => <span key={skill} className="chip">{skill}</span>)}
           {overlap.missingSkills.slice(0, 4).map(skill => <span key={skill} className="chip gap">{skill}</span>)}
-          {overlap.missingSkills.length > 4 && <span className="muted small">+{overlap.missingSkills.length - 4} more unmatched skills</span>}
+          {overlap.missingSkills.length > 4 && <span className="muted small">{ui('+{count} more unmatched skills', { count: overlap.missingSkills.length - 4 })}</span>}
         </div>
-        <p className="muted small" style={{ marginBottom: 0 }}>{occupation.explanation}</p>
+        <p className="muted small" style={{ marginBottom: 0 }}>{ui(occupation.explanation)}</p>
       </>}
   </article>;
 }
@@ -143,11 +141,11 @@ export function OccupationComparisonPanel({ query }: { query: OccupationEvidence
   const second = occupations.find(occupation => occupation.id === secondId);
   const options = occupations.map(occupation => ({
     ...occupation,
-    label: `${occupation.mycol.title}${occupation.recommendationStatus === 'excluded' ? ' — no skill comparison' : ''}`,
+    label: occupation.recommendationStatus === 'excluded' ? ui('{title} — no skill comparison', { title: occupation.mycol.title }) : occupation.mycol.title,
   }));
-  const emptyMessage = query.isError
+  const emptyMessage = ui(query.isError
     ? 'Official occupation data is unavailable. Retry from the Malaysian critical occupations panel.'
-    : 'Choose a Malaysian critical occupation above to compare its documented skills.';
+    : 'Choose a Malaysian critical occupation above to compare its documented skills.');
 
   return <section className="panel panel-pad" style={{ marginTop: 18 }} data-testid="panel-comparison">
     <SectionTitle
@@ -160,22 +158,22 @@ export function OccupationComparisonPanel({ query }: { query: OccupationEvidence
         className="select-field"
         value={firstId}
         onChange={event => setFirstId(event.target.value)}
-        aria-label="First Malaysian critical occupation"
+        aria-label={ui("First Malaysian critical occupation")}
         data-testid="select-compare-a"
         disabled={!query.data}
       >
-        <option value="">Choose first occupation</option>
+        <option value="">{ui('Choose first occupation')}</option>
         {options.map(occupation => <option key={occupation.id} value={occupation.id}>{occupation.label}</option>)}
       </select>
       <select
         className="select-field"
         value={secondId}
         onChange={event => setSecondId(event.target.value)}
-        aria-label="Second Malaysian critical occupation"
+        aria-label={ui("Second Malaysian critical occupation")}
         data-testid="select-compare-b"
         disabled={!query.data}
       >
-        <option value="">Choose second occupation</option>
+        <option value="">{ui('Choose second occupation')}</option>
         {options.map(occupation => <option key={occupation.id} value={occupation.id}>{occupation.label}</option>)}
       </select>
     </div>
@@ -220,7 +218,7 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
         <div className="panel panel-pad" data-testid="panel-occupation-skills">
           <SectionTitle title={t('detail.skillsOnet')} note={t('detail.matchLegend')} />
           {o.exclusionReason
-            ? <div className="state-box" data-testid="text-occupation-excluded">{o.exclusionReason}</div>
+            ? <div className="state-box" data-testid="text-occupation-excluded">{ui(o.exclusionReason)}</div>
             : <>
               <MatchScore metric="onet" variant="panel" value={o.overlap!.score} matched={o.overlap!.matchedSkills.length} considered={o.overlap!.skillsConsidered} testId="text-occupation-overlap" />
               <p className="small">{t('detail.overlap', { matched: o.overlap!.matchedSkills.length, total: o.overlap!.skillsConsidered })}</p>
@@ -233,7 +231,7 @@ export function OccupationEvidenceDetail({ id }: { id: string }) {
         </div>
         <div className="panel panel-pad" data-testid="panel-occupation-why">
           <SectionTitle title={t('detail.whyOccupation')} note={t('detail.explanation')} />
-          <p className="muted">{o.explanation}</p>
+          <p className="muted">{ui(o.explanation)}</p>
           <dl className="evidence"><dt>{t('detail.rationale')}</dt><dd>{o.mapping.rationale}</dd><dt>{t('detail.mappingLimits')}</dt><dd>{o.mapping.limitations}</dd><dt>{t('detail.scoring')}</dt><dd>{data.scoring}</dd></dl>
           <p className="muted small">{t('detail.browseNote')}</p>
         </div>

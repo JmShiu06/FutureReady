@@ -99,15 +99,16 @@ export function AiDrawerProvider({ children }: { children: ReactNode }) {
 }
 
 /** Feature trigger. Selects feature / job / goal only; the drawer owns the request lifecycle. */
-export function AiExplainButton({ request, label = 'Explain with AI', testId, small = false, quiet = false }: {
+export function AiExplainButton({ request, label, testId, small = false, quiet = false }: {
   request: AiRequest; label?: string; testId?: string; small?: boolean; quiet?: boolean;
 }) {
   const { open } = useAiDrawer();
+  const { ui } = useI18n();
   if (request.feature !== 'cv-analysis' && request.feature !== 'market-trends') {
     return null;
   }
   return <span className="ai-trigger-wrap"><button type="button" className={`btn ai-trigger ${quiet ? 'btn-quiet' : 'btn-secondary'}${small ? ' btn-small' : ''}`} aria-haspopup="dialog"
     onClick={() => open(request)} data-testid={testId ?? `button-open-ai-${request.feature}`}>
-    <Sparkles size={small ? 12 : 14} aria-hidden="true" /> {label}
+    <Sparkles size={small ? 12 : 14} aria-hidden="true" /> {label ?? ui('Explain with AI')}
   </button><AiModelLabel compact testId={`label-ai-model-button-${request.feature}`} /></span>;
 }
